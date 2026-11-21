@@ -179,6 +179,13 @@
     { key: 'data', label: 'nav.g.data', items: ['xref', 'graph', 'import'] }
   ];
   const STAFF_ONLY = NAV_GROUPS.reduce((a, g) => a.concat(g.items), []);
+  /** 分组菜单末尾的外部系统入口：新窗口打开，不进本站路由 */
+  const NAV_EXT = [
+    {
+      group: 'clues', zh: '转单云', en: 'Zhuandan Cloud', href: 'https://admin.hqsmartcloud.com/#/home',
+      tipZh: '外部系统 · 转单云后台（新窗口打开）', tipEn: 'External · Zhuandan Cloud admin (opens in a new tab)'
+    }
+  ];
   /** 分组菜单展开状态（纯 UI，不落 localStorage） */
   let navOpen = '';
   /** 获客的三种视图都收进「用户画像」这一个入口 */
@@ -273,11 +280,13 @@
       const active = items.indexOf(S.tab) >= 0 ? S.tab : '';
       const sepCls = first ? ' divided' : '';
       first = false;
+      const ext = NAV_EXT.filter(x => x.group === g.key).map(x =>
+        `<a class="nav-ext" role="menuitem" href="${esc(x.href)}" target="_blank" rel="noopener noreferrer" title="${esc(LZ(x.tipZh, x.tipEn))}">${esc(LZ(x.zh, x.en))}<span class="ext" aria-hidden="true">↗</span></a>`).join('');
       return `<div class="nav-fly${sepCls}${navOpen === g.key ? ' open' : ''}" data-fly="${g.key}">
         <button class="nav-fly-btn${active ? ' cur' : ''}" data-act="navGroup" data-id="${g.key}"
           aria-haspopup="true" aria-expanded="${navOpen === g.key}">${T(g.label)}${sum ? `<span class="badge">${sum}</span>` : ''}<span class="caret">▾</span></button>
         <div class="nav-menu" role="menu">
-          ${items.map(k => `<button role="menuitem" data-act="tab" data-id="${k}" class="${isOn(k) ? 'on' : ''}">${label(k)}${badge(k) ? `<span class="badge">${badge(k)}</span>` : ''}${active === k ? '<span class="tick">✓</span>' : ''}</button>`).join('')}
+          ${items.map(k => `<button role="menuitem" data-act="tab" data-id="${k}" class="${isOn(k) ? 'on' : ''}">${label(k)}${badge(k) ? `<span class="badge">${badge(k)}</span>` : ''}${active === k ? '<span class="tick">✓</span>' : ''}</button>`).join('')}${ext}
         </div></div>`;
     };
     // 老板页签同样走 .nav-fly，才能融进 Grid 等分
@@ -303,6 +312,7 @@
     ['适配图谱', '车型 → 车桥 → 型号的对应关系'],
     ['数据导入', 'Excel 批量导入型号 / 适配'],
     ['短视频接口', 'RedFox 短视频数据 → 选题与线索'],
+    ['转单云（外部）', '「客户线索」菜单最后一项，新窗口打开转单云后台'],
     ['报价与资料', '同上，但可回写客户档案']
   ];
   function openPerm() {
