@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>冠英 · 选型与报价中台</title>
+<meta name="description" content="车型 / 车桥 / 编码 → 刹车片型号 → 报价与客户资料包。冠英（KOOYING）选型数据库与报价中台。">
+<link rel="stylesheet" href="assets/style.css">
+<link rel="stylesheet" href="assets/theme.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-in">
+    <div class="brand">
+      <img class="brand-logo" src="assets/img/logo.jpg" alt="KOOYING 冠英 AUTO PARTS">
+      <div class="brand-sep"></div>
+      <div>
+        <div class="brand-t">选型与报价中台</div>
+        <div class="brand-s">Selection &amp; Quotation Hub</div>
+      </div>
+    </div>
+    <div class="gsearch">
+      <span class="ico">⌕</span>
+      <input id="gsearch" type="text" placeholder="输入车型 / 车桥 / 旧件编码 / 客户原话，回车开始匹配（如 豪沃A7、457桥、29087）">
+    </div>
+    <div class="top-actions">
+      <span class="tz-badge" id="tzNow">本地 --:--</span>
+      <button class="lang-pill" id="permBtn" data-act="openPerm" title="谁能做什么">? 权限</button>
+      <button class="lang-pill" id="langBtn" data-act="openLang"><span id="langFlag">🇨🇳</span> <span id="langName">中文</span> <span class="caret">▾</span></button>
+      <button class="lang-pill" id="userBtn" data-act="openGate"><span id="userRole">未登录</span><span class="caret">▾</span></button>
+    </div>
+  </div>
+</header>
+
+<nav class="nav"><div class="nav-in" id="nav"></div></nav>
+
+<div id="demoBar" class="demo-bar" hidden></div>
+
+<main class="wrap">
+  <section class="page on" id="p-home"></section>
+  <section class="page" id="p-select"></section>
+  <section class="page" id="p-products"></section>
+  <section class="page" id="p-graph"></section>
+  <section class="page" id="p-quote"></section>
+  <section class="page" id="p-pack"></section>
+  <section class="page" id="p-leads"></section>
+  <section class="page" id="p-visits"></section>
+  <section class="page" id="p-network"></section>
+  <section class="page" id="p-content"></section>
+  <section class="page" id="p-import"></section>
+</main>
+
+<div class="drawer-mask" id="drawerMask"></div>
+<aside class="drawer" id="drawer">
+  <div class="drawer-h"><div class="flex1" id="drawerTitle"></div><button class="btn ghost sm" data-act="closeDrawer">✕</button></div>
+  <div class="drawer-b" id="drawerBody"></div>
+  <div class="drawer-f" id="drawerFoot"></div>
+</aside>
+
+<div class="modal-mask" id="modalMask">
+  <div class="modal" id="modal">
+    <div class="modal-h"><div class="flex1 b" id="modalTitle"></div><button class="btn ghost sm" data-act="closeModal">✕</button></div>
+    <div class="modal-b" id="modalBody"></div>
+    <div class="modal-f" id="modalFoot"></div>
+  </div>
+</div>
+
+<div id="toasts"></div>
+<div id="printRoot"></div>
+
+<!-- 入口：员工 / 客户 -->
+<div class="gate-mask" id="gateMask">
+  <div class="gate-card" role="dialog" aria-modal="true">
+    <div class="gate-head">
+      <img class="gate-logo" src="assets/img/logo.jpg" alt="KOOYING 冠英">
+      <div>
+        <h2 id="gateTitle">选择入口</h2>
+        <p id="gateSub">客户用手机号 / 邮箱 / WhatsApp 登录；员工用访问码进入管理端。</p>
+      </div>
+    </div>
+    <div id="gateBody"></div>
+  </div>
+</div>
+
+<!-- 首次进入：界面语言 -->
+<div class="lang-mask" id="langMask">
+  <div class="lang-card" role="dialog" aria-modal="true" aria-labelledby="langTitle">
+    <div class="lang-head">
+      <img class="gate-logo" src="assets/img/logo.jpg" alt="KOOYING 冠英">
+      <div>
+        <h2 id="langTitle">选择界面语言</h2>
+        <p id="langSub">面向国际市场的版本：界面文案跟随语言切换，产品型号与编码保持原样。</p>
+      </div>
+    </div>
+    <div class="lang-grid" id="langGrid"></div>
+    <div class="lang-foot">
+      <label class="lang-remember"><input type="checkbox" id="langRemember" checked> <span id="langRememberTxt">记住选择，下次自动进入</span></label>
+      <span class="flex1"></span>
+      <button class="btn primary" id="langGo" data-act="langConfirm">开始使用</button>
+    </div>
+  </div>
+</div>
+
+<!-- 权限一览 -->
+<div class="perm-mask" id="permMask" data-act="closePerm">
+  <div class="perm-card" role="dialog" aria-modal="true" aria-labelledby="permTitle">
+    <div class="perm-head">
+      <div>
+        <h2 id="permTitle">谁能做什么</h2>
+        <p>客户登录后只能看到左边 5 项；右边 8 项只有员工访问码进来才有。</p>
+      </div>
+      <span class="flex1"></span>
+      <button class="btn sm ghost" style="color:#c8d2e0" data-act="closePerm">✕</button>
+    </div>
+    <div class="perm-body" id="permBody"></div>
+    <div class="perm-foot">
+      <span class="tiny muted">演示版：客户用任意手机号 / 邮箱 / WhatsApp 登录；员工访问码 GY2024</span>
+      <span class="flex1"></span>
+      <button class="btn sm" data-act="closePerm">知道了</button>
+    </div>
+  </div>
+</div>
+
+<!-- 客服解答：浮窗监听 + 车型提醒 -->
+<div id="chatAlert" class="chat-alert"></div>
+<button id="chatFab" class="chat-fab" data-act="chatToggle">
+  <span class="fab-av"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 13v-1a7.5 7.5 0 0 1 15 0v1"/><rect x="2.6" y="12.6" width="4" height="6.2" rx="1.7"/><rect x="17.4" y="12.6" width="4" height="6.2" rx="1.7"/><path d="M12 19.3h2.2a2.8 2.8 0 0 0 2.8-2.8"/></svg></span>
+  <span class="fab-txt">客服解答</span>
+  <span id="chatBadge" class="chat-badge" style="display:none">0</span>
+</button>
+<aside id="chatPanel" class="chat-panel">
+  <div class="chat-h">
+    <span class="chat-av"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 13v-1a7.5 7.5 0 0 1 15 0v1"/><rect x="2.6" y="12.6" width="4" height="6.2" rx="1.7"/><rect x="17.4" y="12.6" width="4" height="6.2" rx="1.7"/><path d="M12 19.3h2.2a2.8 2.8 0 0 0 2.8-2.8"/></svg></span>
+    <div>
+      <div class="b" id="chatTitle">客服解答</div>
+      <div class="tiny" style="color:#93a1b8" id="chatStat">0 条</div>
+    </div>
+    <span class="flex1"></span>
+    <span class="live" id="chatLive"><i></i> 监听中</span>
+    <span class="online-pill" id="chatOnline" hidden><i></i> 在线</span>
+    <button class="btn ghost sm" style="color:#c8d2e0" data-act="chatToggle">✕</button>
+  </div>
+  <div class="chat-chans" id="chatChans">
+    <span class="chan on">WhatsApp</span><span class="chan on">TikTok 私信</span>
+    <span class="chan on">Facebook</span><span class="chan on">Instagram</span>
+    <span class="tiny" style="color:#7d8ba3;margin-left:auto">演示回放</span>
+  </div>
+  <div class="chat-body" id="chatBody"></div>
+  <div class="cs-compose" id="csCompose" hidden>
+    <input id="csInput" type="text" placeholder="输入车型 / 数量 / 问题，回车发送…" autocomplete="off">
+    <button class="btn primary sm" data-act="csSend">发送</button>
+  </div>
+  <div class="chat-f" id="chatFoot">
+    <button class="btn sm dark" data-act="chatNext">▶ 模拟新消息</button>
+    <button class="btn sm ghost" style="color:#c8d2e0" data-act="chatAuto" id="chatAutoBtn">自动提醒：开</button>
+    <button class="btn sm ghost" style="color:#c8d2e0" data-act="chatClear">清空</button>
+  </div>
+</aside>
+
+<script src="assets/data.js"></script>
+<script src="assets/social.js"></script>
+<script src="assets/engine.js"></script>
+<script src="assets/i18n.js"></script>
+<script src="assets/chat-i18n.js"></script>
+<script src="assets/auth.js"></script>
+<script src="assets/search.js"></script>
+<script src="assets/redfox.js"></script>
+<script src="assets/deals.js"></script>
+<script src="assets/home.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>

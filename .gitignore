@@ -1,0 +1,17 @@
+# 临时 / 测试文件（headless 截图用的临时页不要进仓库）
+_*.html
+_*.png
+_*.txt
+*.zip
+
+# 系统 / 编辑器
+Thumbs.db
+desktop.ini
+.DS_Store
+*.log
+node_modules/
+.vscode/
+.idea/
+
+# 本地个人数据（如果有用 启动.bat 生成的话）
+*.local
