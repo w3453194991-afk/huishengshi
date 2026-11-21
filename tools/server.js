@@ -62,6 +62,52 @@ async function redfoxApi(req, res) {
   const u = url.parse(req.url, true);
   const key = req.headers['x-redfox-key'] || u.query.key || '';
   const platform = String(u.query.platform || '').toLowerCase();
+
+  /* ---- REST 直连代理：/api/redfox/rest ---- */
+  if (u.pathname === '/api/redfox/rest' && req.method === 'POST') {
+    try {
+      let body = '';
+      await new Promise((resolve, reject) => {
+        req.on('data', c => { body += c; if (body.length > 2e6) reject(new Error('请求体过大')); });
+        req.on('end', resolve);
+        req.on('error', reject);
+      });
+      const p = JSON.parse(body || '{}');
+      const apiPath = String(p.path || '');
+      // 白名单：只允许打到 redfox 的故事线接口，避免变成任意请求转发器
+      if (!/^\/story\/api\/[A-Za-z0-9_\/.-]+$/.test(apiPath)) {
+        return sendJson(res, 400, { ok: false, error: '非法接口路径' });
+      }
+      const r = await (async () => {
+        let lastErr;
+        for (let i = 0; i < 2; i++) {
+          try {
+            return await fetch('https://redfox.hk' + apiPath, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json', 'X-API-KEY': key, 'User-Agent': 'QoderWork/1.0' },
+              body: JSON.stringify(p.payload || {}),
+              signal: AbortSignal.timeout(60000)
+            });
+          } catch (e) {
+            lastErr = e;
+            if (i === 0) await new Promise(r2 => setTimeout(r2, 800));
+          }
+        }
+        throw lastErr;
+      })();
+      const text = await r.text();
+      let data;
+      try { data = JSON.parse(text); } catch (e) { data = text; }
+      if (r.status !== 200) return sendJson(res, 200, { ok: false, error: 'HTTP ' + r.status, data });
+      if (data && data.code !== undefined && data.code !== 2000) {
+        return sendJson(res, 200, { ok: false, error: data.msg || ('code=' + data.code), code: data.code, data });
+      }
+      return sendJson(res, 200, { ok: true, platform, path: apiPath, data });
+    } catch (e) {
+      return sendJson(res, 200, { ok: false, error: String(e && e.message || e) });
+    }
+  }
+
   if (!RF_PLATFORMS.includes(platform)) return sendJson(res, 400, { ok: false, error: '未知平台: ' + platform });
 
   try {

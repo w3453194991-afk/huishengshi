@@ -2444,7 +2444,6 @@
     rfPlat(id) { window.REDFOX.setPlatform(id); vRedfox(); },
     rfKind(id) { window.REDFOX.setKind(id); vRedfox(); },
     rfQuery() { window.REDFOX.runQuery(() => vRedfox()); },
-    rfRun(id) { window.REDFOX.run(id, () => vRedfox()); },
     rfImportLead() {
       window.REDFOX.importLead({
         addLead: (lead) => { S.leads.unshift(lead); save(); renderNav(); }
