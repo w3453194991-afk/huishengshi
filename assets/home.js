@@ -43,6 +43,21 @@
         </div>
       </div>
       <div class="hero-top">
+        <div class="hero-pick-row">
+        <div class="hero-pick" id="heroPick">
+          <button class="hero-pick-t" data-act="heroPick" aria-haspopup="true" aria-expanded="false">
+            <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+            <span>${zh ? '选购' : 'Browse'}</span>
+            <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>
+          </button>
+          <div class="hero-pick-p">
+            <button class="hp-i" data-act="tab" data-id="select"><span class="hp-ico">◎</span><span class="hp-t"><b>${zh ? '智能选型' : 'Smart match'}</b><i>${zh ? '车型 / 车桥 / 编码 → 候选型号' : 'Vehicle, axle or code to candidates'}</i></span></button>
+            <button class="hp-i" data-act="tab" data-id="products"><span class="hp-ico">▤</span><span class="hp-t"><b>${zh ? '产品库' : 'Catalog'}</b><i>${zh ? '全部型号，规格 · 材质 · 图片' : 'All parts with specs and photos'}</i></span></button>
+            <button class="hp-i" data-act="tab" data-id="custom"><span class="hp-ico">✂</span><span class="hp-t"><b>${zh ? '自定义定制' : 'Custom parts'}</b><i>${zh ? '非标尺寸 / 材质 / 包装 / 打标' : 'Non-standard size, mix, packing'}</i></span></button>
+            <button class="hp-i" data-act="tab" data-id="quote"><span class="hp-ico">￥</span><span class="hp-t"><b>${zh ? '购物车' : 'Cart'}${(o.cartCount ? ' <span class="badge">' + o.cartCount + '</span>' : '')}</b><i>${zh ? '已选型号，出阶梯价和报价单' : 'Your picks, tier price and quote'}</i></span></button>
+          </div>
+        </div>
+        </div>
         <div class="hero-search">
           <span class="ico">⌕</span>
           <input id="heroQ" type="text" placeholder="${T('sel.ph')}">
@@ -109,9 +124,10 @@
       <div class="tool-grid">
         <button class="tool-card" data-act="tab" data-id="select"><span class="ti">◎</span><b>${zh ? '智能选型' : 'Smart match'}</b><i>${zh ? '车型 / 车桥 / 旧件编码 → 候选型号 + 消歧问题' : 'Vehicle, axle or old code to ranked candidates'}</i></button>
         <button class="tool-card" data-act="tab" data-id="products"><span class="ti">▤</span><b>${zh ? '产品库' : 'Catalog'}</b><i>${zh ? st.products + ' 个型号，含规格、材质、编码与缩略图' : st.products + ' parts with specs, codes and photos'}</i></button>
-        <button class="tool-card" data-act="tab" data-id="quote"><span class="ti">￥</span><b>${zh ? '报价单' : 'Quotation'}</b><i>${zh ? '阶梯价 + 运费，生成可打印 PDF' : 'Tier pricing, freight, printable PDF'}</i></button>
-        <button class="tool-card" data-act="tab" data-id="pack"><span class="ti">▣</span><b>${zh ? '资料包' : 'Data pack'}</b><i>${zh ? '报价 + 产品页 + 试验 + 确认页，打包 ZIP' : 'Quote, data sheets, tests — one ZIP'}</i></button>
-        ${isCust ? `<button class="tool-card" data-act="askPrice"><span class="ti">✎</span><b>${zh ? '询价' : 'Ask price'}</b><i>${zh ? '填数量，2 小时内按阶梯价回你' : 'Send quantities, get tier pricing'}</i></button>` : ''}
+        <button class="tool-card" data-act="tab" data-id="custom"><span class="ti">✂</span><b>${zh ? '自定义定制' : 'Custom parts'}</b><i>${zh ? '非标尺寸 / 材质 / 包装 / 打标，提交后 2 小时回方案' : 'Non-standard size, material, packing or marking'}</i></button>
+        ${!isCust ? `<button class="tool-card" data-act="tab" data-id="quote"><span class="ti">￥</span><b>${zh ? '报价单' : 'Quotation'}</b><i>${zh ? '阶梯价 + 运费，生成可打印 PDF' : 'Tier pricing, freight, printable PDF'}</i></button>` : ''}
+        ${!isCust ? `<button class="tool-card" data-act="tab" data-id="pack"><span class="ti">▣</span><b>${zh ? '资料包' : 'Data pack'}</b><i>${zh ? '报价 + 产品页 + 试验 + 确认页，打包 ZIP' : 'Quote, data sheets, tests — one ZIP'}</i></button>` : ''}
+
         ${!isCust ? `<button class="tool-card" data-act="tab" data-id="network"><span class="ti">◉</span><b>${zh ? '用户画像' : 'Profiles'}</b><i>${zh ? '画像 / 检索式搜客户 / 短视频选题，一个入口三段切换' : 'Profiles, buyer search and content studio in one entry'}</i></button>` : ''}
         ${!isCust ? `<button class="tool-card" data-act="tab" data-id="xref"><span class="ti">⇄</span><b>${zh ? '编号对照' : 'Cross reference'}</b><i>${zh ? 'WVA / FMSI / OE / 车桥 → 自家型号，还差什么一眼看到' : 'WVA, FMSI, OE or axle to your part number'}</i></button>` : ''}
         ${!isCust ? `<button class="tool-card" data-act="tab" data-id="deals"><span class="ti">✎</span><b>${zh ? '成交台账' : 'Deals'}</b><i>${zh ? '记一笔成交 / 改状态，老板那边立刻看到' : 'Log a deal and its status'}</i></button>` : ''}

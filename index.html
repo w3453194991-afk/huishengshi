@@ -26,7 +26,6 @@
     </div>
     <div class="top-actions">
       <span class="tz-badge" id="tzNow">本地 --:--</span>
-      <button class="lang-pill" id="permBtn" data-act="openPerm" title="谁能做什么">? 权限</button>
       <button class="lang-pill" id="langBtn" data-act="openLang"><span id="langFlag">🇨🇳</span> <span id="langName">中文</span> <span class="caret">▾</span></button>
       <button class="lang-pill" id="userBtn" data-act="openGate"><span id="userRole">未登录</span><span class="caret">▾</span></button>
     </div>
@@ -42,6 +41,7 @@
   <section class="page" id="p-select"></section>
   <section class="page" id="p-products"></section>
   <section class="page" id="p-graph"></section>
+  <section class="page" id="p-custom"></section>
   <section class="page" id="p-quote"></section>
   <section class="page" id="p-pack"></section>
   <section class="page" id="p-leads"></section>
@@ -139,6 +139,7 @@
     <span class="flex1"></span>
     <span class="live" id="chatLive"><i></i> 监听中</span>
     <span class="online-pill" id="chatOnline" hidden><i></i> 在线</span>
+    <button class="chat-hist" id="chatHist" data-act="chatHistory" title="查看以前的聊天记录"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/><path d="M12 8v4l3 2"/></svg><span id="chatHistTxt">浏览记录</span></button>
     <button class="btn ghost sm" style="color:#c8d2e0" data-act="chatToggle">✕</button>
   </div>
   <div class="chat-chans" id="chatChans">

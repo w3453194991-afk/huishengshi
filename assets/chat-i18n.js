@@ -17,6 +17,8 @@ window.CHAT_I18N = {
     noMatchText: '未识别到车型 → 自动发送「三步定位法」索要照片', copyPhotoScript: '复制索要话术',
     emptyHint: '点击「模拟新消息」，看浮窗如何在 1 秒内提示型号',
     alertTitle: '新消息命中车型', alertAsks: '问', alertOpen: '看型号', alertOpenSupport: '打开客服解答',
+    history: '浏览记录', histTitle: '聊天记录', histBrowse: '最近浏览',
+    custLabel: '客户', staffLabel: '客服', histEmpty: '还没有聊天记录，发一条消息试试',
     queueEnd: '演示队列已播完，可清空后重放'
   },
   en: {
@@ -36,6 +38,8 @@ window.CHAT_I18N = {
     noMatchText: 'No vehicle matched → send the 3-step photo script', copyPhotoScript: 'Copy photo script',
     emptyHint: 'Click "Simulate message" to see the popup match a part in one second',
     alertTitle: 'New message matched a part', alertAsks: 'asks about', alertOpen: 'Open part', alertOpenSupport: 'Open support',
+    history: 'Records', histTitle: 'Chat history', histBrowse: 'Recent views',
+    custLabel: 'Customer', staffLabel: 'Support', histEmpty: 'No chat history yet — send a message to start',
     queueEnd: 'Demo queue finished — clear to replay'
   },
   es: {
@@ -55,6 +59,8 @@ window.CHAT_I18N = {
     noMatchText: 'Sin vehículo detectado → enviar el guion de 3 pasos con fotos', copyPhotoScript: 'Copiar guion de fotos',
     emptyHint: 'Pulsa «Simular mensaje» para ver cómo detecta un modelo en 1 segundo',
     alertTitle: 'Nuevo mensaje con modelo detectado', alertAsks: 'pregunta por', alertOpen: 'Ver pieza', alertOpenSupport: 'Abrir soporte',
+    history: 'Registros', histTitle: 'Historial de chat', histBrowse: 'Vistas recientes',
+    custLabel: 'Cliente', staffLabel: 'Soporte', histEmpty: 'Aún no hay historial: envía un mensaje',
     queueEnd: 'Cola demo terminada — limpia para repetir'
   },
   pt: {
@@ -74,6 +80,8 @@ window.CHAT_I18N = {
     noMatchText: 'Nenhum veículo detectado → enviar o roteiro de 3 passos com fotos', copyPhotoScript: 'Copiar roteiro de fotos',
     emptyHint: 'Clique em «Simular mensagem» para ver a detecção em 1 segundo',
     alertTitle: 'Nova mensagem com modelo detectado', alertAsks: 'pergunta por', alertOpen: 'Ver peça', alertOpenSupport: 'Abrir suporte',
+    history: 'Registros', histTitle: 'Histórico de chat', histBrowse: 'Visualizações recentes',
+    custLabel: 'Cliente', staffLabel: 'Suporte', histEmpty: 'Ainda sem histórico: envie uma mensagem',
     queueEnd: 'Fila demo terminou — limpe para repetir'
   },
   ar: {
@@ -93,6 +101,8 @@ window.CHAT_I18N = {
     noMatchText: 'لم يتم التعرف على المركبة → إرسال نص الخطوات الثلاث لطلب الصور', copyPhotoScript: 'نسخ نص طلب الصور',
     emptyHint: 'اضغط «محاكاة رسالة» لترى كيف يُكتشف الموديل في ثانية',
     alertTitle: 'رسالة جديدة طابقت موديلًا', alertAsks: 'يسأل عن', alertOpen: 'عرض القطعة', alertOpenSupport: 'فتح الدعم',
+    history: 'السجلات', histTitle: 'سجل المحادثات', histBrowse: 'المشاهدات الأخيرة',
+    custLabel: 'العميل', staffLabel: 'الدعم', histEmpty: 'لا يوجد سجل بعد — أرسل رسالة',
     queueEnd: 'انتهى طابور العرض — امسح للتكرار'
   },
   ru: {
@@ -112,6 +122,8 @@ window.CHAT_I18N = {
     noMatchText: 'Автомобиль не распознан → отправить скрипт из 3 шагов с фото', copyPhotoScript: 'Копировать текст про фото',
     emptyHint: 'Нажмите «Имитировать сообщение», чтобы увидеть распознавание за 1 секунду',
     alertTitle: 'Новое сообщение — найдена деталь', alertAsks: 'спрашивает про', alertOpen: 'Открыть деталь', alertOpenSupport: 'Открыть поддержку',
+    history: 'Записи', histTitle: 'История чатов', histBrowse: 'Недавние просмотры',
+    custLabel: 'Клиент', staffLabel: 'Поддержка', histEmpty: 'Истории пока нет — отправьте сообщение',
     queueEnd: 'Демо-очередь закончилась — очистите для повтора'
   },
   id: {
@@ -131,6 +143,8 @@ window.CHAT_I18N = {
     noMatchText: 'Kendaraan tidak dikenali → kirim skrip 3 langkah minta foto', copyPhotoScript: 'Salin skrip foto',
     emptyHint: 'Klik «Simulasikan pesan» untuk melihat deteksi dalam 1 detik',
     alertTitle: 'Pesan baru cocok dengan part', alertAsks: 'menanyakan', alertOpen: 'Lihat part', alertOpenSupport: 'Buka bantuan',
+    history: 'Riwayat', histTitle: 'Riwayat chat', histBrowse: 'Kunjungan terakhir',
+    custLabel: 'Pelanggan', staffLabel: 'Dukungan', histEmpty: 'Belum ada riwayat — kirim pesan dulu',
     queueEnd: 'Antrean demo habis — bersihkan untuk mengulang'
   },
   vi: {
@@ -150,6 +164,8 @@ window.CHAT_I18N = {
     noMatchText: 'Chưa nhận ra xe → gửi kịch bản 3 bước xin ảnh', copyPhotoScript: 'Sao chép kịch bản ảnh',
     emptyHint: 'Bấm «Mô phỏng tin nhắn» để xem nhận diện trong 1 giây',
     alertTitle: 'Tin nhắn mới khớp phụ tùng', alertAsks: 'hỏi về', alertOpen: 'Xem phụ tùng', alertOpenSupport: 'Mở hỗ trợ',
+    history: 'Lịch sử', histTitle: 'Lịch sử chat', histBrowse: 'Xem gần đây',
+    custLabel: 'Khách', staffLabel: 'Hỗ trợ', histEmpty: 'Chưa có lịch sử — hãy gửi tin nhắn',
     queueEnd: 'Hàng đợi demo đã hết — xóa để chạy lại'
   },
   th: {
@@ -169,6 +185,8 @@ window.CHAT_I18N = {
     noMatchText: 'ตรวจไม่พบรุ่นรถ → ส่งสคริปต์ 3 ขั้นขอรูป', copyPhotoScript: 'คัดลอกสคริปต์ขอรูป',
     emptyHint: 'กด «จำลองข้อความ» เพื่อดูการตรวจจับใน 1 วินาที',
     alertTitle: 'ข้อความใหม่ตรงกับชิ้นส่วน', alertAsks: 'ถามถึง', alertOpen: 'ดูชิ้นส่วน', alertOpenSupport: 'เปิดช่วยเหลือ',
+    history: 'ประวัติ', histTitle: 'ประวัติแชท', histBrowse: 'เข้าชมล่าสุด',
+    custLabel: 'ลูกค้า', staffLabel: 'ซัพพอร์ต', histEmpty: 'ยังไม่มีประวัติ — ส่งข้อความก่อน',
     queueEnd: 'คิวตัวอย่างจบแล้ว — ล้างเพื่อเล่นซ้ำ'
   },
   tr: {
@@ -188,6 +206,8 @@ window.CHAT_I18N = {
     noMatchText: 'Araç tanınmadı → 3 adımlı fotoğraf metnini gönder', copyPhotoScript: 'Fotoğraf metnini kopyala',
     emptyHint: '«Mesaj simüle et» ile 1 saniyede algılamayı görün',
     alertTitle: 'Yeni mesaj parçayla eşleşti', alertAsks: 'soruyor', alertOpen: 'Parçayı aç', alertOpenSupport: 'Desteği aç',
+    history: 'Kayıtlar', histTitle: 'Sohbet geçmişi', histBrowse: 'Son görüntülemeler',
+    custLabel: 'Müşteri', staffLabel: 'Destek', histEmpty: 'Henüz geçmiş yok — bir mesaj gönderin',
     queueEnd: 'Demo kuyruğu bitti — tekrar için temizleyin'
   }
 };
