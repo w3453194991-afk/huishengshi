@@ -26,6 +26,8 @@ window.I18N = (function () {
     'nav.visits':    ["客户浏览", "Visitor log", "Visitas", "Visitas", "زيارات العملاء", "Визиты", "Kunjungan", "Lượt xem", "ผู้เข้าชม", "Ziyaretler"],
     'nav.redfox':    ["短视频接口", "Short-video API", "API de video", "API de vídeo", "واجهة الفيديو", "Видео API", "API video", "API video", "API วิดีโอ", "Video API"],
     'nav.acquire':   ["获客", "Acquire", "Captación", "Captação", "استقطاب العملاء", "Привлечение", "Akuisisi", "Khai thác khách", "หาลูกค้า", "Müşteri kazanımı"],
+    'nav.g.clues':   ["客户线索", "Clues", "Pistas", "Pistas", "خيوط العملاء", "Клиенты", "Prospek", "Manh mối KH", "เบาะแสลูกค้า", "Müşteri izleri"],
+    'nav.g.data':    ["型号数据", "Catalog", "Catálogo", "Catálogo", "بيانات الأرقام", "Каталог", "Katalog", "Dữ liệu mã", "ข้อมูลรหัส", "Katalog"],
     'nav.deals':     ["成交台账", "Deals", "Ventas", "Vendas", "الصفقات", "Сделки", "Deal", "Đơn hàng", "ดีล", "Anlaşmalar"],
     'nav.boss':      ["业绩总览", "Overview", "Resumen", "Resumo", "ملخص", "Сводка", "Ringkasan", "Tổng quan", "ภาพรวม", "Özet"],
     'nav.select':    ["智能选型", "Selector", "Selección", "Seleção", "اختيار المقاس", "Подбор", "Pemilihan", "Chọn mã", "ตัวเลือก", "Seçim"],

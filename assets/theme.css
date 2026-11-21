@@ -30,21 +30,72 @@ body{font-size:13.5px}
 .gsearch .ico{left:12px;top:8px;color:var(--muted-2);font-size:13px}
 .tz-badge{border-color:var(--line);color:var(--muted);background:#fafbfc;font-size:10.5px}
 
-/* ---------- 导航：分组 + 下划线，去掉色块 ---------- */
+/* ---------- 导航：Grid 等分铺满 + 文字下划线，去掉色块 ---------- */
 .nav{top:47px;background:#fff;border-bottom:1px solid var(--line)}
-.nav-in{padding:0 24px;gap:0;align-items:stretch}
-.nav-grp{display:flex;align-items:stretch}
-.nav-sep{width:1px;background:var(--line);margin:11px 9px}
-.nav button{
-  padding:11px 12px;font-size:13px;font-weight:500;color:var(--muted);
+/* 宽度与 .wrap（1300）对齐，导航项才不会比内容区更靠外 */
+.nav-in{max-width:1300px;margin:0 auto;padding:0 24px;gap:0;align-items:stretch;overflow:visible;
+  display:grid;grid-auto-flow:column;grid-auto-columns:1fr}
+/* 顶层页签：各占一等份，文字居中 */
+.nav-in > button{
+  position:relative;min-width:0;justify-content:center;
+  padding:11px 8px;font-size:13px;font-weight:500;color:var(--muted);
   background:none;border:0;border-bottom:2px solid transparent;border-radius:0
 }
-.nav button:hover{color:var(--ink);background:none}
-.nav button.on{color:var(--ink);font-weight:650;border-bottom-color:var(--accent)}
+.nav-in > button:hover{color:var(--ink);background:none}
+/* 必须显式清掉 border-bottom-color：style.css 里 .nav button.on 会把它染成橙色，
+   那是一条整格宽的下划线，会和下面这条窄下划线叠成两条 */
+.nav-in > button.on{color:var(--ink);font-weight:650;border-bottom-color:transparent}
+/* 下划线只占文字中部一带，不跟着等分块拉满 */
+.nav-in > button.on::after{
+  content:'';position:absolute;bottom:0;inset-inline:34%;height:2px;
+  background:var(--accent);border-radius:2px
+}
+/* 员工侧的竖分隔线：画在项的左边界，不占额外宽度 */
+.nav-fly.divided::before{
+  content:'';position:absolute;top:12px;bottom:12px;inset-inline-start:0;
+  width:1px;background:var(--line)
+}
 .nav .sub button{font-size:12.5px;color:var(--muted-2)}
 .nav .sub button:hover{color:var(--ink)}
 .nav .sub button.on{color:var(--ink)}
 .nav .badge{background:var(--accent-soft);color:var(--accent);font-weight:600;font-size:10.5px}
+
+/* 导航分组下拉：9 个员工页面收进 2 个菜单，窄屏不再横向溢出 */
+.nav-fly{position:relative;min-width:0;display:flex;align-items:stretch}
+.nav-fly > .nav-fly-btn{
+  display:flex;align-items:center;justify-content:center;gap:5px;
+  flex:1 1 auto;min-width:0;width:100%;
+  padding:11px 8px;font-size:13px;font-weight:500;color:var(--muted);
+  background:none;border:0;border-bottom:2px solid transparent;border-radius:0;cursor:pointer;white-space:nowrap
+}
+.nav-fly > .nav-fly-btn:hover{color:var(--ink);background:none}
+.nav-fly > .nav-fly-btn.cur{color:var(--ink);font-weight:650;border-bottom-color:transparent}
+.nav-fly-btn.cur::after{
+  content:'';position:absolute;bottom:0;inset-inline:34%;height:2px;
+  background:var(--accent);border-radius:2px
+}
+.nav-fly-btn .caret{color:var(--muted-2);font-size:9px;transition:transform .14s}
+.nav-fly.open > .nav-fly-btn{color:var(--ink);background:none}
+.nav-fly.open .nav-fly-btn .caret{transform:rotate(180deg)}
+.nav-menu{
+  position:absolute;top:100%;inset-inline-start:0;z-index:60;min-width:178px;padding:5px;
+  background:#fff;border:1px solid var(--line);border-radius:11px;
+  box-shadow:var(--shadow-lg);display:none;flex-direction:column;gap:1px
+}
+.nav-fly.open .nav-menu{display:flex}
+/* 下拉项：特异性要高于 .nav-in > button（0,1,1），否则会被等分规则带跑 */
+.nav-in > .nav-fly .nav-menu button{
+  position:static;min-width:0;justify-content:flex-start;
+  display:flex;align-items:center;gap:7px;width:100%;padding:8px 10px;
+  border:0;border-radius:8px;background:none;border-bottom:0;
+  font-size:12.5px;font-weight:500;color:#3d4653;text-align:start;cursor:pointer;white-space:nowrap
+}
+.nav-in > .nav-fly .nav-menu button:hover{background:var(--accent-soft);color:var(--accent)}
+.nav-in > .nav-fly .nav-menu button.on{background:var(--accent-soft);color:var(--accent);font-weight:650}
+.nav-in > .nav-fly .nav-menu button::after{display:none}
+.nav-menu button .tick{margin-inline-start:auto;color:var(--accent);font-size:11px}
+.nav-menu button .badge{margin-inline-start:auto;padding:0 6px}
+.nav-menu button .tick+.badge{margin-inline-start:4px}
 
 /* ---------- 首页：搜索即入口 ---------- */
 .hero{text-align:center;padding:38px 0 16px}
@@ -128,11 +179,15 @@ details.fold .fold-b{padding:0 15px 15px}
 .todo-t{font-size:13px;font-weight:550}
 .todo-d{font-size:11px;color:var(--muted)}
 
+/* 下拉菜单必须溢出可见，否则会被导航条裁掉 */
+.nav-in{flex-wrap:wrap}
+
 @media(max-width:820px){
   .hero h1{font-size:22px}
   .hero-search{flex-direction:column}
-  .nav-in{overflow-x:auto}
+  .nav-in{overflow:visible}
   .nav-sep{display:none}
+  .nav-menu{min-width:158px}
 }
 
 /* ---------- 语言选择 ---------- */
@@ -259,8 +314,10 @@ details.fold .fold-b{padding:0 15px 15px}
   font-size:10.5px;font-weight:650;letter-spacing:.03em;color:#8a6a54;
   background:#f7efe9;border:1px solid #efdccd;white-space:nowrap
 }
-.nav-grp.staff-only button{color:var(--muted-2)}
-.nav-grp.staff-only button.on{color:var(--ink)}
+/* 老板页签：与员工项区分开（靠字色区分，宽度仍等分） */
+.nav-fly > .nav-fly-btn.boss-only{color:#b45309}
+.nav-fly > .nav-fly-btn.boss-only.cur{color:#8a4a1b}
+.nav-fly-btn.boss-only.cur::after{background:#b45309}
 
 /* ---------- 权限一览弹层 ---------- */
 .perm-mask{
@@ -670,3 +727,62 @@ tr.deal-row:hover td:first-child::before{
 .acq-bar .btn.sm{box-shadow:none}
 .acq-hint{margin-left:auto;font-size:11px;color:#9aa6b5;padding-right:4px}
 @media (max-width:980px){ .acq-hint{display:none} }
+
+/* ---------- 成交台账 · 待跟进客户 ---------- */
+.fu-card{border:1px solid #f0d9c6;background:linear-gradient(180deg,#fffdfb,#fff)}
+.fu-card>.card-h{border-bottom:1px solid #f7e6d8}
+.fu-kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;padding:12px 15px}
+.fu-kpi{
+  border:1px solid var(--line);border-radius:10px;padding:9px 11px;background:#fff;
+  display:flex;flex-direction:column;gap:2px
+}
+.fu-kpi b{font-size:20px;font-weight:700;letter-spacing:-.4px;font-variant-numeric:tabular-nums;line-height:1.1}
+.fu-kpi span{font-size:11px;color:var(--muted)}
+.fu-kpi.main{background:#fdf6f0;border-color:#f0d9c6}
+.fu-kpi.main b{color:#c2410c}
+.fu-kpi.g b{color:#166534}
+.fu-kpi.y b{color:#b45309}
+.fu-kpi.b b{color:#1d4ed8}
+.fu-row td{vertical-align:top}
+.fu-who{font-size:12.5px}
+.fu-q{max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#8a97a6;font-style:italic}
+.fu-card .tbl-wrap table th{font-size:11px;color:#8a97a6;font-weight:600;white-space:nowrap}
+.fu-card .tbl-wrap table td{font-size:12px;padding-top:9px;padding-bottom:9px}
+@media (max-width:900px){ .fu-q{max-width:110px} }
+
+/* ---------- 待跟进客户 · 紧急小旗 / 备注 / 截图 ---------- */
+.fu-flag{
+  display:inline-flex;align-items:center;gap:3px;font-size:12px;line-height:1.5;
+  padding:1px 7px 1px 5px;border-radius:7px;cursor:pointer;user-select:none;
+  font-weight:600;transition:background .15s,border-color .15s;border:1px solid transparent;
+  vertical-align:1px
+}
+.fu-flag i{font-style:normal;font-size:10.5px;letter-spacing:0}
+.fu-flag.none{color:#c3ccd7;border:1px dashed #dfe6ee;padding:1px 6px}
+.fu-flag.none:hover{color:#c2410c;border-color:#f0c9b4;background:#fdf6f0}
+.fu-f-red{background:#fdeaea;color:#b91c1c;border-color:#f6c9c9}
+.fu-f-red:hover{background:#fbdcdc}
+.fu-f-yellow{background:#fef6e0;color:#a16207;border-color:#f5e0ae}
+.fu-f-yellow:hover{background:#fdefd0}
+.fu-f-blue{background:#e9f1fd;color:#1d4ed8;border-color:#c9dcf7}
+.fu-f-blue:hover{background:#dce8fb}
+tr.fu-has-flag td:first-child{box-shadow:inset 2px 0 0 0 #f6c9c9}
+tr.fu-has-flag td{background:#fffdfd}
+
+.fu-filter{display:flex;gap:6px;flex-wrap:wrap;padding:10px 15px;border-bottom:1px solid var(--line-2)}
+.fu-filter .btn.xs{box-shadow:none;font-size:11px}
+.fu-filter .btn.xs .tiny{opacity:.65;margin-left:2px}
+
+.fu-note-wrap{margin-top:5px;max-width:260px}
+.fu-note{background:#fbfcfd;border:1px solid var(--line-2);border-radius:8px;padding:6px 8px;margin-top:4px}
+.fu-note-t{font-size:11.5px;line-height:1.6;color:#475569;white-space:pre-wrap;word-break:break-word}
+.fu-shots{display:flex;gap:5px;flex-wrap:wrap;margin-top:5px}
+.fu-shot{
+  width:74px;height:54px;object-fit:cover;border-radius:6px;border:1px solid var(--line);
+  cursor:zoom-in;background:#f4f6f9;transition:transform .12s,border-color .12s
+}
+.fu-shot:hover{transform:scale(1.06);border-color:#e0a37a;position:relative;z-index:2}
+.fu-kpi.red{background:#fdf2f2;border-color:#f6c9c9}
+.fu-kpi.red b{color:#b91c1c}
+.fu-note-preview{width:100%;max-height:70vh;object-fit:contain;border-radius:10px;border:1px solid var(--line)}
+@media (max-width:900px){ .fu-note-wrap{max-width:150px} .fu-shot{width:58px;height:44px} }

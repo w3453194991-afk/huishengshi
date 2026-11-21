@@ -24,6 +24,10 @@
     script: null,
     chat: { open: false, msgs: [], auto: true, idx: 0 },
     custMsgs: [],
+    fuMute: {},
+    fuFlags: {},
+    fuNotes: {},
+    fuFilter: 'all',
     quoteMeta: { no: '', date: new Date().toISOString().slice(0, 10), incoterm: '', pay: '', note: '' }
   };
   let storageOK = true;
@@ -34,7 +38,8 @@
     try {
       localStorage.setItem(KEY, JSON.stringify({
         cart: S.cart, customerId: S.customerId, leads: S.leads, quotes: S.quotes,
-        overrides: S.overrides, draftFits: S.draftFits, quoteMeta: S.quoteMeta, custMsgs: S.custMsgs, deals: S.deals
+        overrides: S.overrides, draftFits: S.draftFits, quoteMeta: S.quoteMeta, custMsgs: S.custMsgs, deals: S.deals,
+        fuMute: S.fuMute, fuFlags: S.fuFlags, fuNotes: S.fuNotes
       }));
     } catch (e) { storageOK = false; }
   }
@@ -164,8 +169,16 @@
   ];
   // 客户能看的：首页 / 选型 / 产品库 / 我的报价 / 我的资料
   const CUST_TABS = ['home', 'select', 'products', 'quote', 'pack'];
-  // 员工：先客户可见的 5 个，再仅员工可见的 7 个
-  const STAFF_ONLY = ['inquiries', 'visits', 'leads', 'network', 'deals', 'xref', 'redfox', 'graph', 'import'];
+  /** 仅员工可见的 9 个页面，按用途收进 2 个分组菜单（14 个入口一个不丢） */
+  const NAV_GROUPS = [
+    // 客户线索：客户提的需求 + 客户在我方站内的行为 + 我们要主动找的人
+    { key: 'clues', label: 'nav.g.clues', items: ['inquiries', 'leads', 'visits', 'network', 'deals', 'redfox'] },
+    // 型号数据：都是「补充 / 校正型号与适配」的维护动作
+    { key: 'data', label: 'nav.g.data', items: ['xref', 'graph', 'import'] }
+  ];
+  const STAFF_ONLY = NAV_GROUPS.reduce((a, g) => a.concat(g.items), []);
+  /** 分组菜单展开状态（纯 UI，不落 localStorage） */
+  let navOpen = '';
   /** 获客的三种视图都收进「用户画像」这一个入口 */
   const ACQ_PAGES = ['network', 'search', 'content'];
   /** 客户只看选型、产品、报价、资料包；其余是员工端 */
@@ -173,6 +186,27 @@
     if (A.isBoss()) return true;
     if (A.isStaff()) return k !== 'boss';
     return CUST_TABS.includes(k);
+  }
+  /** 等宽铺满后，最右侧分组的菜单可能顶出屏幕 —— 展开时按视口夹一下位置 */
+  function clampNavMenu() {
+    if (!navOpen) return;
+    const flyEl = document.querySelector('.nav-fly.open');
+    if (!flyEl) return;
+    const menu = flyEl.querySelector('.nav-menu');
+    if (!menu) return;
+    // 先复位到默认（贴分组按钮起始边），再按需平移
+    menu.style.left = ''; menu.style.right = '';
+    const vr = menu.getBoundingClientRect();
+    const fr = flyEl.getBoundingClientRect();
+    const vw = document.documentElement.clientWidth;
+    const pad = 10;
+    let dx = 0;
+    if (vr.right > vw - pad) dx = (vw - pad) - vr.right;
+    if (vr.left + dx < pad) dx = pad - vr.left;
+    if (dx) {
+      menu.style.left = Math.round(vr.left - fr.left + dx) + 'px';
+      menu.style.right = 'auto';
+    }
   }
   /** 客户端换几个更好懂的名字 */
   const CUST_LABEL = { home: 'nav.homeCust', quote: 'nav.myQuote', pack: 'nav.myPack' };
@@ -182,22 +216,36 @@
     const badge = k => k === 'leads' ? S.leads.filter(l => l.status === '待跟进').length
       : (k === 'inquiries') ? A.inquiries().length
         : (k === 'quote' || k === 'pack') ? S.cart.length : 0;
-    const grp = (keys) => keys.filter(allowedTab).map(k => {
+    const isOn = k => (S.tab === k) || (k === 'network' && ACQ_PAGES.indexOf(S.tab) > 0);
+    const btn = k => {
       const n = badge(k);
-      const on = (S.tab === k) || (k === 'network' && ACQ_PAGES.indexOf(S.tab) > 0);
-      return `<button data-act="tab" data-id="${k}" class="${on ? 'on' : ''}">${label(k)}${n ? `<span class="badge">${n}</span>` : ''}</button>`;
-    }).join('');
+      return `<button data-act="tab" data-id="${k}" class="${isOn(k) ? 'on' : ''}">${label(k)}${n ? `<span class="badge">${n}</span>` : ''}</button>`;
+    };
+    const grp = (keys) => keys.filter(allowedTab).map(btn).join('');
     if (!staff) {
-      $('#nav').innerHTML = `<div class="nav-grp">${grp(CUST_TABS)}</div>`;
+      $('#nav').innerHTML = grp(CUST_TABS);
       return;
     }
-    const bossGrp = A.isBoss()
-      ? `<span class="nav-sep"></span><div class="nav-grp boss-only"><span class="nav-lab">${LZ('老板', 'Owner')}</span>${grp(['boss'])}</div>`
-      : '';
-    $('#nav').innerHTML =
-      `<div class="nav-grp">${grp(CUST_TABS)}</div>
-       <span class="nav-sep"></span>
-       <div class="nav-grp staff-only"><span class="nav-lab">${LZ('仅员工', 'Staff only')}</span>${grp(STAFF_ONLY)}</div>` + bossGrp;
+    // 员工侧：9 个页面收进 2 个下拉分组，分组标题本身也能点开看成员
+    let first = true;
+    const fly = g => {
+      const items = g.items.filter(allowedTab);
+      if (!items.length) return '';
+      const sum = items.reduce((n, k) => n + badge(k), 0);
+      const active = items.indexOf(S.tab) >= 0 ? S.tab : '';
+      const sepCls = first ? ' divided' : '';
+      first = false;
+      return `<div class="nav-fly${sepCls}${navOpen === g.key ? ' open' : ''}" data-fly="${g.key}">
+        <button class="nav-fly-btn${active ? ' cur' : ''}" data-act="navGroup" data-id="${g.key}"
+          aria-haspopup="true" aria-expanded="${navOpen === g.key}">${T(g.label)}${sum ? `<span class="badge">${sum}</span>` : ''}<span class="caret">▾</span></button>
+        <div class="nav-menu" role="menu">
+          ${items.map(k => `<button role="menuitem" data-act="tab" data-id="${k}" class="${isOn(k) ? 'on' : ''}">${label(k)}${badge(k) ? `<span class="badge">${badge(k)}</span>` : ''}${active === k ? '<span class="tick">✓</span>' : ''}</button>`).join('')}
+        </div></div>`;
+    };
+    const bossGrp = A.isBoss() ? `<div class="nav-fly divided"><button data-act="tab" data-id="boss" class="nav-fly-btn boss-only${isOn('boss') ? ' cur' : ''}">${LZ('业绩总览', 'Owner')}</button></div>` : '';
+    // 扁平结构 + Grid 等分：每个顶层项都占同样宽度，不会因嵌套 flex 差几像素
+    $('#nav').innerHTML = grp(CUST_TABS) + NAV_GROUPS.map(fly).join('') + bossGrp;
+    clampNavMenu();
   }
   /** 权限一览弹层 */
   const PERM_CUST = [
@@ -1309,7 +1357,9 @@
     const zh = I.getLang() === 'zh';
     const t = () => chatTime();
     if (!Array.isArray(S.custMsgs)) S.custMsgs = [];
-    S.custMsgs.push({ from: 'me', text, time: t() });
+    /* 记上是谁问的：员工端「待跟进客户」靠 uid 认出这个客户问过价 */
+    const _cu = A.me();
+    S.custMsgs.push({ from: 'me', text, time: t(), t: Date.now(), uid: (_cu && _cu.role === 'customer') ? _cu.id : '' });
 
     const m = E.match(text);
     const top = m && m.top;
@@ -1472,7 +1522,11 @@
   function dealCtx() {
     return {
       list: S.deals || [], esc, LZ, me: A.me(), isBoss: A.isBoss(),
-      customers: A.customers(), codes: D.products.map(p => p.code)
+      customers: A.customers(), custMsgs: S.custMsgs || [],
+      fuMute: S.fuMute || {}, fuFlags: S.fuFlags || {}, fuNotes: S.fuNotes || {},
+      fuFilter: S.fuFilter || 'all',
+      flags: S.fuFlags || {}, notes: S.fuNotes || {},
+      codes: D.products.map(p => p.code)
     };
   }
   function vDeals() {
@@ -1493,7 +1547,33 @@
     bind('dPrice', 'oninput', sync);
   }
   function vBoss() {
-    $('#p-boss').innerHTML = window.DEALS.htmlBoss(dealCtx());
+    const ctx = dealCtx();
+    /* 老板看得到全部：待跟进客户全表（只读）+ 员工跟进汇总 */
+    $('#p-boss').innerHTML = window.DEALS.htmlBoss(ctx) +
+      (window.DEALS.htmlFollowups ? '<div class="boss-fu-wrap">' + window.DEALS.htmlFollowups(ctx) + '</div>' : '') +
+      (window.DEALS.htmlFollowupBoss ? window.DEALS.htmlFollowupBoss(ctx) : '');
+    /* 老板端是只读的：小旗不能点、备注和登记按钮去掉；筛选和查看截图保留 */
+    document.querySelectorAll('#p-boss .fu-flag[data-act]').forEach(el => {
+      el.removeAttribute('data-act');
+      el.style.cursor = 'default';
+      el.title = LZ('员工标的紧急度（老板只读）', 'Staff-set urgency (read-only)');
+    });
+    ['fuNote', 'fuDeal', 'fuContact'].forEach(a => {
+      document.querySelectorAll('#p-boss [data-act="' + a + '"]').forEach(el => el.remove());
+    });
+  }
+
+  /** 只重绘「待跟进客户」卡片，不整页刷新（保住滚动位置和输入焦点） */
+  function renderFollowupsInPlace() {
+    /* 老板端整页由 vBoss 统一渲染（含只读处理），直接重跑它 */
+    if (S.tab === 'boss') { vBoss(); return; }
+    const card = document.querySelector('.fu-card');
+    if (!card) { render(); return; }
+    const html = window.DEALS.htmlFollowups(dealCtx());
+    const tmp = document.createElement('div');
+    tmp.innerHTML = html;
+    const fresh = tmp.firstElementChild;
+    if (fresh) card.replaceWith(fresh);
   }
 
   function vRedfox() {
@@ -1515,10 +1595,10 @@
 
   /* ================= 交互动作 ================= */
   /** 体验版员工端：只读，不允许发送 / 导入 / 改数据 */
-  const DEMO_BLOCK = new Set(['sendCustomer', 'pushLead', 'newFit', 'saveFit', 'confirmFit', 'runImport', 'resetData', 'saveQuote', 'priceSend', 'saveNewLead', 'saveLead', 'dealAdd', 'dealSet', 'dealDel', 'dealTo', 'dealToQuote']);
+  const DEMO_BLOCK = new Set(['sendCustomer', 'pushLead', 'newFit', 'saveFit', 'confirmFit', 'runImport', 'resetData', 'saveQuote', 'priceSend', 'saveNewLead', 'saveLead', 'dealAdd', 'dealSet', 'dealDel', 'dealTo', 'dealToQuote', 'fuFlagCycle', 'fuSaveNote']);
 
   const ACT = {
-    tab(id) { S.tab = id; render(); },
+    tab(id) { S.tab = id; navOpen = ''; render(); },
     openGate() { openGate(); },
     closeGate() { closeGate(); if (window.__askLang) { window.__askLang = false; setTimeout(openLang, 40); } },
     gateRole(id) { gateRole = (id === 'staff' || id === 'boss') ? id : 'customer'; renderGate(); },
@@ -1585,6 +1665,11 @@
       if (c && E.byId.get(c.pid)) openProduct(c.pid); else toast(LZ('没有这个型号', 'No such part'));
     },
     openLang() { openLang(); },
+    /** 导航分组下拉：同一时间只开一个，再点同一个收起来 */
+    navGroup(key) {
+      navOpen = (navOpen === key) ? '' : key;
+      renderNav();
+    },
     pickLang(code) {
       I.setLang(code);
       applyLangChrome();
@@ -2040,6 +2125,169 @@
     dealDel(id) {
       S.deals = (S.deals || []).filter(x => x.id !== id);
       save(); toast('已删除'); vDeals();
+    },
+    /** 待跟进客户 → 跟进：打开这个客户的浏览履历 + 带话术的发送框 */
+    fuContact(uid) {
+      openCustomer(uid);
+    },
+    /** 待跟进客户 → 登记：把客户信息填进下面的登记表 */
+    fuDeal(uid) {
+      const u = A.customers().find(x => x.id === uid);
+      if (!u) { toast(LZ('这个客户不在了', 'Customer not found')); return; }
+      const sel = $('#dCust');
+      if (sel) {
+        const want = (u.company || u.name) + '|' + (u.country || '');
+        const hit = [...sel.options].find(o => o.value === want);
+        if (hit) sel.value = want;
+        else {
+          const o = document.createElement('option');
+          o.value = want; o.textContent = (u.company || u.name) + ' · ' + (u.country || '');
+          sel.appendChild(o); sel.value = want;
+        }
+      }
+      /* 带出他问过的第一个型号 */
+      const f = window.DEALS.followups(dealCtx()).find(x => x.uid === uid);
+      if (f && f.wantCodes.length) {
+        const codeEl = $('#dCode');
+        if (codeEl) { codeEl.value = f.wantCodes[0]; codeEl.dispatchEvent(new Event('change')); }
+      }
+      const box = $('#dCode');
+      if (box && box.scrollIntoView) box.scrollIntoView({ block: 'center', behavior: 'smooth' });
+      toast(LZ('已带到登记表：' + (u.company || u.name), 'Prefilled: ' + (u.company || u.name)));
+    },
+    /** 标记「这个客户不用跟了」 */
+    fuMute(uid) {
+      S.fuMute = S.fuMute || {};
+      const on = !S.fuMute[uid];
+      if (on) S.fuMute[uid] = 1; else delete S.fuMute[uid];
+      save(); vDeals();
+      toast(on ? LZ('已忽略，不再提醒', 'Muted') : LZ('已恢复跟进', 'Restored'));
+    },
+    /** 点截图放大看原图 */
+    fuZoom(src) {
+      if (!src) return;
+      modal('<div class="small muted">' + LZ('聊天记录截图', 'Chat screenshot') + '</div>',
+        '<img class="fu-note-preview" src="' + src + '" alt="chat">',
+        '<button class="btn" data-act="closeModal">' + LZ('关闭', 'Close') + '</button>', true);
+    },
+    /** 点小旗循环切换紧急度：无 → 红(最急) → 黄(较急) → 蓝(一般) → 无 */
+    fuFlagCycle(uid) {
+      S.fuFlags = S.fuFlags || {};
+      const seq = ['red', 'yellow', 'blue', ''];
+      const cur = S.fuFlags[uid] || '';
+      const next = seq[(seq.indexOf(cur) + 1) % seq.length];
+      if (next) S.fuFlags[uid] = next; else delete S.fuFlags[uid];
+      save();
+      const FLAG = (window.DEALS && window.DEALS.FLAG) || {};
+      const nm = next && FLAG[next] ? LZ(FLAG[next].l[0], FLAG[next].l[1]) : LZ('未标', 'none');
+      toast(LZ('紧急度：', 'Urgency: ') + nm);
+      renderFollowupsInPlace();
+    },
+    /** 按紧急度筛选 */
+    fuFilter(k) {
+      S.fuFilter = k || 'all';
+      renderFollowupsInPlace();
+    },
+    /** 给客户加备注：文字 + 聊天截图（可多张） */
+    fuNote(uid) {
+      const u = A.customers().find(x => x.id === uid);
+      if (!u) { toast(LZ('这个客户不在了', 'Customer not found')); return; }
+      const old = (S.fuNotes || {})[uid];
+      const oldTxt = old ? (old.text || '') : '';
+      const oldImgs = (old && old.imgs) || [];
+      modal(
+        '<div class="small muted mb">' + LZ('记下沟通要点，或贴上别的平台（WhatsApp / 微信 / TikTok）的聊天截图。老板端能看到这些内容。',
+          'Note key points or attach chat screenshots from WhatsApp / WeChat / TikTok. The owner sees this.') + '</div>' +
+        '<div class="field"><label>' + LZ('备注文字', 'Note') + '</label>' +
+        '<textarea id="fuNoteText" rows="5" style="width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:9px;font-family:inherit;font-size:13px;resize:vertical" placeholder="' +
+        LZ('如：客户要 500 套 HOWO A7 后片，压价到 4.2，答应下周给样品', 'e.g. wants 500 sets, price push to 4.2, sample next week') + '">' + esc(oldTxt) + '</textarea></div>' +
+        '<div class="field" style="margin-top:10px"><label>' + LZ('聊天截图', 'Chat screenshots') + '</label>' +
+        '<input id="fuNoteImgs" type="file" accept="image/*" multiple style="font-size:12px">' +
+        '<div class="tiny muted" style="margin-top:4px">' + LZ('可多选；图片压到 900px 宽存本机，不占太多空间。',
+          'Multiple files; resized to 900px and stored locally.') + '</div>' +
+        '<div id="fuNotePrev" class="fu-shots" style="margin-top:8px"></div></div>' +
+        (oldImgs.length ? '<div class="tiny muted" style="margin-top:8px">' + LZ('已有 ', 'Existing ') + oldImgs.length + LZ(' 张截图，保存后会被替换', ' screenshots will be replaced') + '</div>' : ''),
+        '<button class="btn" data-act="closeModal">' + LZ('取消', 'Cancel') + '</button>' +
+        '<button class="btn primary" data-act="fuSaveNote" data-id="' + esc(uid) + '">' + LZ('保存备注', 'Save note') + '</button>',
+        true
+      );
+      /* 选图后即时预览 */
+      setTimeout(() => {
+        const inp = $('#fuNoteImgs');
+        if (inp) inp.onchange = () => {
+          const box = $('#fuNotePrev');
+          if (!box) return;
+          box.innerHTML = '';
+          [...(inp.files || [])].slice(0, 6).forEach(f => {
+            const img = document.createElement('img');
+            img.className = 'fu-shot';
+            img.src = URL.createObjectURL(f);
+            box.appendChild(img);
+          });
+        };
+      }, 30);
+    },
+    /** 保存备注：文字立即存；图片压到 900px 转 dataURL 存 localStorage */
+    fuSaveNote(uid) {
+      const txtEl = $('#fuNoteText');
+      const txt = txtEl ? txtEl.value.trim() : '';
+      const inp = $('#fuNoteImgs');
+      const files = inp && inp.files ? [...inp.files].slice(0, 6) : [];
+      const me = A.me() || {};
+      const stamp = (() => {
+        const d = new Date();
+        return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' +
+          String(d.getDate()).padStart(2, '0') + ' ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+      })();
+
+      const done = imgs => {
+        if (!txt && !imgs.length) { toast(LZ('没有内容可存', 'Nothing to save')); return; }
+        S.fuNotes = S.fuNotes || {};
+        S.fuNotes[uid] = { text: txt, imgs, by: me.name || LZ('未署名', 'Unassigned'), at: stamp, role: me.role || '' };
+        save();
+        closeModal();
+        toast(LZ('备注已保存，老板端可见', 'Note saved — visible to the owner'));
+        renderFollowupsInPlace();
+      };
+
+      if (!files.length) {
+        /* 没选新图：保留之前存的图 */
+        const prev = (S.fuNotes || {})[uid];
+        done((prev && prev.imgs) || []);
+        return;
+      }
+      /* 压缩：最长边 900px，JPEG 0.72 */
+      Promise.all(files.map(f => new Promise(res => {
+        const rd = new FileReader();
+        rd.onload = () => {
+          const img = new Image();
+          img.onload = () => {
+            try {
+              const max = 900;
+              const sc = Math.min(1, max / Math.max(img.width, img.height));
+              const cv = document.createElement('canvas');
+              cv.width = Math.round(img.width * sc); cv.height = Math.round(img.height * sc);
+              cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
+              res(cv.toDataURL('image/jpeg', 0.72));
+            } catch (e) { res(rd.result); }
+          };
+          img.onerror = () => res(rd.result);
+          img.src = rd.result;
+        };
+        rd.onerror = () => res('');
+        rd.readAsDataURL(f);
+      }))).then(list => {
+        const imgs = list.filter(Boolean);
+        /* 存不下就提示，别静默失败 */
+        const prevNotes = JSON.stringify(S.fuNotes || {});
+        const test = imgs.reduce((n, s) => n + s.length, 0);
+        if (prevNotes.length + test > 4.2 * 1024 * 1024) {
+          toast(LZ('截图太大，超出本机存储上限，只存了文字', 'Images too large for local storage — text saved'));
+          done([]);
+          return;
+        }
+        done(imgs);
+      }).catch(() => done([]));
     },
     rfConnect() { const b = $('#p-redfox'); window.REDFOX.connect(() => vRedfox()); },
     rfPlat(id) { window.REDFOX.setPlatform(id); vRedfox(); },
@@ -2522,6 +2770,12 @@
   });
 
   document.addEventListener('click', e => {
+    // 导航分组：点空白处自动收起
+    if (navOpen && !(e.target.closest && e.target.closest('.nav-fly'))) {
+      navOpen = ''; renderNav();
+    }
+    const shot = e.target.closest ? e.target.closest('img.fu-shot') : null;
+    if (shot && shot.src) { e.preventDefault(); ACT.fuZoom(shot.src); return; }
     const t = e.target.closest('[data-act]');
     if (!t) return;
     const act = t.dataset.act;
@@ -2543,7 +2797,7 @@
     if (act === 'packCfg') ACT.packCfg(id);
   });
   document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') { closeModal(); closeDrawer(); }
+    if (e.key === 'Escape') { closeModal(); closeDrawer(); if (navOpen) { navOpen = ''; renderNav(); } }
     if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { if (S.tab === 'select') doMatch(); }
   });
   $('#gsearch').addEventListener('keydown', e => {
@@ -2554,6 +2808,8 @@
   });
   $('#drawerMask').onclick = closeDrawer;
   $('#modalMask').onclick = e => { if (e.target.id === 'modalMask') closeModal(); };
+  // 视口变化时（拖动窗口 / 手机转屏）把展开中的菜单重新夹回屏幕内
+  window.addEventListener('resize', () => { clampNavMenu(); });
 
   /* ================= 启动 ================= */
   $('#tzNow').textContent = '本地 ' + E.localTime('Asia/Shanghai').text;
