@@ -167,8 +167,10 @@
     ['visits', '客户浏览', '👁'], ['leads', '询盘线索', '✉'], ['network', '用户画像', '◉'], ['content', '获客内容', '▶'],
     ['import', '数据导入', '⇪']
   ];
-  // 客户能看的：首页 / 选型 / 产品库 / 我的报价 / 我的资料
-  const CUST_TABS = ['home', 'select', 'products', 'quote', 'pack'];
+  // 客户能看的：首页 / 选型 / 产品库 / 我的报价 / 自定义定制
+  const CUST_TABS = ['home', 'select', 'products', 'quote', 'custom'];
+  // 员工视角的基础页（比客户多一个「资料包」）
+  const STAFF_TABS = ['home', 'select', 'products', 'quote', 'pack'];
   /** 仅员工可见的 9 个页面，按用途收进 2 个分组菜单（14 个入口一个不丢） */
   const NAV_GROUPS = [
     // 客户线索：客户提的需求 + 客户在我方站内的行为 + 我们要主动找的人
@@ -209,8 +211,23 @@
     }
   }
   /** 客户端换几个更好懂的名字 */
-  const CUST_LABEL = { home: 'nav.homeCust', quote: 'nav.myQuote', pack: 'nav.myPack' };
+  const CUST_LABEL = { home: 'nav.homeCust', quote: 'nav.cart' };
+  /** 客户端只有「选购」一个入口：首页也收进同一个菜单里 */
+  const CUST_MENU = [
+    ['home', '⌂', '看类别、找型号、进客服', 'Categories, search and chat'],
+    ['select', '◎', '车型 / 车桥 / 编码 → 候选型号', 'Vehicle, axle or code to candidates'],
+    ['products', '▤', '全部型号，规格 · 材质 · 图片', 'All parts with specs and photos'],
+    ['custom', '✂', '非标尺寸 / 材质 / 包装 / 打标', 'Non-standard size, mix, packing, marking'],
+    ['quote', '￥', '已选型号，出阶梯价和报价单', 'Your picks, tier price and quote']
+  ];
+  /** 顶栏真实高度 → 导航吸顶位置，避免被压住 */
+  function syncTopbarH() {
+    const tb = document.querySelector('.topbar');
+    if (tb) document.documentElement.style.setProperty('--topbar-h', tb.offsetHeight + 'px');
+  }
+  window.addEventListener('resize', syncTopbarH);
   function renderNav() {
+    syncTopbarH();
     const staff = A.isStaff();
     const label = k => T((!staff && CUST_LABEL[k]) || ('nav.' + k));
     const badge = k => k === 'leads' ? S.leads.filter(l => l.status === '待跟进').length
@@ -223,7 +240,28 @@
     };
     const grp = (keys) => keys.filter(allowedTab).map(btn).join('');
     if (!staff) {
-      $('#nav').innerHTML = grp(CUST_TABS);
+      // 客户端：保留「选购」单一下拉（菜单里含首页），触发器显示当前所在页
+      const navBar0 = document.querySelector('nav.nav');
+      if (navBar0) navBar0.classList.add('has-drop');
+      $('#nav').classList.add('has-drop');
+      const cz = I.getLang() === 'zh';
+      const cur = CUST_MENU.find(m => m[0] === S.tab) || CUST_MENU[0];
+      const items = CUST_MENU.map(m => {
+        const n = badge(m[0]);
+        const on = S.tab === m[0];
+        return '<button data-act="tab" data-id="' + m[0] + '" class="' + (on ? 'on' : '') + '">' +
+          '<span class="nd-ico">' + m[1] + '</span>' +
+          '<span class="nd-txt"><b>' + label(m[0]) + (n ? ' <span class="badge">' + n + '</span>' : '') + '</b>' +
+          '<i>' + (cz ? m[2] : m[3]) + '</i></span></button>';
+      }).join('');
+      $('#nav').innerHTML =
+        '<div class="nav-drop" id="navDrop">' +
+          '<button class="nav-drop-t" data-act="navDrop" aria-haspopup="true" aria-expanded="false">' +
+            label(cur[0]) +
+            '<svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>' +
+          '</button>' +
+          '<div class="nav-drop-p">' + items + '</div>' +
+        '</div>';
       return;
     }
     // 员工侧：9 个页面收进 2 个下拉分组，分组标题本身也能点开看成员
@@ -242,9 +280,10 @@
           ${items.map(k => `<button role="menuitem" data-act="tab" data-id="${k}" class="${isOn(k) ? 'on' : ''}">${label(k)}${badge(k) ? `<span class="badge">${badge(k)}</span>` : ''}${active === k ? '<span class="tick">✓</span>' : ''}</button>`).join('')}
         </div></div>`;
     };
+    // 老板页签同样走 .nav-fly，才能融进 Grid 等分
     const bossGrp = A.isBoss() ? `<div class="nav-fly divided"><button data-act="tab" data-id="boss" class="nav-fly-btn boss-only${isOn('boss') ? ' cur' : ''}">${LZ('业绩总览', 'Owner')}</button></div>` : '';
     // 扁平结构 + Grid 等分：每个顶层项都占同样宽度，不会因嵌套 flex 差几像素
-    $('#nav').innerHTML = grp(CUST_TABS) + NAV_GROUPS.map(fly).join('') + bossGrp;
+    $('#nav').innerHTML = grp(STAFF_TABS) + NAV_GROUPS.map(fly).join('') + bossGrp;
     clampNavMenu();
   }
   /** 权限一览弹层 */
@@ -291,9 +330,50 @@
       $('.wrap').appendChild(sec);
     }
     $$('.page').forEach(p => p.classList.toggle('on', p.id === 'p-' + S.tab));
-    ({ home: vHome, select: vSelect, products: vProducts, graph: vGraph, quote: vQuote, pack: vPack, inquiries: vInquiries, search: vSearch, xref: vXref, redfox: vRedfox, deals: vDeals, boss: vBoss, visits: vVisits, leads: vLeads, network: vNetwork, content: vContent, import: vImport }[S.tab])();
+    ({ home: vHome, select: vSelect, products: vProducts, graph: vGraph, quote: vQuote, pack: vPack, inquiries: vInquiries, search: vSearch, xref: vXref, redfox: vRedfox, deals: vDeals, boss: vBoss, visits: vVisits, leads: vLeads, network: vNetwork, content: vContent, import: vImport, custom: vCustom }[S.tab])();
     if (S.tab === 'content') { const el = $('#p-content'); if (el) el.insertAdjacentHTML('afterbegin', acquireBar('content')); }
     window.scrollTo({ top: 0, behavior: 'instant' });
+  }
+
+  /* ================= 自定义定制（独立页面） ================= */
+  let CU_SENT = null;
+  function vCustom() {
+    const cu = A.me() || {};
+    const contact = cu.contact ? cu.contact.value : '';
+    const zh = I.getLang() === 'zh';
+    const caps = [
+      ['尺寸', '厚度 / 宽度 / 长度按图纸做，公差 ±0.3mm', 'Size', 'Thickness, width, length to drawing, ±0.3mm'],
+      ['材质', '半金属 / 陶瓷 / 风电专用配方可调', 'Compound', 'Semi-metallic, ceramic or wind-turbine mixes'],
+      ['包装', '彩盒 / 中性盒 / 一箱几套，贴标自定义', 'Packing', 'Colour or neutral box, sets per carton, labels'],
+      ['打标', '激光打标、丝印 logo、钢印编码', 'Marking', 'Laser, silk-screen logo, stamped code'],
+      ['打样', '7 天出样，样品费下单可抵', 'Sampling', 'Sample in 7 days, cost credited to the order']
+    ];
+    const sentRows = (S.custMsgs || []).filter(m => m.from === 'me' && /^定制需求/.test(m.text)).slice(-3).reverse();
+    $('#p-custom').innerHTML = `
+      <h1>${T('nav.custom')}</h1>
+      <p class="muted" style="margin:-4px 0 16px">${zh ? '非标尺寸、材质、包装、打标都能做。填完提交，2 小时内回你方案和打样价。' : 'Non-standard size, material, packing or marking — fill this in and we reply within 2 hours.'}</p>
+      ${CU_SENT ? `<div class="cu-ok"><b>${zh ? '已提交' : 'Submitted'}</b><span>${esc(CU_SENT.prod)} × ${CU_SENT.qty}</span><i>${esc(CU_SENT.need)}</i></div>` : ''}
+      <div class="cu-grid">
+        <div class="card">
+          <div class="field"><label>${zh ? '要定制的产品' : 'Product'}</label>
+            <input id="cuProd" placeholder="${zh ? '如 HOWO1 鼓式衬片 / 风电片 / 制动蹄' : 'e.g. HOWO1 brake lining'}"></div>
+          <div class="field"><label>${zh ? '数量' : 'Quantity'}</label>
+            <input id="cuQty" type="number" min="1" value="200"></div>
+          <div class="field"><label>${zh ? '改哪里（尺寸 / 材质 / 包装 / 打标）' : 'What to change'}</label>
+            <textarea id="cuNeed" rows="4" placeholder="${zh ? '如：厚度加 2mm，改成 4 套一箱，箱面印我们的 logo' : 'e.g. +2mm thickness, 4 sets per carton, our logo on the box'}"></textarea></div>
+          <div class="field"><label>${zh ? '联系方式' : 'Contact'}</label>
+            <input id="cuContact" value="${esc(contact)}"></div>
+          <div class="cu-act">
+            <button class="btn primary" data-act="customSubmit">${zh ? '提交定制需求' : 'Send request'}</button>
+            <button class="btn" data-act="tab" data-id="products">${zh ? '先看常规型号' : 'Browse standard parts'}</button>
+          </div>
+        </div>
+        <div class="card cu-side">
+          <div class="cu-h">${zh ? '我们能做' : 'What we can do'}</div>
+          ${caps.map(c => `<div class="cu-row"><b>${zh ? c[0] : c[2]}</b><span>${zh ? c[1] : c[3]}</span></div>`).join('')}
+          ${sentRows.length ? `<div class="cu-h" style="margin-top:14px">${zh ? '最近提交' : 'Recent'}</div>` + sentRows.map(m => `<div class="cu-row"><b>${esc(m.time || '')}</b><span>${esc(m.text.slice(0, 60))}</span></div>`).join('') : ''}
+        </div>
+      </div>`;
   }
 
   /* ================= 工作台 ================= */
@@ -312,7 +392,7 @@
       ].filter(x => x.n > 0);
 
     $('#p-home').innerHTML = window.HOME_HTML({
-      st, isCust, isBoss: A.isBoss(), todo, ex: examples(), T, LZ, esc, I18N: I, confTag, tests: D.tests.length
+      st, isCust, isBoss: A.isBoss(), todo, ex: examples(), T, LZ, esc, I18N: I, confTag, tests: D.tests.length, cartCount: S.cart.length
     });
 
     if (window.HOME_INIT) window.HOME_INIT();
@@ -1417,6 +1497,8 @@
     if (title) title.textContent = CT('support');
     const live = $('#chatLive');
     if (live) live.innerHTML = '<i></i> ' + CT('listening');
+    const hbtn = $('#chatHistTxt');
+    if (hbtn) hbtn.textContent = CT('history');
     const onl = $('#chatOnline');
     if (onl) onl.innerHTML = '<i></i> ' + CT('online').split('·')[0].trim();
     const chans = $('#chatChans');
@@ -1598,7 +1680,23 @@
   const DEMO_BLOCK = new Set(['sendCustomer', 'pushLead', 'newFit', 'saveFit', 'confirmFit', 'runImport', 'resetData', 'saveQuote', 'priceSend', 'saveNewLead', 'saveLead', 'dealAdd', 'dealSet', 'dealDel', 'dealTo', 'dealToQuote', 'fuFlagCycle', 'fuSaveNote']);
 
   const ACT = {
-    tab(id) { S.tab = id; navOpen = ''; render(); },
+    /** 首屏「选购」下拉 */
+    heroPick() {
+      const d = $('#heroPick'); if (!d) return;
+      const open = d.classList.toggle('open');
+      const t = d.querySelector('.hero-pick-t');
+      if (t) t.setAttribute('aria-expanded', open ? 'true' : 'false');
+    },
+    navDrop() {
+      const d = $('#navDrop'); if (!d) return;
+      const open = d.classList.toggle('open');
+      const t = d.querySelector('.nav-drop-t');
+      if (t) t.setAttribute('aria-expanded', open ? 'true' : 'false');
+    },
+    tab(id) {
+      if (!allowedTab(id)) { toast(LZ('这一页是员工端的', 'Staff only')); return; }
+      S.tab = id; navOpen = ''; render();
+    },
     openGate() { openGate(); },
     closeGate() { closeGate(); if (window.__askLang) { window.__askLang = false; setTimeout(openLang, 40); } },
     gateRole(id) { gateRole = (id === 'staff' || id === 'boss') ? id : 'customer'; renderGate(); },
@@ -2314,6 +2412,61 @@
     closePerm() { closePerm(); },
     chatToggle() { S.chat.open = !S.chat.open; renderChat(); },
     chatNext() { pushChat(false); },
+    /** 客服解答：浏览记录（历史聊天 + 浏览足迹） */
+    chatHistory() {
+      const zh = I.getLang() === 'zh';
+      const staff = A.isStaff();
+      const me = A.me();
+      const convo = staff ? (S.chat.msgs || []).slice() : (S.custMsgs || []).slice();
+      const c0 = staff ? A.customers()[0] : null;
+      const who = staff ? (c0 ? c0.name : '') : (me && me.name ? me.name : '');
+      const evs = staff ? (c0 ? A.stats(c0).events : []) : (me ? A.stats(me).events : []);
+      const TYPE = { view: LZ('看型号', 'viewed'), search: LZ('搜索', 'searched'), addCart: LZ('加入购物车', 'added'),
+        quote: LZ('生成报价单', 'quoted'), pack: LZ('资料包', 'data pack'), inquiry: LZ('询价', 'inquiry'), login: LZ('登录', 'login') };
+      const hh = t => { const d = new Date(t); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); };
+      const dd = t => { const d = new Date(t); return (d.getMonth() + 1) + '/' + d.getDate(); };
+
+      const convoHtml = convo.length ? convo.map(m => {
+        const isMe = m.from === 'me';
+        const label = isMe ? CT('custLabel') : CT('staffLabel');
+        const head = staff
+          ? '<span class="tag b" style="margin-right:6px">' + esc(m.ch || '—') + '</span>' + esc(m.from || '') + ' · ' + esc(m.time || '')
+          : esc(m.time || '');
+        const line = staff
+          ? '<div class="hx-t"><span class="hx-who">' + head + '</span>' + esc(m.text || '') + '</div>'
+          : '<span class="hx-who">' + label + '</span><span class="hx-t">' + esc(m.text || '') + '</span><span class="hx-time">' + esc(m.time || '') + '</span>';
+        return '<div class="hx-row ' + (isMe ? 'me' : 'bot') + '">' + line + '</div>';
+      }).join('') : '<div class="hx-empty">' + CT('histEmpty') + '</div>';
+
+      const evHtml = evs.length ? evs.slice().reverse().slice(0, 12).map(e => {
+        const d = e.d || {};
+        const what = d.code || d.q || d.no || (d.items && d.items.length ? d.items.length + LZ(' 项', ' items') : '');
+        return '<div class="hx-ev"><span>' + dd(e.t) + ' ' + hh(e.t) + ' · ' + (TYPE[e.type] || e.type) + '</span><b class="mono">' + esc(String(what || '')) + '</b></div>';
+      }).join('') : '<div class="hx-empty">' + LZ('还没有浏览记录', 'No browsing yet') + '</div>';
+
+      modal(LZ('浏览记录', 'Records'),
+        '<div class="hx-sec"><div class="hx-h">' + CT('histTitle') + (who ? ' · ' + esc(who) : '') + '</div>' +
+        '<div class="hx-thread">' + convoHtml + '</div></div>' +
+        '<div class="hx-sec"><div class="hx-h">' + CT('histBrowse') + '</div><div class="hx-evs">' + evHtml + '</div></div>',
+        '<button class="btn" data-act="closeModal">' + LZ('关闭', 'Close') + '</button>');
+    },
+    /** 「自定义定制」是一个独立页面 */
+    customOpen() { ACT.tab('custom'); },
+    customSubmit() {
+      const v = id => { const el = $('#' + id); return el ? String(el.value || '').trim() : ''; };
+      const prod = v('cuProd'), need = v('cuNeed');
+      if (!prod || !need) { toast(LZ('产品和改动内容都要填', 'Product and requirement are required')); return; }
+      const qty = Math.max(1, Number(v('cuQty')) || 100);
+      const contact = v('cuContact');
+      const txt = LZ('定制需求', 'Custom request') + '：' + prod + ' × ' + qty + '；' + need;
+      if (!Array.isArray(S.custMsgs)) S.custMsgs = [];
+      S.custMsgs.push({ from: 'me', text: txt, time: chatTime() });
+      S.custMsgs.push({ from: 'bot', text: LZ('收到，定制需求已登记，工艺和打样价 2 小时内回你：', 'Logged. Tooling and sample price within 2 hours to: ') + contact, time: chatTime() });
+      save();
+      CU_SENT = { prod: prod, qty: qty, need: need, contact: contact, time: chatTime() };
+      toast(LZ('已提交，客服会回你', 'Submitted — we will reply'));
+      render();
+    },
     chatClear() { S.chat.msgs = []; S.chat.idx = 0; $('#chatAlert').classList.remove('on'); renderChat(); $('#chatBadge').style.display = 'none'; },
     chatAuto() { S.chat.auto = !S.chat.auto; renderChat(); },
     chatAdd(pid) { ACT.addCart(pid, null, null); },
@@ -2504,7 +2657,7 @@
     }
     const b = $('#userBtn');
     if (b) b.title = u ? esc(u.contact.value) : T('gate.choose');
-    if (u && u.role === 'customer' && !['home', 'select', 'products', 'quote', 'pack'].includes(S.tab)) S.tab = 'home';
+    if (u && u.role === 'customer' && !CUST_TABS.includes(S.tab)) S.tab = 'home';
     renderNav();
     render();
   }
@@ -2770,10 +2923,15 @@
   });
 
   document.addEventListener('click', e => {
-    // 导航分组：点空白处自动收起
+    // 导航分组（员工侧）：点空白处自动收起
     if (navOpen && !(e.target.closest && e.target.closest('.nav-fly'))) {
       navOpen = ''; renderNav();
     }
+    // 客户端「选购」下拉 与 首屏「选购」下拉：点空白处收起
+    const nd = document.getElementById('navDrop');
+    if (nd && nd.classList.contains('open') && !e.target.closest('#navDrop')) nd.classList.remove('open');
+    const hp = document.getElementById('heroPick');
+    if (hp && hp.classList.contains('open') && !e.target.closest('#heroPick')) hp.classList.remove('open');
     const shot = e.target.closest ? e.target.closest('img.fu-shot') : null;
     if (shot && shot.src) { e.preventDefault(); ACT.fuZoom(shot.src); return; }
     const t = e.target.closest('[data-act]');
@@ -2797,7 +2955,12 @@
     if (act === 'packCfg') ACT.packCfg(id);
   });
   document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') { closeModal(); closeDrawer(); if (navOpen) { navOpen = ''; renderNav(); } }
+    if (e.key === 'Escape') {
+      closeModal(); closeDrawer();
+      if (navOpen) { navOpen = ''; renderNav(); }
+      const nd = document.getElementById('navDrop'); if (nd) nd.classList.remove('open');
+      const hp = document.getElementById('heroPick'); if (hp) hp.classList.remove('open');
+    }
     if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) { if (S.tab === 'select') doMatch(); }
   });
   $('#gsearch').addEventListener('keydown', e => {
