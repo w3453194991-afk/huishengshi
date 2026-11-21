@@ -43,6 +43,7 @@ window.I18N = (function () {
     'nav.content':   ["获客内容", "Content", "Contenido", "Conteúdo", "المحتوى", "Контент", "Konten", "Nội dung", "คอนเทนต์", "İçerik"],
     'nav.import':    ["数据导入", "Import", "Importar", "Importar", "استيراد البيانات", "Импорт", "Impor", "Nhập dữ liệu", "นำเข้า", "İçe aktar"],
     'nav.inquiries':   ["客户询价", "Inquiries", "Consultas", "Consultas", "استفسارات", "Запросы", "Permintaan", "Yêu cầu báo giá", "สอบถามราคา", "Talepler"],
+    'nav.addcust':     ["增加客户", "Add customer", "Agregar cliente", "Adicionar cliente", "إضافة عميل", "Добавить клиента", "Tambah pelanggan", "Thêm khách hàng", "เพิ่มลูกค้า", "Müşteri ekle"],
     'top.searchPh':  ["输入车型 / 车桥 / 旧件编码 / 客户原话，回车开始匹配", "Vehicle, axle, old part number or a customer's words — press Enter", "Vehículo, eje, número de pieza o lo que diga el cliente — Enter", "Veículo, eixo, código ou o que o cliente falar — Enter", "اكتب المركبة أو المحور أو رقم القطعة ثم اضغط Enter", "Модель, мост, номер детали или слова клиента — Enter", "Kendaraan, axle, nomor part — tekan Enter", "Xe, cầu, mã phụ tùng — nhấn Enter", "พิมพ์รุ่นรถ เพลา หรือรหัส แล้วกด Enter", "Araç, aks, parça kodu — Enter"],
     'top.lang':      ["界面语言", "Language", "Idioma", "Idioma", "اللغة", "Язык", "Bahasa", "Ngôn ngữ", "ภาษา", "Dil"],
     'top.offline':   ["离线可用", "Offline", "Sin conexión", "Offline", "بدون إنترنت", "Офлайн", "Offline", "Ngoại tuyến", "ออฟไลน์", "Çevrimdışı"],

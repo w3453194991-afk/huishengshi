@@ -260,9 +260,49 @@ window.AUTH = (function () {
     save();
   }
 
+  /** 员工录入客户（手动填 / 拍名片识别后确认）：同联系方式视为同一客户，更新不新增 */
+  function addCustomer(o) {
+    o = o || {};
+    const name = (o.name || '').trim();
+    const type = o.type || 'WhatsApp';
+    const value = (o.value || '').trim();
+    if (!name) return { ok: false, msg: '请填写联系人姓名' };
+    const bad = validContact(type, value);
+    if (bad) return { ok: false, msg: bad };
+    const key = normContact(value);
+    const tags = (o.tags || []).filter(Boolean);
+    let u = db.users.find(x => x.role === 'customer' && normContact(x.contact.value) === key);
+    const isNew = !u;
+    if (!u) {
+      u = {
+        id: 'U' + Math.random().toString(36).slice(2, 7).toUpperCase(),
+        role: 'customer', name,
+        company: (o.company || '').trim(), country: (o.country || '').trim(),
+        contact: { type, value }, tags: tags.length ? tags : ['新客户'],
+        note: (o.note || '').trim(), source: o.source || 'manual',
+        created: now(), lastSeen: now(), events: []
+      };
+      db.users.push(u);
+    } else {
+      u.name = name;
+      if (o.company) u.company = o.company.trim();
+      if (o.country) u.country = o.country.trim();
+      u.contact = { type, value };
+      if (tags.length) u.tags = [...new Set((u.tags || []).concat(tags))];
+      if (o.note) u.note = o.note.trim();
+      u.source = o.source || u.source || 'manual';
+      u.lastSeen = now();
+    }
+    const by = (me() || {}).name || '';
+    u.events = u.events || [];
+    u.events.push({ t: now(), type: 'create', d: { source: u.source, by } });
+    save();
+    return { ok: true, user: u, isNew };
+  }
+
   return {
     CONTACT_TYPES, STAFF_CODE, BOSS_CODE,
-    me, isStaff, isBoss, isDemoStaff, login, loginDemo, logout, track, stats, customers, sendUrl, setTag, submitInquiry, inquiries,
+    me, isStaff, isBoss, isDemoStaff, login, loginDemo, logout, track, stats, customers, sendUrl, setTag, submitInquiry, inquiries, addCustomer,
     all: () => db.users
   };
 })();

@@ -24,6 +24,7 @@
     script: null,
     chat: { open: false, msgs: [], auto: true, idx: 0 },
     custMsgs: [],
+    addCust: { name: '', company: '', country: '', type: 'WhatsApp', value: '', tags: '', note: '', photo: '', scanning: false, ocr: false },
     fuMute: {},
     fuFlags: {},
     fuNotes: {},
@@ -33,6 +34,8 @@
   let storageOK = true;
   let RQ = null;
   let PRICE_ROWS = [];
+  /** 名片识别演示：定时器与样例索引（识别结果仅演示，接口接上后换成真 OCR） */
+  let OCR_T = null, OCR_I = 0;
 
   function save() {
     try {
@@ -174,7 +177,7 @@
   /** 仅员工可见的 9 个页面，按用途收进 2 个分组菜单（14 个入口一个不丢） */
   const NAV_GROUPS = [
     // 客户线索：客户提的需求 + 客户在我方站内的行为 + 我们要主动找的人
-    { key: 'clues', label: 'nav.g.clues', items: ['inquiries', 'leads', 'visits', 'network', 'deals', 'redfox'] },
+    { key: 'clues', label: 'nav.g.clues', items: ['addcust', 'inquiries', 'leads', 'visits', 'network', 'deals', 'redfox'] },
     // 型号数据：都是「补充 / 校正型号与适配」的维护动作
     { key: 'data', label: 'nav.g.data', items: ['xref', 'graph', 'import'] }
   ];
@@ -306,6 +309,7 @@
   ];
   const PERM_STAFF = [
     ['客户询价', '收到客户清单 → 一键载入报价'],
+    ['增加客户', '手动录入，或拍名片识别后确认保存'],
     ['客户浏览', '谁在看、看了什么、意向分'],
     ['询盘线索', '跟进状态、下一步动作'],
     ['用户画像', '画像 + 客户搜索 + 获客内容，一个入口三段切换'],
@@ -340,7 +344,7 @@
       $('.wrap').appendChild(sec);
     }
     $$('.page').forEach(p => p.classList.toggle('on', p.id === 'p-' + S.tab));
-    ({ home: vHome, select: vSelect, products: vProducts, graph: vGraph, quote: vQuote, pack: vPack, inquiries: vInquiries, search: vSearch, xref: vXref, redfox: vRedfox, deals: vDeals, boss: vBoss, visits: vVisits, leads: vLeads, network: vNetwork, content: vContent, import: vImport, custom: vCustom }[S.tab])();
+    ({ home: vHome, select: vSelect, products: vProducts, graph: vGraph, quote: vQuote, pack: vPack, inquiries: vInquiries, search: vSearch, xref: vXref, redfox: vRedfox, deals: vDeals, boss: vBoss, visits: vVisits, leads: vLeads, network: vNetwork, content: vContent, import: vImport, custom: vCustom, addcust: vAddCustomer }[S.tab])();
     if (S.tab === 'content') { const el = $('#p-content'); if (el) el.insertAdjacentHTML('afterbegin', acquireBar('content')); }
     window.scrollTo({ top: 0, behavior: 'instant' });
   }
@@ -1695,7 +1699,7 @@
 
   /* ================= 交互动作 ================= */
   /** 体验版员工端：只读，不允许发送 / 导入 / 改数据 */
-  const DEMO_BLOCK = new Set(['sendCustomer', 'pushLead', 'newFit', 'saveFit', 'confirmFit', 'runImport', 'resetData', 'saveQuote', 'priceSend', 'saveNewLead', 'saveLead', 'dealAdd', 'dealSet', 'dealDel', 'dealTo', 'dealToQuote', 'fuFlagCycle', 'fuSaveNote']);
+  const DEMO_BLOCK = new Set(['sendCustomer', 'pushLead', 'newFit', 'saveFit', 'confirmFit', 'runImport', 'resetData', 'saveQuote', 'priceSend', 'saveNewLead', 'saveLead', 'dealAdd', 'dealSet', 'dealDel', 'dealTo', 'dealToQuote', 'fuFlagCycle', 'fuSaveNote', 'addCustSave']);
 
   const ACT = {
     /** 首屏「选购」下拉 */
@@ -2116,6 +2120,37 @@
       if (!confirm('将清空本机修改（线索、报价、手动适配），恢复默认数据。继续？')) return;
       localStorage.removeItem(KEY); location.reload();
     },
+    /* ---- 增加客户（手动 / 拍照名片） ---- */
+    addCustSave() {
+      const st = S.addCust;
+      const tags = String(st.tags || '').split(/[,，;；]/).map(s => s.trim()).filter(Boolean);
+      const r = A.addCustomer({
+        name: st.name, company: st.company, country: st.country, type: st.type, value: st.value,
+        tags, note: st.note, source: st.ocr ? 'card' : 'manual'
+      });
+      if (!r.ok) { toast(r.msg); return; }
+      toast((r.isNew ? '已新增客户：' : '已更新客户：') + r.user.name + (st.ocr ? '（名片导入）' : '（手动录入）'));
+      S.addCust = defaultAddCust();
+      vAddCustomer();
+    },
+    addCustReset() { S.addCust = defaultAddCust(); vAddCustomer(); toast('已清空表单'); },
+    addCustClearPhoto() {
+      S.addCust.photo = ''; S.addCust.ocr = false; S.addCust.scanning = false;
+      vAddCustomer();
+    },
+    addCustOcr() {
+      const st = S.addCust;
+      if (!st.photo) { toast('先拍照或选一张名片图片'); return; }
+      st.scanning = true; st.ocr = false;
+      vAddCustomer();
+      clearTimeout(OCR_T);
+      OCR_T = setTimeout(() => {
+        const d = CARD_DEMO[OCR_I++ % CARD_DEMO.length];
+        Object.assign(st, d, { scanning: false, ocr: true });
+        vAddCustomer();
+        toast('名片已识别（演示），核对左侧字段后点「保存客户」');
+      }, 900);
+    },
     /* ---- 画像 / 内容 ---- */
     persona(id) { openPersona(id); },
     dmPersona(id) {
@@ -2407,6 +2442,8 @@
     },
     rfConnect() { const b = $('#p-redfox'); window.REDFOX.connect(() => vRedfox()); },
     rfPlat(id) { window.REDFOX.setPlatform(id); vRedfox(); },
+    rfKind(id) { window.REDFOX.setKind(id); vRedfox(); },
+    rfQuery() { window.REDFOX.runQuery(() => vRedfox()); },
     rfRun(id) { window.REDFOX.run(id, () => vRedfox()); },
     rfImportLead() {
       window.REDFOX.importLead({
@@ -2830,6 +2867,107 @@
         <span class="tag g">${list.length} 条待处理</span></div>
       <div class="card"><table><thead><tr><th>${LZ('时间','When')}</th><th>${LZ('客户','Customer')}</th><th>${LZ('询价号','No.')}</th><th>${LZ('要什么','Items')}</th><th>${LZ('联系方式','Contact')}</th><th></th></tr></thead>
       <tbody>${rows}</tbody></table></div>`;
+  }
+
+  /* ================= 增加客户（手动录入 / 拍照名片） ================= */
+  /** 名片识别演示结果：接真 OCR（腾讯云 / 阿里云 / GPT-4o）后换成接口返回 */
+  const CARD_DEMO = [
+    { name: 'Omar Haddad', company: 'Haddad Brake Center', country: '阿联酋', type: 'WhatsApp', value: '+971 50 448 2210', tags: '名片导入, 中东, 批发', note: '迪拜刹车片批发商，先要目录 + ECE R90 报告' },
+    { name: 'Ricardo Alvarez', company: 'Refacciones del Norte', country: '墨西哥', type: 'Phone', value: '+52 81 3344 7788', tags: '名片导入, 墨西哥, 车队', note: '蒙特雷车队 60 台重卡，问后片阶梯价' },
+    { name: 'Budi Santoso', company: 'CV Sinar Jaya Parts', country: '印度尼西亚', type: 'WhatsApp', value: '+62 812 3344 5566', tags: '名片导入, 东南亚, 贸易商', note: '雅加达配件商，要 HOWO / 解放适配表' },
+    { name: 'Mehmet Yilmaz', company: 'Yilmaz Otomotiv', country: '土耳其', type: 'Email', value: 'mehmet@yilmazoto.com.tr', tags: '名片导入, 土耳其, 终端', note: '伊斯坦布尔车队，关注 29087 / 29095' }
+  ];
+  function defaultAddCust() {
+    return { name: '', company: '', country: '', type: 'WhatsApp', value: '', tags: '', note: '', photo: '', scanning: false, ocr: false };
+  }
+  function vAddCustomer() {
+    const st = S.addCust;
+    const recent = A.customers().filter(c => !c.demo && c.created).sort((a, b) => (b.created || 0) - (a.created || 0)).slice(0, 6);
+    const srcLabel = c => c.source === 'card' ? LZ('名片识别', 'From card') : c.source === 'manual' ? LZ('手动录入', 'Manual') : LZ('历史数据', 'Existing');
+    $('#p-addcust').innerHTML = `
+    <div class="row wrap-gap" style="justify-content:space-between;margin-bottom:12px">
+      <div><h1 style="margin:0">${LZ('增加客户', 'Add customer')}</h1>
+        <div class="muted small">${LZ('手动填，或拍一张名片自动带出字段。保存后进「客户浏览」，可以直接发目录 / 报价。', 'Type it in, or snap a business card to prefill. Saved customers land in Customer activity.')}</div></div>
+      <div class="row"><span class="tag o">${LZ('演示识别', 'Demo OCR')}</span><span class="tag n">${LZ('接 OCR 后读真名片', 'Wire OCR to read real cards')}</span></div>
+    </div>
+    <div class="split">
+      <div class="card">
+        <div class="card-h"><h3>${LZ('手动录入', 'Manual entry')}</h3><span class="sub">${LZ('带 * 必填；联系方式已存在会更新老客户', 'Required *; an existing contact updates the old record')}</span></div>
+        <div class="card-b">
+          <div class="grid" style="grid-template-columns:1fr 1fr;gap:8px">
+            <div class="field"><label>${LZ('联系人姓名 *', 'Contact name *')}</label><input id="cuName" value="${esc(st.name)}" placeholder="Carlos Mendoza"></div>
+            <div class="field"><label>${LZ('公司', 'Company')}</label><input id="cuCompany" value="${esc(st.company)}" placeholder="Transportes Mendoza"></div>
+            <div class="field"><label>${LZ('国家 / 地区', 'Country')}</label><input id="cuCountry" value="${esc(st.country)}" placeholder="墨西哥"></div>
+            <div class="field"><label>${LZ('联系方式类型', 'Contact type')}</label><select id="cuType">${A.CONTACT_TYPES.map(t => `<option ${st.type === t ? 'selected' : ''}>${t}</option>`).join('')}</select></div>
+            <div class="field" style="grid-column:span 2"><label>${LZ('联系方式 *', 'Contact *')}</label><input id="cuValue" value="${esc(st.value)}" placeholder="+52 55 1234 5678 / buyer@company.com"></div>
+            <div class="field" style="grid-column:span 2"><label>${LZ('标签（逗号分隔）', 'Tags (comma separated)')}</label><input id="cuTags" value="${esc(st.tags)}" placeholder="车队, 墨西哥, A 类"></div>
+            <div class="field" style="grid-column:span 2"><label>${LZ('备注 / 需求', 'Note / need')}</label><input id="cuNote" value="${esc(st.note)}" placeholder="想要 29087 后片 200 套，先要目录"></div>
+          </div>
+          <div class="row wrap-gap mt-s">
+            <button class="btn primary" data-act="addCustSave">${LZ('保存客户', 'Save customer')}</button>
+            <button class="btn" data-act="addCustReset">${LZ('清空', 'Clear')}</button>
+            <span class="tiny muted">${LZ('保存后可在「客户浏览」里跟进，支持一键发 WhatsApp / 邮件。', 'Follow up from Customer activity; one-tap WhatsApp / email.')}</span>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-h"><h3>${LZ('拍照名片', 'Business card photo')}</h3><span class="sub">${LZ('手机直接拍，或上传图片', 'Shoot it or upload a photo')}</span></div>
+        <div class="card-b">
+          ${st.photo ? `
+            <div class="card-photo">
+              <img src="${st.photo}" alt="名片预览">
+              ${st.scanning ? '<div class="scan"><i></i><span>识别中…</span></div>' : ''}
+            </div>
+            <div class="row wrap-gap mt-s">
+              <button class="btn sm primary" data-act="addCustOcr">${st.ocr ? LZ('再识别一次', 'Read again') : LZ('识别名片', 'Read card')}</button>
+              <label class="btn sm" for="cuPhoto">${LZ('换一张', 'Replace')}</label>
+              <button class="btn sm ghost" data-act="addCustClearPhoto">${LZ('移除', 'Remove')}</button>
+            </div>
+            <div class="tiny muted mt-s">${st.ocr ? LZ('已把识别结果填到左边（演示数据），核对后保存。', 'Prefilled on the left (demo data) — review, then save.') : LZ('点「识别名片」读图并带出姓名 / 公司 / 国家 / 电话。', 'Read the card to fill name, company, country and phone.')}</div>
+          ` : `
+            <label class="photo-drop" for="cuPhoto">
+              <span class="ic">📷</span>
+              <b>${LZ('拍照 / 选名片图片', 'Shoot or choose a card')}</b>
+              <span class="tiny muted">${LZ('手机端直接调相机；桌面点选或拖图', 'Camera on mobile; click or drop a file on desktop')}</span>
+            </label>
+            <div class="tiny muted mt-s">${LZ('演示版：识别结果是一组示例字段（可改）。接腾讯云 / 阿里云 OCR 或 GPT-4o 后，这里读的就是名片上的真字。', 'Demo: the read result is sample data you can edit. With a real OCR API this reads the actual card.')}</div>
+          `}
+          <input type="file" id="cuPhoto" accept="image/*" capture="environment" hidden>
+        </div>
+      </div>
+    </div>
+    <div class="card mt"><div class="card-h"><h3>${LZ('最近新增', 'Recently added')}</h3><span class="sub">${LZ('手动 + 名片，按创建时间倒序', 'Manual + card, newest first')}</span></div>
+      <div class="tbl-wrap"><table><thead><tr>
+        <th>${LZ('客户', 'Customer')}</th><th>${LZ('联系方式', 'Contact')}</th><th>${LZ('国家', 'Country')}</th>
+        <th>${LZ('来源', 'Source')}</th><th>${LZ('创建时间', 'Created')}</th><th></th>
+      </tr></thead><tbody>
+      ${recent.map(c => `<tr class="click" data-act="openCustomer" data-id="${c.id}">
+        <td><b>${esc(c.name)}</b>${c.company ? `<div class="tiny muted">${esc(c.company)}</div>` : ''}</td>
+        <td class="small"><span class="tag n">${esc(c.contact.type)}</span><div class="tiny mono muted">${esc(c.contact.value)}</div></td>
+        <td class="small">${esc(c.country || '—')}</td>
+        <td class="small">${srcLabel(c)}</td>
+        <td class="small">${c.created ? dayLabel(c.created) : '—'}</td>
+        <td><button class="btn xs" data-act="openCustomer" data-id="${c.id}">${LZ('详情', 'Details')}</button></td>
+      </tr>`).join('') || `<tr><td colspan="6" class="empty small">${LZ('还没有客户记录，保存一条试试。', 'No customers yet — save one.')}</td></tr>`}
+      </tbody></table></div>
+    </div>`;
+    const bind = (id, key, ev) => {
+      const n = $('#' + id); if (!n) return;
+      n[ev || 'oninput'] = () => { S.addCust[key] = n.value; };
+    };
+    bind('cuName', 'name'); bind('cuCompany', 'company'); bind('cuCountry', 'country');
+    bind('cuValue', 'value'); bind('cuTags', 'tags'); bind('cuNote', 'note');
+    bind('cuType', 'type', 'onchange');
+    const fi = $('#cuPhoto');
+    if (fi) fi.onchange = () => {
+      const f = fi.files && fi.files[0]; if (!f) return;
+      if (!/^image\//.test(f.type || '')) { toast('请选图片文件（JPG / PNG）'); return; }
+      if (f.size > 8 * 1024 * 1024) { toast('图片超过 8MB，换一张小一点的'); return; }
+      const rd = new FileReader();
+      rd.onload = () => { S.addCust.photo = String(rd.result); S.addCust.ocr = false; S.addCust.scanning = false; vAddCustomer(); };
+      rd.onerror = () => toast('图片读取失败，换一张试试');
+      rd.readAsDataURL(f);
+    };
   }
 
   function vVisits() {
