@@ -1273,9 +1273,9 @@
             <div class="field"><label>时长（秒）</label><input id="cSec" type="number" value="${cfg.seconds}"></div>
             <div class="field"><label>核心痛点</label><input id="cPain" value="${esc(cfg.pain)}"></div>
           </div>
-          <div class="row mt-s"><button class="btn primary" data-act="genScript">生成脚本</button>
+          <div class="row mt-s"><button class="btn primary" data-act="genScript">${T('ct.gen')}</button>
             <button class="btn" data-act="copyPrompt">复制 AI 提示词</button></div>
-          <div class="tiny muted mt-s">生成的是「可拍的分镜稿 + 可配音的口播」，不是空泛文案；每个脚本都绑定一个型号和一条适配依据。</div>
+          <div class="tiny muted mt-s">生成的是「可拍的分镜稿 + 可配音的口播 + 一段 AI 提示词」，不是空泛文案；提示词下方可一键跳 Kling AI 出片。</div>
         </div>
       </div>
     </div>
@@ -1306,6 +1306,14 @@
             <div class="sec-t">话题标签</div>
             <div class="row wrap-gap" style="gap:5px">${sc.tags.map(t => `<span class="chip">${esc(t)}</span>`).join('')}</div>
           </div>
+        </div>
+        <div class="sec-t">AI 提示词<span class="tiny muted" style="font-weight:400;margin-left:8px">复制后粘到 Kling / 任意大模型，直接出片</span></div>
+        <div id="promptBox" style="background:var(--panel-2);border:1px solid var(--line);border-radius:8px;padding:10px;font-size:12.5px;line-height:1.75;white-space:pre-wrap;max-height:160px;overflow:auto">${esc(sc.prompt)}</div>
+        <div class="row wrap-gap mt-s">
+          <button class="btn sm" data-act="copyPrompt">复制提示词</button>
+          <a class="btn sm primary" id="klingGo" href="https://kling.ai/" target="_blank" rel="noopener noreferrer"
+             title="${esc(LZ('在 Kling AI 新窗口打开，粘贴提示词出片', 'Open Kling AI, paste the prompt, generate the video'))}">${LZ('去 Kling AI 生成视频', 'Generate video on Kling AI')}<span aria-hidden="true" style="opacity:.75;font-size:11px">↗</span></a>
+          <span class="tiny muted">先「复制提示词」，到 Kling 粘贴即可（视频按这个脚本出）</span>
         </div>
       </div>
     </div>`;
