@@ -203,9 +203,28 @@ async function lookupApi(req, res) {
   }
 }
 
+/* ---- 汇率：/api/fx ---- */
+let FX_CACHE = { at: 0, body: null };
+async function fxApi(req, res) {
+  if (FX_CACHE.body && Date.now() - FX_CACHE.at < 3600e3) return sendJson(res, 200, FX_CACHE.body);
+  try {
+    const r = await fetch('https://open.er-api.com/v6/latest/USD', {
+      headers: { 'User-Agent': 'QoderWork/1.0' }, signal: AbortSignal.timeout(12000)
+    });
+    const j = await r.json();
+    if (!j || j.result !== 'success' || !j.rates) throw new Error('汇率源返回异常');
+    const body = { ok: true, base: 'USD', rates: j.rates, updated: j.time_last_update_utc || '', source: 'open.er-api.com' };
+    FX_CACHE = { at: Date.now(), body };
+    return sendJson(res, 200, body);
+  } catch (e) {
+    return sendJson(res, 200, { ok: false, error: String((e && e.message) || e) });
+  }
+}
+
 http.createServer((req, res) => {
   if (req.url.indexOf('/api/redfox') === 0) return redfoxApi(req, res);
   if (req.url.indexOf('/api/lookup') === 0) return lookupApi(req, res);
+  if (req.url.indexOf('/api/fx') === 0) return fxApi(req, res);
   let rel = decodeURIComponent(url.parse(req.url).pathname);
   if (rel === '/') rel = '/index.html';
   const fp = path.join(ROOT, rel);

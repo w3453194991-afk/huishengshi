@@ -34,6 +34,7 @@ window.I18N = (function () {
     'nav.g.tools':   ["工具书", "Handbook", "Manual", "Manual", "الدليل", "Справочник", "Buku alat", "Sổ tay", "คู่มือ", "El kitabı"],
     'nav.tax':       ["税务查询", "Duty & tax", "Impuestos", "Impostos", "الضرائب", "Налоги", "Pajak", "Thuế", "ภาษี", "Vergi"],
     'nav.model':     ["型号查询", "Part lookup", "Buscar modelo", "Buscar código", "بحث رقم القطعة", "Поиск модели", "Cari kode", "Tra mã", "ค้นรหัส", "Parça arama"],
+    'nav.fx':        ["货币兑换", "Currency", "Divisas", "Câmbio", "صرف العملات", "Валюта", "Kurs mata uang", "Quy đổi tiền", "แลกเปลี่ยนเงิน", "Döviz"],
     'nav.aftersales': ["售后服务", "After-sales", "Posventa", "Pós-venda", "خدمة ما بعد البيع", "Сервис", "Purnajual", "Hậu mãi", "บริการหลังการขาย", "Satış sonrası"],
     'nav.aftersale': ["售后服务", "After-sales", "Posventa", "Pós-venda", "خدمة ما بعد البيع", "Сервис", "Purnajual", "Hậu mãi", "บริการหลังการขาย", "Satış sonrası"],
     'nav.deals':     ["成交台账", "Deals", "Ventas", "Vendas", "الصفقات", "Сделки", "Deal", "Đơn hàng", "ดีล", "Anlaşmalar"],

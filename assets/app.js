@@ -36,6 +36,7 @@
     /* 工具书 */
     tax: { country: 'US', hs: '', qty: 0 },
     model: { q: '', res: [], busy: false, err: '' },
+    fx: { amt: 10000, from: 'USD', to: 'CNY', rates: {}, at: '', busy: false, err: '' },
     quoteMeta: { no: '', date: new Date().toISOString().slice(0, 10), incoterm: '', pay: '', note: '' }
   };
   let storageOK = true;
@@ -51,7 +52,7 @@
         overrides: S.overrides, draftFits: S.draftFits, quoteMeta: S.quoteMeta, custMsgs: S.custMsgs, deals: S.deals,
         fuMute: S.fuMute, fuFlags: S.fuFlags, fuNotes: S.fuNotes,
         /* 新增：售后服务两份独立清单 + 税务查询上次所选市场 */
-        asStaff: S.asStaff, asBoss: S.asBoss, tax: S.tax
+        asStaff: S.asStaff, asBoss: S.asBoss, tax: S.tax, fx: { amt: S.fx.amt, from: S.fx.from, to: S.fx.to }
       }));
     } catch (e) { storageOK = false; }
   }
@@ -188,7 +189,7 @@
     // 客户线索：客户提的需求 + 客户在我方站内的行为 + 我们要主动找的人
     { key: 'clues', label: 'nav.g.clues', items: ['addcust', 'inquiries', 'aftersales', 'leads', 'visits', 'network', 'deals', 'redfox'] },
     // 工具书：查税率、查库里没有的型号
-    { key: 'tools', label: 'nav.g.tools', items: ['tax', 'model'] },
+    { key: 'tools', label: 'nav.g.tools', items: ['tax', 'model', 'fx'] },
     // 型号数据：都是「补充 / 校正型号与适配」的维护动作
     { key: 'data', label: 'nav.g.data', items: ['xref', 'graph', 'import'] }
   ];
@@ -356,7 +357,7 @@
       $('.wrap').appendChild(sec);
     }
     $$('.page').forEach(p => p.classList.toggle('on', p.id === 'p-' + S.tab));
-    ({ home: vHome, select: vSelect, products: vProducts, graph: vGraph, quote: vQuote, pack: vPack, inquiries: vInquiries, search: vSearch, xref: vXref, redfox: vRedfox, deals: vDeals, boss: vBoss, visits: vVisits, leads: vLeads, network: vNetwork, content: vContent, import: vImport, custom: vCustom, addcust: vAddCustomer, tax: vTax, model: vModel, aftersale: vAfterSale, aftersales: vAfterSales }[S.tab])();
+    ({ home: vHome, select: vSelect, products: vProducts, graph: vGraph, quote: vQuote, pack: vPack, inquiries: vInquiries, search: vSearch, xref: vXref, redfox: vRedfox, deals: vDeals, boss: vBoss, visits: vVisits, leads: vLeads, network: vNetwork, content: vContent, import: vImport, custom: vCustom, addcust: vAddCustomer, tax: vTax, model: vModel, fx: vFx, aftersale: vAfterSale, aftersales: vAfterSales }[S.tab])();
     if (S.tab === 'content') { const el = $('#p-content'); if (el) el.insertAdjacentHTML('afterbegin', acquireBar('content')); }
     window.scrollTo({ top: 0, behavior: 'instant' });
   }
@@ -1706,27 +1707,30 @@
     if (k) k.onchange = () => window.REDFOX.setKey(k.value.trim());
   }
 
-  /* ================= 工具书：税务查询 ================= */
+  /* ================= 工具书：税务查询 / 型号查询 / 货币兑换 ================= */
+  const L = (zh, en) => LZ(zh, en);
+
   /** 常用市场税率（刹车片 HS 8708.30；仅作报价参考，正式报关以当地税则为准） */
   const TAX_MK = [
-    { k: 'US', n: '美国', en: 'United States', duty: 2.5, vat: 0, vatName: '销售税（州级另计）', note: '301 条款加征 25% 需另算' },
-    { k: 'DE', n: '德国', en: 'Germany', duty: 4.5, vat: 19, vatName: 'VAT', note: '欧盟统一税则' },
-    { k: 'ES', n: '西班牙', en: 'Spain', duty: 4.5, vat: 21, vatName: 'IVA', note: '欧盟统一税则' },
-    { k: 'RU', n: '俄罗斯', en: 'Russia', duty: 10, vat: 20, vatName: 'НДС', note: 'EAEU 统一税则' },
-    { k: 'SA', n: '沙特', en: 'Saudi Arabia', duty: 5, vat: 15, vatName: 'VAT', note: 'GCC 关税同盟' },
-    { k: 'AE', n: '阿联酋', en: 'UAE', duty: 5, vat: 5, vatName: 'VAT', note: 'GCC 关税同盟' },
-    { k: 'MX', n: '墨西哥', en: 'Mexico', duty: 10, vat: 16, vatName: 'IVA', note: '无自贸协定加征' },
-    { k: 'BR', n: '巴西', en: 'Brazil', duty: 16, vat: 17, vatName: 'ICMS', note: '另有 IPI / PIS / COFINS' },
-    { k: 'VN', n: '越南', en: 'Vietnam', duty: 20, vat: 10, vatName: 'VAT', note: 'ACFTA 可凭原产地证降税' },
-    { k: 'TH', n: '泰国', en: 'Thailand', duty: 20, vat: 7, vatName: 'VAT', note: 'ACFTA 可降税' },
-    { k: 'ID', n: '印尼', en: 'Indonesia', duty: 10, vat: 11, vatName: 'PPN', note: '进口需 SNI 认证' },
-    { k: 'TR', n: '土耳其', en: 'Turkey', duty: 4.5, vat: 20, vatName: 'KDV', note: '另有反倾销附加税' },
-    { k: 'EG', n: '埃及', en: 'Egypt', duty: 30, vat: 14, vatName: 'VAT', note: '需 ACID 预申报' },
-    { k: 'ZA', n: '南非', en: 'South Africa', duty: 20, vat: 15, vatName: 'VAT', note: 'SADC 内可优惠' },
-    { k: 'NG', n: '尼日利亚', en: 'Nigeria', duty: 10, vat: 7.5, vatName: 'VAT', note: '需 SONCAP 认证' },
-    { k: 'IN', n: '印度', en: 'India', duty: 15, vat: 28, vatName: 'GST', note: 'BIS 认证强制' }
+    { k: 'US', n: '美国', en: 'United States', duty: 2.5, vat: 0, vatName: 'Sales tax', vatZh: '销售税（州级另计）', note: '301 条款加征 25% 需另算', noteEn: 'Section 301 adds 25% on top' },
+    { k: 'DE', n: '德国', en: 'Germany', duty: 4.5, vat: 19, vatName: 'VAT', vatZh: '增值税', note: '欧盟统一税则', noteEn: 'EU common tariff' },
+    { k: 'ES', n: '西班牙', en: 'Spain', duty: 4.5, vat: 21, vatName: 'IVA', vatZh: '增值税', note: '欧盟统一税则', noteEn: 'EU common tariff' },
+    { k: 'RU', n: '俄罗斯', en: 'Russia', duty: 10, vat: 20, vatName: 'НДС', vatZh: '增值税', note: 'EAEU 统一税则', noteEn: 'EAEU common tariff' },
+    { k: 'SA', n: '沙特', en: 'Saudi Arabia', duty: 5, vat: 15, vatName: 'VAT', vatZh: '增值税', note: 'GCC 关税同盟', noteEn: 'GCC customs union' },
+    { k: 'AE', n: '阿联酋', en: 'UAE', duty: 5, vat: 5, vatName: 'VAT', vatZh: '增值税', note: 'GCC 关税同盟', noteEn: 'GCC customs union' },
+    { k: 'MX', n: '墨西哥', en: 'Mexico', duty: 10, vat: 16, vatName: 'IVA', vatZh: '增值税', note: '无自贸协定加征', noteEn: 'No FTA surcharge' },
+    { k: 'BR', n: '巴西', en: 'Brazil', duty: 16, vat: 17, vatName: 'ICMS', vatZh: '州增值税', note: '另有 IPI / PIS / COFINS', noteEn: 'Plus IPI / PIS / COFINS' },
+    { k: 'VN', n: '越南', en: 'Vietnam', duty: 20, vat: 10, vatName: 'VAT', vatZh: '增值税', note: 'ACFTA 可凭原产地证降税', noteEn: 'ACFTA cuts duty with a CO' },
+    { k: 'TH', n: '泰国', en: 'Thailand', duty: 20, vat: 7, vatName: 'VAT', vatZh: '增值税', note: 'ACFTA 可降税', noteEn: 'ACFTA reduces duty' },
+    { k: 'ID', n: '印尼', en: 'Indonesia', duty: 10, vat: 11, vatName: 'PPN', vatZh: '增值税', note: '进口需 SNI 认证', noteEn: 'SNI certification required' },
+    { k: 'TR', n: '土耳其', en: 'Turkey', duty: 4.5, vat: 20, vatName: 'KDV', vatZh: '增值税', note: '另有反倾销附加税', noteEn: 'Plus anti-dumping duty' },
+    { k: 'EG', n: '埃及', en: 'Egypt', duty: 30, vat: 14, vatName: 'VAT', vatZh: '增值税', note: '需 ACID 预申报', noteEn: 'ACID pre-declaration required' },
+    { k: 'ZA', n: '南非', en: 'South Africa', duty: 20, vat: 15, vatName: 'VAT', vatZh: '增值税', note: 'SADC 内可优惠', noteEn: 'SADC preferential rates' },
+    { k: 'NG', n: '尼日利亚', en: 'Nigeria', duty: 10, vat: 7.5, vatName: 'VAT', vatZh: '增值税', note: '需 SONCAP 认证', noteEn: 'SONCAP certification required' },
+    { k: 'IN', n: '印度', en: 'India', duty: 15, vat: 28, vatName: 'GST', vatZh: '消费税', note: 'BIS 认证强制', noteEn: 'BIS certification mandatory' }
   ];
   const REBATE = 13; // 中国出口退税率（汽配 8708 类通常 13%）
+  const mkName = m => (I.getLang() === 'zh' ? m.n : m.en);
 
   function vTax() {
     const m = TAX_MK.find(x => x.k === (S.tax.country || 'US')) || TAX_MK[0];
@@ -1737,13 +1741,14 @@
     const landed = val + duty + vat;
     const card = (lab, big, sub, cls) =>
       `<div class="rf-kpi"><span>${lab}</span><b class="${cls || ''}">${big}</b><i>${sub}</i></div>`;
+    const vatName = I.getLang() === 'zh' ? m.vatZh : m.vatName;
 
     $('#p-tax').innerHTML = `
     <div class="row wrap-gap" style="justify-content:space-between;margin-bottom:12px">
-      <div><h1 style="margin:0">税务查询</h1>
-      <div class="muted small">选市场 → 看进口关税、增值税和国内出口退税，报价时直接算进成本。</div></div>
+      <div><h1 style="margin:0">${L('税务查询', 'Duty & tax')}</h1>
+      <div class="muted small">${L('选市场 → 看进口关税、增值税和国内出口退税，报价时直接算进成本。', 'Pick a market to see import duty, local VAT and China export rebate — margin included in one view.')}</div></div>
       <div class="row wrap-gap">
-        <label class="tiny muted" style="display:flex;align-items:center;gap:6px">货值 USD
+        <label class="tiny muted" style="display:flex;align-items:center;gap:6px">${L('货值 USD', 'Value USD')}
           <input id="taxVal" type="number" min="0" step="100" value="${val || ''}" placeholder="10000" style="width:110px">
         </label>
       </div>
@@ -1751,37 +1756,37 @@
 
     <div class="card"><div class="card-b">
       <div class="rf-plats" style="margin-bottom:0">
-        ${TAX_MK.map(x => `<button class="rf-plat ${x.k === m.k ? 'on' : ''}" data-act="taxCty" data-id="${x.k}">${x.n}</button>`).join('')}
+        ${TAX_MK.map(x => `<button class="rf-plat ${x.k === m.k ? 'on' : ''}" data-act="taxCty" data-id="${x.k}">${mkName(x)}</button>`).join('')}
       </div>
     </div></div>
 
-    <div class="card"><div class="card-h"><h3>${m.n} · ${m.en}</h3>
-      <span class="sub">HS 8708.30 · ${m.note}</span></div>
+    <div class="card"><div class="card-h"><h3>${esc(mkName(m))}</h3>
+      <span class="sub">HS 8708.30 · ${esc(I.getLang() === 'zh' ? m.note : m.noteEn)}</span></div>
       <div class="card-b">
         <div class="rf-kpis">
-          ${card('中国出口退税', REBATE + '%', val ? '可退 $' + Math.round(rebate).toLocaleString() : '按货值算')}
-          ${card('进口关税', m.duty + '%', val ? '$' + Math.round(duty).toLocaleString() : m.note)}
-          ${card(m.vatName, m.vat + '%', val ? '$' + Math.round(vat).toLocaleString() : '按 CIF＋关税计征')}
-          ${card('到岸总成本', val ? '$' + Math.round(landed).toLocaleString() : '—', val ? '货值 + 关税 + ' + m.vatName : '填货值后自动算', 'c-hi')}
+          ${card(L('中国出口退税', 'China rebate'), REBATE + '%', val ? L('可退 $', 'refund $') + Math.round(rebate).toLocaleString() : L('按货值算', 'of invoice value'))}
+          ${card(L('进口关税', 'Import duty'), m.duty + '%', val ? '$' + Math.round(duty).toLocaleString() : (I.getLang() === 'zh' ? m.note : m.noteEn))}
+          ${card(vatName, m.vat + '%', val ? '$' + Math.round(vat).toLocaleString() : L('按 CIF + 关税计征', 'on CIF + duty'))}
+          ${card(L('到岸总成本', 'Landed cost'), val ? '$' + Math.round(landed).toLocaleString() : '—', val ? L('货值 + 关税 + ', 'value + duty + ') + vatName : L('填货值后自动算', 'enter a value'), 'c-hi')}
         </div>
         <div class="tiny muted" style="line-height:1.9">
-          · 关税 = 货值 × ${m.duty}%；${m.vatName} = (货值 + 关税) × ${m.vat}%；出口退税按 13% 退，实际到手 = 货值 − 退税额。<br>
-          · ${val ? `以 $${val.toLocaleString()} 货值计：出口可退 <b>$${Math.round(rebate).toLocaleString()}</b>，客户到手成本 <b>$${Math.round(landed).toLocaleString()}</b>。` : '填入货值可直接算出金额。'}<br>
-          · 税率随原产地证、自贸协定、反倾销措施变化，正式报关前请让货代复核。
+          · ${L(`关税 = 货值 × ${m.duty}%；${vatName} = (货值 + 关税) × ${m.vat}%；出口退税按 13% 退。`, `Duty = value × ${m.duty}%; ${vatName} = (value + duty) × ${m.vat}%; China rebate is 13%.`)}<br>
+          · ${val ? L(`以 $${val.toLocaleString()} 货值计：出口可退 <b>$${Math.round(rebate).toLocaleString()}</b>，客户到岸成本 <b>$${Math.round(landed).toLocaleString()}</b>。`, `On $${val.toLocaleString()}: rebate <b>$${Math.round(rebate).toLocaleString()}</b>, landed cost <b>$${Math.round(landed).toLocaleString()}</b>.`) : L('填入货值可直接算出金额。', 'Enter a value to get the numbers.')}<br>
+          · ${L('税率随原产地证、自贸协定、反倾销措施变化，正式报关前请让货代复核。', 'Rates move with certificates of origin, FTAs and anti-dumping measures — confirm with your forwarder before declaring.')}
         </div>
       </div>
     </div>
 
-    <div class="card"><div class="card-h"><h3>常用市场对照</h3><span class="sub">点一行切换上方明细</span></div>
-      <div class="tbl-wrap"><table><thead><tr><th>市场</th><th class="right">进口关税</th><th class="right">增值税</th><th class="right">综合税负</th><th>备注</th></tr></thead><tbody>
+    <div class="card"><div class="card-h"><h3>${L('常用市场对照', 'Markets at a glance')}</h3><span class="sub">${L('点一行切换上方明细', 'Click a row to switch')}</span></div>
+      <div class="tbl-wrap"><table><thead><tr><th>${L('市场', 'Market')}</th><th class="right">${L('进口关税', 'Duty')}</th><th class="right">${L('增值税', 'VAT')}</th><th class="right">${L('综合税负', 'Total')}</th><th>${L('备注', 'Notes')}</th></tr></thead><tbody>
       ${TAX_MK.map(x => {
       const comp = x.duty + (100 + x.duty) * x.vat / 100;
       return `<tr class="click ${x.k === m.k ? 'on' : ''}" data-act="taxCty" data-id="${x.k}">
-          <td><b>${x.n}</b><div class="tiny muted">${x.en}</div></td>
+          <td><b>${esc(mkName(x))}</b><div class="tiny muted">${esc(x.k)}</div></td>
           <td class="right mono">${x.duty}%</td>
-          <td class="right mono">${x.vat}%<div class="tiny muted">${x.vatName}</div></td>
+          <td class="right mono">${x.vat}%<div class="tiny muted">${esc(I.getLang() === 'zh' ? x.vatZh : x.vatName)}</div></td>
           <td class="right mono b">${comp.toFixed(1)}%</td>
-          <td class="small muted">${x.note}</td></tr>`;
+          <td class="small muted">${esc(I.getLang() === 'zh' ? x.note : x.noteEn)}</td></tr>`;
     }).join('')}
       </tbody></table></div>
     </div>`;
@@ -1802,18 +1807,18 @@
 
     $('#p-model').innerHTML = `
     <div class="row wrap-gap" style="justify-content:space-between;margin-bottom:12px">
-      <div><h1 style="margin:0">型号查询</h1>
-      <div class="muted small">先查本站型号库，库里没有就去互联网找。适配要自己复核，别直接照抄。</div></div>
+      <div><h1 style="margin:0">${L('型号查询', 'Part lookup')}</h1>
+      <div class="muted small">${L('先查本站型号库，库里没有就去互联网找。适配要自己复核，别直接照抄。', 'We search our own catalog first, then the web. Always re-check fitment before quoting.')}</div></div>
     </div>
 
     <div class="card"><div class="card-b">
       <div class="rf-conn-row">
-        <input id="mdQ" type="text" value="${esc(q)}" placeholder="输入型号 / OE 号 / 编码，例如 WVA 29087、HOWO1、D1060">
-        <button class="btn primary" data-act="modelGo">${st.busy ? '查询中…' : '查询'}</button>
+        <input id="mdQ" type="text" value="${esc(q)}" placeholder="${L('输入型号 / OE 号 / 编码，例如 WVA 29087、HOWO1、D1060', 'Part number, OE number or code — e.g. WVA 29087, HOWO1, D1060')}">
+        <button class="btn primary" data-act="modelGo">${st.busy ? L('查询中…', 'Searching…') : L('查询', 'Search')}</button>
       </div>
-      <div class="tiny muted" style="margin-top:8px">站内库：${D.products.length} 个型号 · 联网搜索走本地服务代理</div>
+      <div class="tiny muted" style="margin-top:8px">${L('站内库', 'Our catalog')}：${D.products.length} ${L('个型号', 'part numbers')} · ${L('联网搜索走本地服务代理', 'web search goes through the local service')}</div>
       ${q ? `<div class="row wrap-gap" style="margin-top:10px;gap:6px">
-        <span class="tiny muted">在浏览器里搜：</span>
+        <span class="tiny muted">${L('在浏览器里搜：', 'Open in browser:')}</span>
         <a class="btn sm" target="_blank" rel="noopener" href="https://www.baidu.com/s?wd=${encodeURIComponent(q + ' 刹车片 型号')}">百度 ↗</a>
         <a class="btn sm" target="_blank" rel="noopener" href="https://www.google.com/search?q=${encodeURIComponent(q + ' brake pad')}">Google ↗</a>
         <a class="btn sm" target="_blank" rel="noopener" href="https://www.bing.com/search?q=${encodeURIComponent(q + ' brake pad')}">Bing ↗</a>
@@ -1822,22 +1827,22 @@
     </div></div>
 
     ${q ? `
-    <div class="card"><div class="card-h"><h3>站内库</h3><span class="sub">${local.length} 个匹配</span></div>
+    <div class="card"><div class="card-h"><h3>${L('站内库', 'Our catalog')}</h3><span class="sub">${local.length} ${L('个匹配', 'matches')}</span></div>
       <div class="card-b" style="padding:0">
-        ${local.length ? `<div class="tbl-wrap"><table><thead><tr><th>型号</th><th>编码</th><th>材质</th><th>规格</th><th></th></tr></thead><tbody>
+        ${local.length ? `<div class="tbl-wrap"><table><thead><tr><th>${L('型号', 'Part no.')}</th><th>${L('编码', 'Codes')}</th><th>${L('材质', 'Material')}</th><th>${L('规格', 'Size')}</th><th></th></tr></thead><tbody>
         ${local.map(p => `<tr><td class="mono b">${esc(p.code)}</td>
           <td class="small">${(p.codes || []).slice(0, 4).map(c => esc(c)).join(' · ') || '—'}</td>
           <td class="small">${esc(p.material || '—')}</td>
           <td class="small">${esc(p.size || '')}</td>
-          <td><button class="btn xs" data-act="modelOpen" data-id="${esc(p.id)}">看详情</button></td></tr>`).join('')}
-        </tbody></table></div>` : `<div class="card-b muted small">本站库里没有找到，下面是互联网结果。</div>`}
+          <td><button class="btn xs" data-act="modelOpen" data-id="${esc(p.id)}">${L('看详情', 'Open')}</button></td></tr>`).join('')}
+        </tbody></table></div>` : `<div class="card-b muted small">${L('本站库里没有找到，下面是互联网结果。', 'Not in our catalog — see the web results below.')}</div>`}
       </div>
     </div>` : ''}
 
     ${st.err ? `<div class="card"><div class="card-b rf-err">${esc(st.err)}</div></div>` : ''}
 
     ${st.res && st.res.length ? `
-    <div class="card"><div class="card-h"><h3>互联网结果</h3><span class="sub">${st.res.length} 条 · 仅作线索</span></div>
+    <div class="card"><div class="card-h"><h3>${L('互联网结果', 'Web results')}</h3><span class="sub">${st.res.length} ${L('条 · 仅作线索', 'items · leads only')}</span></div>
       <div class="card-b" style="padding:0">
         ${st.res.map((r, i) => `<div class="rf-tool" style="padding:12px 15px;border-top:${i ? '1px solid var(--line-2)' : '0'}">
           <a href="${esc(r.url)}" target="_blank" rel="noopener" style="font-weight:600;color:#1d4ed8;text-decoration:none">${esc(r.title)}</a>
@@ -1850,6 +1855,90 @@
 
     const inp = $('#mdQ');
     if (inp) inp.onkeydown = e => { if (e.key === 'Enter') ACT.modelGo(); };
+  }
+
+  /* ================= 工具书：货币兑换 ================= */
+  const FX_LIST = [
+    ['USD', '美元', 'US dollar'], ['CNY', '人民币', 'Chinese yuan'], ['EUR', '欧元', 'Euro'],
+    ['GBP', '英镑', 'Pound sterling'], ['JPY', '日元', 'Japanese yen'], ['RUB', '卢布', 'Russian ruble'],
+    ['SAR', '沙特里亚尔', 'Saudi riyal'], ['AED', '迪拉姆', 'UAE dirham'], ['MXN', '墨西哥比索', 'Mexican peso'],
+    ['BRL', '雷亚尔', 'Brazilian real'], ['VND', '越南盾', 'Vietnamese dong'], ['THB', '泰铢', 'Thai baht'],
+    ['IDR', '印尼盾', 'Indonesian rupiah'], ['TRY', '里拉', 'Turkish lira'], ['EGP', '埃及镑', 'Egyptian pound'],
+    ['ZAR', '兰特', 'South African rand'], ['INR', '卢比', 'Indian rupee'], ['NGN', '奈拉', 'Nigerian naira'],
+    ['KRW', '韩元', 'Korean won'], ['AUD', '澳元', 'Australian dollar']
+  ];
+  /* 离线兜底：1 美元约合（2025 年前后的量级，联网后自动被真实汇率覆盖） */
+  const FX_FALLBACK = {
+    USD: 1, CNY: 7.2, EUR: 0.92, GBP: 0.79, JPY: 152, RUB: 92, SAR: 3.75, AED: 3.67, MXN: 17.5,
+    BRL: 5.1, VND: 25400, THB: 36, IDR: 15800, TRY: 32.5, EGP: 47, ZAR: 18.5, INR: 83.5, NGN: 1500,
+    KRW: 1340, AUD: 1.52
+  };
+  const fxName = c => { const f = FX_LIST.find(x => x[0] === c); return f ? (I.getLang() === 'zh' ? f[1] : f[2]) : c; };
+  const fxRate = (from, to) => {
+    const R = (S.fx && S.fx.rates && Object.keys(S.fx.rates).length) ? S.fx.rates : FX_FALLBACK;
+    const a = Number(R[from]), b = Number(R[to]);
+    if (!a || !b) return 0;
+    return b / a;
+  };
+  const fxMoney = n => (n >= 1000 ? Math.round(n).toLocaleString() : (Math.round(n * 100) / 100).toString());
+
+  function vFx() {
+    const f = S.fx || (S.fx = { amt: 10000, from: 'USD', to: 'CNY', rates: {}, at: '', busy: false, err: '' });
+    const r = fxRate(f.from, f.to);
+    const out = (Number(f.amt) || 0) * r;
+    const live = !!(f.rates && Object.keys(f.rates).length);
+    const opts = sel => FX_LIST.map(c => `<option value="${c[0]}" ${c[0] === sel ? 'selected' : ''}>${c[0]} · ${fxName(c[0])}</option>`).join('');
+    const notable = ['CNY', 'EUR', 'SAR', 'AED', 'MXN', 'BRL', 'VND', 'RUB'].filter(c => c !== f.from);
+
+    $('#p-fx').innerHTML = `
+    <div class="row wrap-gap" style="justify-content:space-between;margin-bottom:12px">
+      <div><h1 style="margin:0">${L('货币兑换', 'Currency converter')}</h1>
+      <div class="muted small">${L('报价前先算清汇率，报价单里别写错币种和数字。', 'Convert before quoting so the currency and the numbers line up.')}</div></div>
+      <div class="row wrap-gap">
+        <span class="rf-pill ${live ? 'on' : ''}">${live ? L('实时汇率', 'Live rates') : L('内置参考汇率', 'Built-in rates')}</span>
+        <button class="btn sm" data-act="fxGo">${f.busy ? L('刷新中…', 'Refreshing…') : L('刷新汇率', 'Refresh')}</button>
+      </div>
+    </div>
+
+    <div class="card"><div class="card-b">
+      <div class="rf-form" style="grid-template-columns:1.2fr 1fr auto 1fr;align-items:end">
+        <label>${L('金额', 'Amount')}<input id="fxAmt" type="number" min="0" step="100" value="${Number(f.amt) || 0}"></label>
+        <label>${L('从', 'From')}<select id="fxFrom">${opts(f.from)}</select></label>
+        <button class="btn" data-act="fxSwap" title="${L('对调', 'Swap')}" style="margin-bottom:2px">⇄</button>
+        <label>${L('到', 'To')}<select id="fxTo">${opts(f.to)}</select></label>
+      </div>
+      <div class="rf-kpis" style="margin-top:14px;margin-bottom:0">
+        <div class="rf-kpi" style="grid-column:span 2">
+          <span>${Number(f.amt).toLocaleString()} ${f.from} =</span>
+          <b style="font-size:30px">${fxMoney(out)} <span style="font-size:16px;color:#64748b">${f.to}</span></b>
+          <i>1 ${f.from} = ${r ? r.toFixed(4) : '—'} ${f.to}</i>
+        </div>
+        <div class="rf-kpi"><span>${L('反向', 'Reverse')}</span><b>${r ? (1 / r).toFixed(4) : '—'}</b><i>1 ${f.to} = ? ${f.from}</i></div>
+      </div>
+      ${f.err ? `<div class="rf-err">${esc(f.err)}</div>` : ''}
+      <div class="tiny muted" style="margin-top:10px">${live
+        ? L('汇率来自 open.er-api.com，每天更新一次；实际结汇以银行牌价为准。', 'Rates from open.er-api.com, updated daily. Your bank rate is what actually settles.')
+        : L('这是内置参考汇率（离线可用）。点「刷新汇率」联网取当天汇率。', 'These are built-in reference rates (works offline). Hit Refresh to pull today’s rates.')}</div>
+    </div></div>
+
+    <div class="card"><div class="card-h"><h3>${L('常用对照', 'Quick table')}</h3><span class="sub">1 ${f.from} = ?</span></div>
+      <div class="tbl-wrap"><table><thead><tr><th>${L('币种', 'Currency')}</th><th class="right">${L('汇率', 'Rate')}</th><th class="right">${Number(f.amt).toLocaleString()} ${f.from}</th></tr></thead><tbody>
+        ${notable.map(c => {
+      const rr = fxRate(f.from, c);
+      return `<tr class="click" data-act="fxPick" data-id="${c}">
+          <td><b>${c}</b> <span class="muted small">${esc(fxName(c))}</span></td>
+          <td class="right mono">${rr ? rr.toFixed(4) : '—'}</td>
+          <td class="right mono b">${fxMoney((Number(f.amt) || 0) * rr)}</td></tr>`;
+    }).join('')}
+      </tbody></table></div>
+    </div>`;
+
+    const amt = $('#fxAmt'), from = $('#fxFrom'), to = $('#fxTo');
+    if (amt) amt.onchange = () => { S.fx.amt = Number(amt.value) || 0; save(); vFx(); };
+    if (from) from.onchange = () => { S.fx.from = from.value; save(); vFx(); };
+    if (to) to.onchange = () => { S.fx.to = to.value; save(); vFx(); };
+    /* 首次进入自动拉一次真实汇率，失败就留在内置参考汇率 */
+    if (!live && !f.busy && !f.tried) { f.tried = true; setTimeout(() => ACT.fxGo(), 80); }
   }
 
   /* ================= 售后服务 ================= */
@@ -2705,6 +2794,20 @@
         .catch(e => { S.model.busy = false; S.model.err = '请求失败（本地服务没开？）: ' + e.message; vModel(); });
     },
     modelOpen(id) { S.filters.q = id; S.tab = 'products'; renderNav(); render(); },
+    fxGo() {
+      S.fx.busy = true; S.fx.err = ''; vFx();
+      fetch('/api/fx')
+        .then(r => r.json())
+        .then(j => {
+          S.fx.busy = false;
+          if (j.ok) { S.fx.rates = j.rates || {}; S.fx.at = j.updated || ''; S.fx.err = ''; save(); }
+          else S.fx.err = LZ('联网取汇率失败，仍在用内置参考汇率：', 'Live rates unavailable, still using built-in: ') + (j.error || '');
+          vFx();
+        })
+        .catch(e => { S.fx.busy = false; S.fx.err = LZ('请求失败（本地服务没开？）: ', 'Request failed (is the local server running?): ') + e.message; vFx(); });
+    },
+    fxSwap() { const a = S.fx.from; S.fx.from = S.fx.to; S.fx.to = a; save(); vFx(); },
+    fxPick(c) { S.fx.to = c; save(); vFx(); },
     /* 售后服务 */
     asSend() {
       const u = A.me() || {};
