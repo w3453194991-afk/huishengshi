@@ -23,15 +23,15 @@
     distributor: { en: 'distributor', zh: '经销商', local: { es: 'distribuidor', pt: 'distribuidor', ar: 'موزع', ru: 'дистрибьютор', tr: 'distribütör', id: 'distributor', vi: 'nhà phân phối', en: 'distributor' } },
     importer: { en: 'importer', zh: '进口商', local: { es: 'importador', pt: 'importador', ar: 'مستورد', ru: 'импортёр', tr: 'ithalatçı', id: 'importir', vi: 'nhà nhập khẩu', en: 'importer' } },
     wholesaler: { en: 'wholesaler', zh: '批发商', local: { es: 'mayorista', pt: 'atacadista', ar: 'تاجر جملة', ru: 'оптовик', tr: 'toptancı', id: 'grosir', vi: 'bán buôn', en: 'wholesaler' } },
-    fleet: { en: 'fleet', zh: '母婴连锁', local: { es: 'flotilla', pt: 'frota', ar: 'أسطول', ru: 'автопарк', tr: 'filo', id: 'armada truk', vi: 'đội xe', en: 'fleet' } },
+    fleet: { en: 'fleet', zh: '车队', local: { es: 'flotilla', pt: 'frota', ar: 'أسطول', ru: 'автопарк', tr: 'filo', id: 'armada truk', vi: 'đội xe', en: 'fleet' } },
     workshop: { en: 'workshop', zh: '修理厂', local: { es: 'taller', pt: 'oficina', ar: 'ورشة', ru: 'СТО', tr: 'servis', id: 'bengkel', vi: 'xưởng', en: 'workshop' } }
   };
 
   const PRODUCTS = {
-    pad: { zh: '盘式童装', en: 'brake pads', cat: '盘式童装' },
-    lining: { zh: '鼓式款式', en: 'brake lining', cat: '鼓式款式' },
-    shoe: { zh: '童装套装总成', en: 'brake shoe assembly', cat: '童装套装总成' },
-    wind: { zh: '风电童装', en: 'wind turbine brake pad', cat: '风电童装' }
+    pad: { zh: '盘式刹车片', en: 'brake pads', cat: '盘式刹车片' },
+    lining: { zh: '鼓式衬片', en: 'brake lining', cat: '鼓式衬片' },
+    shoe: { zh: '制动蹄总成', en: 'brake shoe assembly', cat: '制动蹄总成' },
+    wind: { zh: '风电刹车片', en: 'wind turbine brake pad', cat: '风电刹车片' }
   };
 
   const NARROW = {
@@ -54,12 +54,12 @@
       note: '时差小，漏单主因是刷屏淹没',
       rows: [
         {
-          tag: '童装 · 母婴连锁修理厂 · 泰国',
+          tag: '刹车片 · 车队修理厂 · 泰国',
           google: 'SEA "brake pads" fleet workshop TH -"alibaba" -"made-in-china" -marketplace' , g2: '"brake pads" (fleet OR workshop OR garage) Bangkok filetype:pdf OR contact',
           ddg: '"brake pads" fleet workshop TH -alibaba'
         },
         {
-          tag: '鼓式款式 · 童装防护服务 · 泰国',
+          tag: '鼓式衬片 · 卡车制动服务 · 泰国',
           google: 'SEA "brake lining" truck brake service TH -"alibaba" -"made-in-china" -marketplace', g2: '"brake lining" (fleet OR workshop OR garage) Bangkok filetype:pdf OR contact',
           ddg: '"brake lining" truck brake service TH -alibaba'
         }
@@ -72,12 +72,12 @@
       note: '迪拜是转口集散地，满屏贸易公司最典型',
       rows: [
         {
-          tag: '童装批发 · 母婴连锁 · 阿联酋',
+          tag: '重卡刹车片 · 车队维保 · 阿联酋',
           google: 'ME "heavy duty brake pads" fleet maintenance AE -"alibaba" -"made-in-china" -marketplace', g2: '"heavy duty brake pads" (fleet OR workshop OR garage) Dubai filetype:pdf OR contact',
           ddg: '"heavy duty brake pads" fleet maintenance AE -alibaba'
         },
         {
-          tag: '鼓式款式 · 童装修理厂 · 阿联酋',
+          tag: '鼓式衬片 · 卡车修理厂 · 阿联酋',
           google: 'ME "brake lining" truck workshop AE -"alibaba" -"made-in-china" -marketplace', g2: '"brake lining" (fleet OR workshop OR garage) Dubai filetype:pdf OR contact',
           ddg: '"brake lining" truck workshop AE -alibaba'
         }
@@ -90,12 +90,12 @@
       note: '时差最大，夜间询盘必漏',
       rows: [
         {
-          tag: '童装 · 母婴连锁 · 巴西',
+          tag: '刹车片 · 车队 · 巴西',
           google: 'SA "pastilha de freio" frota BR -"alibaba" -"made-in-china" -marketplace', g2: '"pastilha de freio" (fleet OR workshop OR garage) Sao Paulo filetype:pdf OR contact',
           ddg: '"pastilha de freio" frota BR -alibaba'
         },
         {
-          tag: '童装 · 修理厂 · 巴西',
+          tag: '刹车片 · 修理厂 · 巴西',
           google: 'SA "pastillas de freno" oficina BR -"alibaba" -"made-in-china" -marketplace', g2: '"pastillas de freno" (fleet OR workshop OR garage) Sao Paulo filetype:pdf OR contact',
           ddg: '"pastillas de freno" oficina BR -alibaba'
         }
@@ -108,12 +108,12 @@
       note: '提单相对可用，但准入认证更严',
       rows: [
         {
-          tag: '童装批发 · 母婴连锁 · 美国',
+          tag: '重卡刹车片 · 车队维保 · 美国',
           google: 'NA "heavy duty brake pads" fleet maintenance US -"alibaba" -"made-in-china" -marketplace', g2: '"heavy duty brake pads" (fleet OR workshop OR garage) Dallas filetype:pdf OR contact',
           ddg: '"heavy duty brake pads" fleet maintenance US -alibaba'
         },
         {
-          tag: 'FMSI D1369 · 童装修理厂 · 美国',
+          tag: 'FMSI D1369 · 卡车修理厂 · 美国',
           google: 'NA "FMSI D1369" truck repair shop US -"alibaba" -"made-in-china" -marketplace', g2: '"FMSI D1369" (fleet OR workshop OR garage) Dallas filetype:pdf OR contact',
           ddg: '"FMSI D1369" truck repair shop US -alibaba'
         }
@@ -126,7 +126,7 @@
       note: 'WVA 编号是通用语言',
       rows: [
         {
-          tag: 'WVA 29087 · 母婴连锁修理厂 · 波兰',
+          tag: 'WVA 29087 · 车队修理厂 · 波兰',
           google: 'EU "WVA 29087" fleet workshop PL -"alibaba" -"made-in-china" -marketplace', g2: '"WVA 29087" (fleet OR workshop OR garage) Warsaw filetype:pdf OR contact',
           ddg: '"WVA 29087" fleet workshop PL -alibaba'
         },
@@ -144,12 +144,12 @@
       note: '价格极敏感，先问 AIS 认证；巴基斯坦多做转口',
       rows: [
         {
-          tag: '童装批发 · 母婴店 · 印度',
+          tag: '重卡刹车片 · 车队修理厂 · 印度',
           google: 'SAS "heavy duty brake pads" fleet workshop IN -"alibaba" -"made-in-china" -marketplace', g2: '"heavy duty brake pads" (fleet OR workshop OR garage) Mumbai filetype:pdf OR contact',
           ddg: '"heavy duty brake pads" fleet workshop IN -alibaba'
         },
         {
-          tag: '鼓式款式 · 经销商 · 印度',
+          tag: '鼓式衬片 · 经销商 · 印度',
           google: 'SAS "brake lining" distributor IN -"alibaba" -"made-in-china" -marketplace', g2: '"brake lining" (distributor OR dealer OR wholesaler) Delhi filetype:pdf OR contact',
           ddg: '"brake lining" distributor IN -alibaba'
         }
@@ -159,15 +159,15 @@
       k: 'ru', label: '俄语区 RU',
       langs: 'ru（тормозные колодки / накладки）/ en · 哈语多走俄语',
       chan: 'WhatsApp / Telegram / 邮件',
-      note: '本地化要求高（EAC 认证），哈萨克多做转口与矿山母婴连锁',
+      note: '本地化要求高（EAC 认证），哈萨克多做转口与矿山车队',
       rows: [
         {
-          tag: '童装 · 母婴连锁修理厂 · 俄罗斯',
+          tag: '刹车片 · 车队修理厂 · 俄罗斯',
           google: 'RU "тормозные колодки" автопарк СТО RU -"alibaba" -"made-in-china" -marketplace', g2: '"тормозные колодки" (автопарк OR СТО OR сервис) Москва filetype:pdf OR contact',
           ddg: '"тормозные колодки" автопарк СТО RU -alibaba'
         },
         {
-          tag: '鼓式款式 · 矿山母婴连锁 · 哈萨克斯坦',
+          tag: '鼓式衬片 · 矿山车队 · 哈萨克斯坦',
           google: 'RU "тормозные накладки" автопарк KZ -"alibaba" -"made-in-china" -marketplace', g2: '"тормозные накладки" (автопарк OR карьер OR сервис) Алматы filetype:pdf OR contact',
           ddg: '"тормозные накладки" автопарк KZ -alibaba'
         }
@@ -177,15 +177,15 @@
       k: 'af', label: '非洲 AF',
       langs: 'en / fr（部分）',
       chan: 'WhatsApp / Facebook',
-      note: '矿山与港口母婴连锁集中',
+      note: '矿山与港口车队集中',
       rows: [
         {
-          tag: '童装童装 · 母婴连锁修理厂 · 南非',
+          tag: '卡车刹车片 · 车队修理厂 · 南非',
           google: 'AF "truck brake pads" fleet workshop ZA -"alibaba" -"made-in-china" -marketplace', g2: '"truck brake pads" (fleet OR workshop OR garage) Johannesburg filetype:pdf OR contact',
           ddg: '"truck brake pads" fleet workshop ZA -alibaba'
         },
         {
-          tag: '鼓式款式 · 矿山母婴连锁 · 南非',
+          tag: '鼓式衬片 · 矿山车队 · 南非',
           google: 'AF "brake lining" mining fleet ZA -"alibaba" -"made-in-china" -marketplace', g2: '"brake lining" (fleet OR workshop OR garage) Johannesburg filetype:pdf OR contact',
           ddg: '"brake lining" mining fleet ZA -alibaba'
         }
@@ -247,7 +247,7 @@
   function pickCodes() {
     const ps = DB().products;
     const wva = ps.filter(p => /^29\d{3}$/.test(p.code)).slice(0, 2).map(p => p.code);
-    const fmsi = ps.filter(p => /^(D\d{3,4}|\d{4}[A-Z]{0,2})$/.test(p.code) && p.cat === '鼓式款式').slice(0, 2).map(p => p.code);
+    const fmsi = ps.filter(p => /^(D\d{3,4}|\d{4}[A-Z]{0,2})$/.test(p.code) && p.cat === '鼓式衬片').slice(0, 2).map(p => p.code);
     return { wva: wva.length ? wva : ['29087', '29108'], fmsi: fmsi.length ? fmsi : ['4709', '4515'] };
   }
 
@@ -282,19 +282,19 @@
 
     /* 3 本地语言 */
     q.push({
-      k: '本地语言（终端）', tip: '终端客户不用英文搜，这条命中修理厂/母婴连锁',
+      k: '本地语言（终端）', tip: '终端客户不用英文搜，这条命中修理厂/车队',
       text: `${site}"${shopLocal}" ("${padLocal}" OR "${liningLocal}") ${excl}`.trim()
     });
 
-    /* 4 尺码 / 版型 */
+    /* 4 车桥 / 卡钳 */
     q.push({
-      k: '尺码 / 版型', tip: '童装是「身高尺码问题」，不是品牌问题',
+      k: '车桥 / 卡钳', tip: '挂车与商用车是「车桥问题」，不是车标问题',
       text: `("BPW" OR "SAF-Holland" OR "Meritor" OR "Fuwa") "${p.en}" ("cross reference" OR catalogue) filetype:pdf`
     });
 
-    /* 5 母婴连锁 */
+    /* 5 车队 */
     q.push({
-      k: '母婴连锁 / 维修', tip: '按维保页面找母婴连锁，而不是按产品词',
+      k: '车队 / 维修', tip: '按维保页面找车队，而不是按产品词',
       text: `intitle:"fleet" ("${p.en}" OR "brake maintenance") ${m.dom ? 'site:' + m.dom : ''} -trading -marketplace`.replace(/\s+/g, ' ').trim()
     });
 
@@ -374,11 +374,11 @@
           <label>国家 ${sel('sqCountry', MARKETS.map(x => ({ v: x.name, t: x.name })), m.name)}</label>
           <label>类型 ${sel('sqKind', Object.keys(TYPES).map(k => ({ v: TYPES[k].zh, t: TYPES[k].zh })), '经销商')}</label>
           <label class="wide">来源链接 <input id="sqUrl" placeholder="https://..."></label>
-          <label class="wide">备注 <input id="sqNote" placeholder="搜到什么：主营童装批发 / 有 3 家门店"></label>
+          <label class="wide">备注 <input id="sqNote" placeholder="搜到什么：主营 BPW 挂车件 / 有 3 家门店"></label>
         </div>
         <div class="row wrap-gap" style="margin-top:10px">
           <button class="btn primary sm" data-act="sqSave">加入线索</button>
-          <span class="tiny muted">进「询盘线索」后可以继续打分、匹配款号</span>
+          <span class="tiny muted">进「询盘线索」后可以继续打分、匹配型号</span>
         </div>
       </div>
     </div>
@@ -391,7 +391,7 @@
         <div>① 只看近 12 个月，三年前的记录不算数</div>
         <div>② 一年 ≥4 票且间隔稳定 → 优先名单；一年一票多是调货贸易商 → 观察区</div>
         <div>③ 抓切换信号：从印度/越南转中国采购、新增 shipper、原供应商份额下滑</div>
-        <div>④ 别信 notify party（多为清关行/货代）；别只按 HS 编码拉（8708.30 太宽，手感材料可能落 6813.81）</div>
+        <div>④ 别信 notify party（多为清关行/货代）；别只按 HS 编码拉（8708.30 太宽，摩擦材料可能落 6813.81）</div>
         <div class="muted">海关数据本身不含电话邮箱，平台上的联系方式是拼凑的，命中率有限，必须二次验证。</div>
       </div>
     </details>`;
@@ -449,7 +449,7 @@
     const stamp = date.getFullYear() + '-' + String(date.getMonth() + 1).padStart(2, '0') + '-' + String(date.getDate()).padStart(2, '0') +
       'T' + String(date.getHours()).padStart(2, '0') + ':' + String(date.getMinutes()).padStart(2, '0') + ':' + String(date.getSeconds()).padStart(2, '0');
     const out = [];
-    out.push('# 全球童装可销售端检索式 · 生成于 ' + stamp);
+    out.push('# 全球汽配可销售端检索式 · 生成于 ' + stamp);
     out.push('# Google 版（可直接抄进浏览器；DDG 不完全支持 site:/filetype: 等语法）');
     out.push('');
     PRESET_REGIONS.forEach(r => r.rows.forEach(row => { out.push(row.google); out.push(row.g2); }));
@@ -499,7 +499,7 @@
     axles.slice(0, 3).forEach(a => {
       db.fitments.filter(f => f.aid === a.id).forEach(f => {
         const p = db.products.find(x => x.id === (f.pid || f.productId));
-        if (p) push(p, '尺码命中 ' + a.brand + ' ' + a.model, 72);
+        if (p) push(p, '车桥命中 ' + a.brand + ' ' + a.model, 72);
       });
     });
 
@@ -507,7 +507,7 @@
     vehs.slice(0, 3).forEach(v => {
       db.fitments.filter(f => f.vid === v.id).forEach(f => {
         const p = db.products.find(x => x.id === (f.pid || f.productId));
-        if (p) push(p, '适用场景命中 ' + (v.brand ? v.brand + ' ' : '') + v.model, 66);
+        if (p) push(p, '车型命中 ' + (v.brand ? v.brand + ' ' : '') + v.model, 66);
       });
     });
 
@@ -525,7 +525,7 @@
     const gaps = [];
     if (!p.dim || p.dimStatus !== '完整') gaps.push('尺寸（长×高×厚）没齐');
     if (!tests.length) gaps.push('没有对应试验报告');
-    if (!(p.apps || []).length) gaps.push('适用适用场景待核');
+    if (!(p.apps || []).length) gaps.push('适配车型待核');
     return { tests: tests.length, gaps };
   }
 
@@ -538,7 +538,7 @@
     <div class="row wrap-gap" style="justify-content:space-between;margin-bottom:12px">
       <div>
         <h1 style="margin:0">编号对照</h1>
-        <div class="muted small">输入自家款号 / WVA / FMSI / OE 别名 / 适用场景 / 尺码，查它在这张表里能对上谁，还差什么。</div>
+        <div class="muted small">输入自家型号 / WVA / FMSI / OE 别名 / 车型 / 车桥，查它在这张表里能对上谁，还差什么。</div>
       </div>
       <button class="btn" data-act="tab" data-id="products">产品库 →</button>
     </div>
@@ -549,7 +549,7 @@
         <button class="btn primary" data-act="xrefGo">查</button>
         ${['29087', '4709', 'BPW', '豪沃A7'].map(x => `<button class="chip" data-act="xrefQuick" data-id="${x}">${x}</button>`).join('')}
       </div>
-      <div class="tiny muted" style="margin-top:8px">同一 WVA 号可能覆盖多个尺码与适用场景；这里给候选集，不给唯一答案——这是行业事实，不是能力不足。</div>
+      <div class="tiny muted" style="margin-top:8px">同一 WVA 号可能覆盖多个车桥与车型；这里给候选集，不给唯一答案——这是行业事实，不是能力不足。</div>
     </div></div>
 
     ${Q.q ? (res.length ? `<div class="xref-list">
@@ -572,7 +572,7 @@
             <span>${g.tests} 份试验报告</span>
           </div>
           <div class="xref-gap ${g.gaps.length ? '' : 'ok'}">
-            ${g.gaps.length ? '缺口：' + esc(g.gaps.join('、')) + ' → 只追问一句：<b>' + esc(ask) + '</b>' : '资料齐：尺寸 + 试验报告 + 适用都在，可作报价依据'}
+            ${g.gaps.length ? '缺口：' + esc(g.gaps.join('、')) + ' → 只追问一句：<b>' + esc(ask) + '</b>' : '资料齐：尺寸 + 试验报告 + 适配都在，可作报价依据'}
           </div>
         </div>`;
       }).join('')}
@@ -581,11 +581,11 @@
     <div class="card">
       <div class="card-h"><h3>这张表要建的四列</h3><span class="sub">建起来，三件事同时解决</span></div>
       <div class="card-b small" style="line-height:1.9">
-        <div><b>自家款号</b> ↔ <b>客户旧款号 / 条码</b> ↔ <b>尺码与版型</b> ↔ <b>尺寸（衣长 / 胸围 / 袖长）</b></div>
-        <div>↔ 各主机厂 OE 别名 ↔ 面料与手感等级（FF/GG）↔ 对应测试报告编号 ↔ 照片</div>
-        <div class="muted" style="margin-top:8px">常见尺码：80 · 90 · 100 · 110 · 120 · 130 · 140 · 150 · 160（身高 cm）；常见版型：标准版 / 宽松版 / 加绒版</div>
+        <div><b>自家型号</b> ↔ <b>WVA / FMSI 形状码</b> ↔ <b>车桥与卡钳平台</b> ↔ <b>尺寸（长/高/厚/鼓径）</b></div>
+        <div>↔ 各主机厂 OE 别名 ↔ 材质与摩擦等级（FF/GG）↔ 对应测试报告编号 ↔ 照片</div>
+        <div class="muted" style="margin-top:8px">常见车桥：BPW · SAF-Holland · Meritor / ROR · Fuwa 富华 · Schmitz；常见卡钳：Knorr-Bremse · Bendix ADB22X · Meritor EX225</div>
         <div class="muted">认证：ECE R90 · IATF 16949 · SAE J866（FF/GG）· SAE J2522 台架矩阵</div>
-        <div class="muted" style="margin-top:8px">现有尺码：${axles.map(a => esc(a.brand + ' ' + a.model)).join(' · ')}</div>
+        <div class="muted" style="margin-top:8px">现有车桥：${axles.map(a => esc(a.brand + ' ' + a.model)).join(' · ')}</div>
       </div>
     </div>`;
   }
