@@ -20,3 +20,8 @@ node_modules/
 tools/redfox-key.txt
 data/
 kooying.tar.gz
+
+# 软件著作权登记材料：仅本地保存，不进仓库
+docs/软著/
+# 软著材料生成脚本（内含说明书全文，同样不进仓库）
+tools/gen-ruanzhu*.py
