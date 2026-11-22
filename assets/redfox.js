@@ -47,7 +47,7 @@
   const ST = {
     plat: 'tiktok', kind: 'topic', count: 20,
     args: {}, res: null, norm: null, err: '', busy: false, msg: '',
-    keySet: false, synced: false
+    keySet: false, synced: false, serverOk: null, statusAt: 0, busySync: false
   };
   try { ST.count = Number(localStorage.getItem(COUNT_LS)) || 20; } catch (e) { }
 
@@ -227,7 +227,7 @@
         <div class="muted small">${t2('选平台 → 填一个词 → 直接出图和表。Key 配在服务端，页面上不显示；按次计费。', 'Pick a platform, type a keyword, get charts and a table. The key lives on the server, not in the page; calls are billed per request.')}</div>
       </div>
       <div class="rf-head-r">
-        <span class="rf-pill ${ST.keySet ? 'on' : ''}">${ST.keySet ? t2('已连接 · 服务端', 'Connected · server') : t2('服务端未配 Key', 'No key on server')}</span>
+        <span class="rf-pill ${ST.keySet ? 'on' : ''}">${ST.serverOk === false ? t2('服务端未连接', 'Server offline') : ST.keySet ? t2('已连接 · 服务端', 'Connected · server') : t2('服务端未配 Key', 'No key on server')}</span>
         <a class="btn sm" href="https://redfox.hk/skills" target="_blank" rel="noopener">Skills 广场 ↗</a>
       </div>
     </div>
@@ -257,7 +257,8 @@
           <span class="tiny muted">${t2('单次约 ¥0.02–0.06', '≈ ¥0.02–0.06 per call')}</span>
         </div>
         ${ST.err ? `<div class="rf-err">${esc(ST.err)}</div>` : (ST.msg ? `<div class="rf-ok">${esc(ST.msg)}</div>` : '')}
-        ${ST.synced && !ST.keySet ? `<div class="rf-err">${t2('服务端还没配 RedFox Key：把 Key 写进 tools/redfox-key.txt（或环境变量 REDFOX_KEY）后重启服务即可，页面上不用再填。', 'No RedFox key on the server yet. Put it in tools/redfox-key.txt (or REDFOX_KEY) and restart the server; nothing to type here.')}</div>` : ''}
+        ${ST.synced && ST.serverOk === false ? `<div class="rf-err">${t2('连不上本地服务：页面能打开，但查询接口用不了。请用「启动.bat」启动，并访问 http://127.0.0.1:8765/index.html ；直接双击 index.html（file://）时没有本地接口。', 'Cannot reach the local server. Start it with 启动.bat and open http://127.0.0.1:8765/index.html — opening index.html by double-click (file://) has no API.')}</div>` : ''}
+        ${ST.synced && ST.serverOk && !ST.keySet ? `<div class="rf-err">${t2('服务端还没配 RedFox Key：把 Key 写进 tools/redfox-key.txt（或环境变量 REDFOX_KEY）后重启服务即可，页面上不用再填。', 'No RedFox key on the server yet. Put it in tools/redfox-key.txt (or REDFOX_KEY) and restart the server; nothing to type here.')}</div>` : ''}
       </div>
     </div>
 
@@ -419,19 +420,27 @@
     } catch (e) { }
   }
   async function refreshStatus() {
+    ST.statusAt = Date.now();
     try {
-      const r = await fetch('/api/redfox/status');
+      const r = await fetch('/api/redfox/status', { cache: 'no-store' });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
       const j = await r.json();
-      if (j && j.ok) ST.keySet = !!j.keySet;
-    } catch (e) { }
+      if (!j || !j.ok) throw new Error('bad status body');
+      ST.serverOk = true; ST.keySet = !!j.keySet;
+    } catch (e) {
+      ST.serverOk = false; ST.keySet = false;
+    }
   }
-  /** 页面首次渲染时同步一次 Key 状态（迁移 + 询问服务端），完成后回调重绘 */
+  /** 进页面核对一次 Key 状态；连不上服务端时 3 秒后自动重试，不用手动刷新 */
   function sync(cb) {
-    if (ST.synced) return;
-    ST.synced = true;
+    if (ST.busySync) return;
+    if (ST.synced && (ST.serverOk !== false || Date.now() - (ST.statusAt || 0) < 3000)) return;
+    ST.busySync = true;
     (async () => {
-      await migrateLegacyKey();
+      if (!ST.synced) await migrateLegacyKey();
+      ST.synced = true;
       await refreshStatus();
+      ST.busySync = false;
       if (typeof cb === 'function') cb();
     })();
   }
