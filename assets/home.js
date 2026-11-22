@@ -214,7 +214,7 @@
     return hero + about + cats + tools + news + contact + statline + (isCust ? '' : todoCard) + why + `
       <footer class="site-foot">
         <img src="assets/img/site/logo-site.png" alt="KOOYING">
-        <span>© 2026 浙江冠英汽车零部件有限公司 · ZHEJIANG KOOYING AUTO PARTS CO., LTD.</span>
+        <span>© 2026 浙江冠英汽车零部件有限公司 · ZHEJIANG KOOYING AUTO PARTS CO., LTD. · 未经授权不得复制、镜像或二次分发</span>
         <span class="flex1"></span>
         <span class="muted">${zh ? '本站数据用于选型与报价演示' : 'Demo data for selection and quoting'}</span>
       </footer>`;

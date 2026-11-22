@@ -380,6 +380,9 @@ async function storeApi(req, res) {
 }
 
 http.createServer((req, res) => {
+  res.setHeader('X-Robots-Tag', 'noindex, nofollow, noarchive');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('Referrer-Policy', 'same-origin');
   if (req.url.indexOf('/api/redfox') === 0) return redfoxApi(req, res);
   if (req.url.indexOf('/api/lookup') === 0) return lookupApi(req, res);
   if (req.url.indexOf('/api/fx') === 0) return fxApi(req, res);
@@ -405,6 +408,7 @@ http.createServer((req, res) => {
     const base = {
       'Content-Type': type,
       'Cache-Control': 'no-cache',
+      'X-Robots-Tag': 'noindex, nofollow, noarchive',
       'Accept-Ranges': 'bytes',
       'Content-Length': total
     };

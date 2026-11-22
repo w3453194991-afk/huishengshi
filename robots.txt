@@ -1,0 +1,16 @@
+# 本站不对外公开索引：禁止搜索引擎与爬虫收录
+User-agent: *
+Disallow: /
+
+# 常见采集器
+User-agent: Bytespider
+Disallow: /
+
+User-agent: GPTBot
+Disallow: /
+
+User-agent: CCBot
+Disallow: /
+
+User-agent: Scrapy
+Disallow: /
