@@ -4,7 +4,8 @@
     ['tiktok', 'TikTok', '话题 / 关键词 / 账号'],
     ['facebook', 'Facebook', '帖子评论'],
     ['x', 'X (Twitter)', '关键词搜索'],
-    ['xiaohongshu', '小红书', '爆款笔记 / 榜单 / 搜索 / 短剧']
+    ['xiaohongshu', '小红书', '爆款笔记 / 榜单 / 搜索 / 短剧'],
+    ['shipinhao', '视频号', '关键词作品 / 账号作品']
   ];
 
   /* 每个平台可用的查询类型。path 走本地 /api/redfox/rest 代理 */
@@ -70,6 +71,21 @@
           { k: 'day', label: '日期', ph: '2026-11-21', req: true },
           { k: 'keyword', label: '题材词（可不填）', ph: '穿越 / 霸总' }
         ]
+      }
+    ],
+    shipinhao: [
+      {
+        id: 'search', name: '关键词作品', path: '/story/api/sphAllData/searchWork',
+        fields: [
+          { k: 'keyword', label: '关键词', ph: '汽修', req: true },
+          {
+            k: 'sort', label: '排序', select: [['综合', '综合'], ['最新', '最新'], ['最多点赞', '最多点赞'], ['最多收藏', '最多收藏']]
+          }
+        ]
+      },
+      {
+        id: 'user', name: '账号作品', path: '/story/api/sphAllData/queryWorkList',
+        fields: [{ k: 'nickname', label: '账号昵称（要精准）', ph: '极速新视界', req: true }]
       }
     ]
   };
@@ -226,6 +242,30 @@
             comments: cnNum(comments),
             shares: cnNum(shares),
             collects: cnNum(collects)
+          }
+        };
+      }
+      if (plat === 'shipinhao') {
+        /* 两套字段：关键词搜索(snake_case) / 账号作品(camelCase) */
+        const snake = o.title !== undefined || o.author !== undefined;
+        const title = snake ? o.title : o.description;
+        const author = (snake ? o.author : o.nickname) || '—';
+        const avatar = snake ? o.author_avatar : o.headUrl;
+        return {
+          title: String(title || '').replace(/\s+/g, ' ').trim(),
+          author: author,
+          handle: '',
+          avatar: avatar || '',
+          time: tsShort(snake ? o.publish_time : o.publishTime),
+          link: '',
+          cover: snake ? (o.cover_url || '') : (o.coverUrl || o.thumbUrl || ''),
+          p: { name: author, handle: '', avatar: avatar || '', bio: '', area: '', verified: false, uid: '', link: '' },
+          m: {
+            views: '',
+            likes: snake ? o.like_count : o.likeCount,
+            comments: snake ? o.comment_count : o.commentCount,
+            shares: snake ? o.share_count : o.forwardCount,
+            collects: snake ? o.collect_count : o.favCount
           }
         };
       }
@@ -684,6 +724,18 @@
         p.startTime = day + ' 00:00:00';
         p.endTime = day + ' 23:59:59';
         if (a.keyword) p.keyword = a.keyword;
+      }
+    } else if (ST.plat === 'shipinhao') {
+      if (kind.id === 'user') {
+        p.nickname = a.nickname || '';
+        p.page = 1;
+        p.size = ST.count;
+      } else {
+        p.keyword = a.keyword || '';
+        p.sort = a.sort || '综合';
+        p.page = 1;
+        p.size = ST.count;
+        p.source = 'RedFox · 冠英选型中台';
       }
     } else {
       p.keyword = a.keyword || '';
