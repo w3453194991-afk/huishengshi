@@ -2348,6 +2348,7 @@
     tab(id) {
       if (!allowedTab(id)) { toast(LZ('这一页是员工端的', 'Staff only')); return; }
       S.tab = id; navOpen = ''; render();
+      try { if (location.hash !== '#/' + id) history.replaceState(null, '', '#/' + id); } catch (e) { }
       if (id === 'home') window.scrollTo({ top: 0, behavior: 'smooth' });
     },
     openGate() { openGate(); },
@@ -4011,6 +4012,21 @@
   I.setLang(savedLang || (I.ORDER.includes(browserLang) ? browserLang : 'en'));
   applyLangChrome();
   if ($('#langRemember')) $('#langRemember').checked = rememberLang === '1';
+  /* 深链接：#/products 直接打开对应页面（便于分享链接、网页取证） */
+  (function initHashLink() {
+    const pick = () => {
+      const m = /^#\/?([a-z]+)$/i.exec(location.hash || '');
+      return m ? m[1].toLowerCase() : '';
+    };
+    const first = pick();
+    if (first && typeof allowedTab === 'function' && allowedTab(first)) S.tab = first;
+    window.addEventListener('hashchange', () => {
+      const id = pick();
+      if (!id || id === S.tab) return;
+      if (typeof allowedTab === 'function' && !allowedTab(id)) { toast(LZ('这一页是员工端的', 'Staff only')); return; }
+      S.tab = id; renderNav(); render(); window.scrollTo({ top: 0, behavior: 'instant' });
+    });
+  })();
   ensureDeals();
   render();
   applySession();
