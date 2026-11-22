@@ -15,3 +15,6 @@ node_modules/
 
 # 本地个人数据（如果有用 启动.bat 生成的话）
 *.local
+
+# RedFox Key 只放服务端，绝不进仓库
+tools/redfox-key.txt

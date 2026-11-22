@@ -26,6 +26,14 @@ const RF_BASE = 'https://mcp.redfox.hk';
 const RF_PLATFORMS = ['douyin', 'xiaohongshu', 'gongzhonghao', 'kuaishou', 'shipinhao', 'bilibili',
   'jinritoutiao', 'tiktok', 'twitter', 'youtube', 'instagram'];
 
+/* RedFox Key 只放服务端：优先环境变量 REDFOX_KEY，其次 tools/redfox-key.txt（已 gitignore） */
+const RF_KEY_FILE = path.join(__dirname, 'redfox-key.txt');
+const RF_NO_KEY = '服务端还没配 RedFox Key：把 Key 写进 tools/redfox-key.txt，或用环境变量 REDFOX_KEY 启动服务';
+function rfKey() {
+  if (process.env.REDFOX_KEY) return String(process.env.REDFOX_KEY).trim();
+  try { return fs.readFileSync(RF_KEY_FILE, 'utf8').trim(); } catch (e) { return ''; }
+}
+
 function sseJson(text) {
   const out = [];
   String(text).split(/\r?\n/).forEach(line => {
@@ -60,8 +68,36 @@ function sendJson(res, code, obj) {
 
 async function redfoxApi(req, res) {
   const u = url.parse(req.url, true);
-  const key = req.headers['x-redfox-key'] || u.query.key || '';
+  const key = rfKey();
   const platform = String(u.query.platform || '').toLowerCase();
+
+  /* ---- Key 状态 / 写入（页面上不显示 Key，只在服务端保存） ---- */
+  if (u.pathname === '/api/redfox/status') {
+    return sendJson(res, 200, {
+      ok: true, keySet: !!key,
+      source: process.env.REDFOX_KEY ? 'env' : (fs.existsSync(RF_KEY_FILE) ? 'file' : 'none')
+    });
+  }
+  if (u.pathname === '/api/redfox/key' && req.method === 'POST') {
+    let body = '';
+    try {
+      await new Promise((resolve, reject) => {
+        req.on('data', c => { body += c; if (body.length > 1e5) reject(new Error('请求体过大')); });
+        req.on('end', resolve);
+        req.on('error', reject);
+      });
+      const k = String((JSON.parse(body || '{}') || {}).key || '').trim();
+      if (!k) {
+        try { fs.unlinkSync(RF_KEY_FILE); } catch (e) { }
+        return sendJson(res, 200, { ok: true, keySet: false });
+      }
+      fs.writeFileSync(RF_KEY_FILE, k, { encoding: 'utf8', mode: 0o600 });
+      return sendJson(res, 200, { ok: true, keySet: true, tail: k.slice(-4) });
+    } catch (e) {
+      return sendJson(res, 200, { ok: false, error: String(e && e.message || e) });
+    }
+  }
+  if (!key) return sendJson(res, 200, { ok: false, error: RF_NO_KEY });
 
   /* ---- REST 直连代理：/api/redfox/rest ---- */
   if (u.pathname === '/api/redfox/rest' && req.method === 'POST') {

@@ -42,14 +42,13 @@
     ]
   };
 
-  const KEY_LS = 'gy_redfox_key';
   const COUNT_LS = 'gy_redfox_count';
 
   const ST = {
-    key: '', plat: 'tiktok', kind: 'topic', count: 20,
-    args: {}, res: null, norm: null, err: '', busy: false, msg: ''
+    plat: 'tiktok', kind: 'topic', count: 20,
+    args: {}, res: null, norm: null, err: '', busy: false, msg: '',
+    keySet: false, synced: false
   };
-  try { ST.key = localStorage.getItem(KEY_LS) || ''; } catch (e) { }
   try { ST.count = Number(localStorage.getItem(COUNT_LS)) || 20; } catch (e) { }
 
   const el = id => document.getElementById(id);
@@ -225,28 +224,16 @@
     <div class="rf-head">
       <div>
         <h1 style="margin:0">${t2('热门追踪', 'Trending')} · RedFox</h1>
-        <div class="muted small">${t2('选平台 → 填一个词 → 直接出图和表。Key 只存在这台电脑，按次计费。', 'Pick a platform, type a keyword, get charts and a table. The key stays on this machine; calls are billed per request.')}</div>
+        <div class="muted small">${t2('选平台 → 填一个词 → 直接出图和表。Key 配在服务端，页面上不显示；按次计费。', 'Pick a platform, type a keyword, get charts and a table. The key lives on the server, not in the page; calls are billed per request.')}</div>
       </div>
       <div class="rf-head-r">
-        <span class="rf-pill ${ST.key ? 'on' : ''}">${ST.key ? t2('已配 Key', 'Key set') : t2('未配 Key', 'No key')}</span>
+        <span class="rf-pill ${ST.keySet ? 'on' : ''}">${ST.keySet ? t2('已连接 · 服务端', 'Connected · server') : t2('服务端未配 Key', 'No key on server')}</span>
         <a class="btn sm" href="https://redfox.hk/skills" target="_blank" rel="noopener">Skills 广场 ↗</a>
       </div>
     </div>
 
-    <div class="card rf-conn">
-      <div class="card-h"><h3>① 连接</h3><span class="sub">RedFoxHub 后台 → API Key 管理</span></div>
-      <div class="card-b">
-        <div class="rf-conn-row">
-          <input id="rfKey" type="password" value="${esc(ST.key)}" placeholder="${t2('粘贴 REDFOX_API_KEY', 'Paste REDFOX_API_KEY')}">
-          <button class="btn primary sm" data-act="rfConnect">${ST.busy ? t2('连接中…', 'Connecting…') : t2('保存并测连接', 'Save & test')}</button>
-          <button class="btn sm" data-act="rfClear">${t2('清除', 'Clear')}</button>
-        </div>
-        ${ST.err ? `<div class="rf-err">${esc(ST.err)}</div>` : (ST.msg ? `<div class="rf-ok">${esc(ST.msg)}</div>` : '')}
-      </div>
-    </div>
-
     <div class="card rf-q">
-      <div class="card-h"><h3>② 查询</h3><span class="sub">${esc(platMeta[2])}</span></div>
+      <div class="card-h"><h3>${t2('查询', 'Search')}</h3><span class="sub">${esc(platMeta[2])}</span></div>
       <div class="card-b">
         <div class="rf-plats">
           ${PLATS.map(([id, name]) => `<button class="rf-plat ${id === ST.plat ? 'on' : ''}" data-act="rfPlat" data-id="${id}">${esc(name)}</button>`).join('')}
@@ -269,6 +256,8 @@
           ${n ? `<button class="btn sm" data-act="rfClearRes">${t2('清空结果', 'Clear')}</button>` : ''}
           <span class="tiny muted">${t2('单次约 ¥0.02–0.06', '≈ ¥0.02–0.06 per call')}</span>
         </div>
+        ${ST.err ? `<div class="rf-err">${esc(ST.err)}</div>` : (ST.msg ? `<div class="rf-ok">${esc(ST.msg)}</div>` : '')}
+        ${ST.synced && !ST.keySet ? `<div class="rf-err">${t2('服务端还没配 RedFox Key：把 Key 写进 tools/redfox-key.txt（或环境变量 REDFOX_KEY）后重启服务即可，页面上不用再填。', 'No RedFox key on the server yet. Put it in tools/redfox-key.txt (or REDFOX_KEY) and restart the server; nothing to type here.')}</div>` : ''}
       </div>
     </div>
 
@@ -291,7 +280,7 @@
     return `
     <div class="card rf-viz">
       <div class="card-h">
-        <h3>③ 结果</h3>
+        <h3>结果</h3>
         <span class="sub">${esc((curKind() || {}).name || '')} · ${n.items.length} 条</span>
       </div>
       <div class="card-b">
@@ -389,13 +378,12 @@
     const a = readArgs();
     const need = (kind.fields || []).find(f => f.req);
     if (need && !a[need.k]) { ST.err = '请先填：' + need.label; ST.msg = ''; render(); return; }
-    if (!ST.key) { ST.err = '请先填 API Key'; ST.msg = ''; render(); return; }
 
     ST.busy = true; ST.err = ''; ST.msg = ''; render();
     try {
       const r = await fetch('/api/redfox/rest', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-redfox-key': ST.key },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ path: kind.path, payload: buildPayload(kind) })
       });
       const j = await r.json();
@@ -416,26 +404,36 @@
     render();
   }
 
-  async function connect(render) {
-    const i = el('rfKey');
-    const k = i ? i.value.trim() : ST.key;
-    ST.key = k; ST.err = ''; ST.msg = ''; ST.busy = true;
-    try { localStorage.setItem(KEY_LS, k); } catch (e) { }
-    if (!k) { ST.busy = false; ST.err = 'Key 不能为空'; render(); return; }
+  /* Key 由服务端保管：先把老版本存在浏览器里的 Key 交上去，再抹掉本地副本 */
+  async function migrateLegacyKey() {
+    let old = '';
+    try { old = localStorage.getItem('gy_redfox_key') || ''; } catch (e) { }
+    if (!old) return;
     try {
-      const r = await fetch('/api/redfox/rest', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'x-redfox-key': k },
-        body: JSON.stringify({ path: '/story/api/tiktok/ability/topicAwemeList', payload: { ch_id: 2525872, cursor: 0, count: 1, source: 'conn-test' } })
+      const r = await fetch('/api/redfox/key', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key: old })
       });
       const j = await r.json();
-      if (j.ok) { ST.msg = '连接正常，可以查询了'; toast('连接正常'); }
-      else { ST.err = '连接失败：' + (j.error || '未知'); }
-    } catch (e) {
-      ST.err = '本地服务未启动（用 启动.bat 打开）';
-    }
-    ST.busy = false;
-    render();
+      if (j && j.ok) { try { localStorage.removeItem('gy_redfox_key'); } catch (e) { } }
+    } catch (e) { }
+  }
+  async function refreshStatus() {
+    try {
+      const r = await fetch('/api/redfox/status');
+      const j = await r.json();
+      if (j && j.ok) ST.keySet = !!j.keySet;
+    } catch (e) { }
+  }
+  /** 页面首次渲染时同步一次 Key 状态（迁移 + 询问服务端），完成后回调重绘 */
+  function sync(cb) {
+    if (ST.synced) return;
+    ST.synced = true;
+    (async () => {
+      await migrateLegacyKey();
+      await refreshStatus();
+      if (typeof cb === 'function') cb();
+    })();
   }
 
   function importLead(ctx) {
@@ -477,12 +475,10 @@
   }
 
   window.REDFOX = {
-    html, connect, runQuery, importLead, saveIdea, copyJson, copyMcp,
+    html, runQuery, sync, importLead, saveIdea, copyJson, copyMcp,
     state: ST,
     setPlatform(p) { if (ST.plat === p) return; ST.plat = p; ST.kind = (kindsOf(p)[0] || {}).id; ST.args = {}; ST.norm = null; ST.res = null; ST.err = ''; ST.msg = ''; },
     setKind(k) { ST.kind = k; ST.args = {}; ST.norm = null; ST.res = null; ST.err = ''; ST.msg = ''; },
-    setKey(k) { ST.key = k; },
-    clearKey() { ST.key = ''; ST.norm = null; ST.res = null; ST.err = ''; ST.msg = ''; try { localStorage.removeItem(KEY_LS); } catch (e) { } },
     clearRes() { ST.norm = null; ST.res = null; ST.err = ''; ST.msg = ''; }
   };
 })();

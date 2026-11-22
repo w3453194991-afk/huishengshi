@@ -1869,10 +1869,8 @@
 
   function vRedfox() {
     const box = $('#p-redfox');
-    const render = () => vRedfox();
     box.innerHTML = window.REDFOX.html({ esc, LZ, T });
-    const k = $('#rfKey');
-    if (k) k.onchange = () => window.REDFOX.setKey(k.value.trim());
+    window.REDFOX.sync(() => vRedfox());   // Key 状态由服务端提供，拿到后重绘一次
   }
 
   /* ================= 工具书：税务查询 / 型号查询 / 货币兑换 ================= */
@@ -2990,7 +2988,6 @@
         done(imgs);
       }).catch(() => done([]));
     },
-    rfConnect() { const b = $('#p-redfox'); window.REDFOX.connect(() => vRedfox()); },
     rfPlat(id) { window.REDFOX.setPlatform(id); vRedfox(); },
     rfKind(id) { window.REDFOX.setKind(id); vRedfox(); },
     rfQuery() { window.REDFOX.runQuery(() => vRedfox()); },
@@ -3003,7 +3000,6 @@
     rfSaveIdea() { window.REDFOX.saveIdea(); vRedfox(); },
     rfCopy() { window.REDFOX.copyJson(); },
     rfCopyMcp() { window.REDFOX.copyMcp(); },
-    rfClear() { window.REDFOX.clearKey(); vRedfox(); toast('已清除本机 Key'); },
     rfClearRes() { window.REDFOX.clearRes(); vRedfox(); },
     /* 工具书 */
     taxCty(id) { S.tax.country = id; save(); vTax(); },
