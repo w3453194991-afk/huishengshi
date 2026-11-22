@@ -37,6 +37,8 @@
     tax: { country: 'US', hs: '', qty: 0 },
     model: { q: '', res: [], busy: false, err: '' },
     fx: { amt: 10000, from: 'USD', to: 'CNY', rates: {}, at: '', busy: false, err: '' },
+    /* 客户提交过的结算单：存提交那一刻的价格快照 */
+    myOrders: [],
     quoteMeta: { no: '', date: new Date().toISOString().slice(0, 10), incoterm: '', pay: '', note: '' }
   };
   let storageOK = true;
@@ -52,7 +54,7 @@
         overrides: S.overrides, draftFits: S.draftFits, quoteMeta: S.quoteMeta, custMsgs: S.custMsgs, deals: S.deals,
         fuMute: S.fuMute, fuFlags: S.fuFlags, fuNotes: S.fuNotes,
         /* 新增：售后服务两份独立清单 + 税务查询上次所选市场 */
-        asStaff: S.asStaff, asBoss: S.asBoss, tax: S.tax, fx: { amt: S.fx.amt, from: S.fx.from, to: S.fx.to }
+        asStaff: S.asStaff, asBoss: S.asBoss, tax: S.tax, myOrders: S.myOrders, fx: { amt: S.fx.amt, from: S.fx.from, to: S.fx.to }
       }));
     } catch (e) { storageOK = false; }
   }
@@ -973,6 +975,77 @@
     bind('qPay', 'oninput', e => { S.quoteMeta.pay = e.target.value; });
   }
 
+  /* ---- 结算单文档：当前购物车和历史记录共用同一套排版 ---- */
+  function settleDocHtml(d) {
+    const e2 = s => String(s == null ? '' : s).replace(/[&<>"]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[m]));
+    return '<div style="padding:26px 30px;font-family:-apple-system,Segoe UI,Roboto,sans-serif;color:#111">' +
+      '<div style="display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid #111;padding-bottom:10px">' +
+      '<div><div style="font-size:22px;font-weight:800">' + LZ('结算单', 'SETTLEMENT') + '</div>' +
+      '<div style="font-size:12px;color:#666;margin-top:2px">KOOYING · ' + LZ('浙江冠英汽车零部件有限公司', 'Zhejiang Kooying Auto Parts Co., Ltd.') + '</div></div>' +
+      '<div style="font-size:12px;text-align:right;color:#333">' + LZ('单号', 'No.') + ' <b>' + e2(d.no) + '</b><br>' + e2(d.at) + '</div></div>' +
+      '<table style="width:100%;font-size:12px;margin-top:12px">' +
+      '<tr><td style="color:#666;padding:2px 0">' + LZ('客户', 'Customer') + '</td><td>' + e2(d.cust) + '</td>' +
+      '<td style="color:#666;padding:2px 0">' + LZ('联系方式', 'Contact') + '</td><td>' + e2(d.contact) + '</td></tr>' +
+      '<tr><td style="color:#666;padding:2px 0">' + LZ('贸易术语', 'Incoterm') + '</td><td>' + e2(d.incoterm) + '</td>' +
+      '<td style="color:#666;padding:2px 0">' + LZ('付款方式', 'Payment') + '</td><td>' + e2(d.pay) + '</td></tr></table>' +
+      '<table style="width:100%;border-collapse:collapse;font-size:12px;margin-top:14px">' +
+      '<thead><tr style="background:#f3f4f6">' +
+      '<th style="text-align:left;padding:7px 8px;border:1px solid #ddd">' + LZ('型号', 'Part no.') + '</th>' +
+      '<th style="text-align:left;padding:7px 8px;border:1px solid #ddd">' + LZ('材质', 'Material') + '</th>' +
+      '<th style="text-align:right;padding:7px 8px;border:1px solid #ddd">' + LZ('数量', 'Qty') + '</th>' +
+      '<th style="text-align:right;padding:7px 8px;border:1px solid #ddd">' + LZ('单价', 'Unit') + '</th>' +
+      '<th style="text-align:right;padding:7px 8px;border:1px solid #ddd">' + LZ('金额', 'Amount') + '</th></tr></thead><tbody>' +
+      d.rows.map(r => '<tr>' +
+        '<td style="padding:6px 8px;border:1px solid #ddd"><b>' + e2(r.code) + '</b></td>' +
+        '<td style="padding:6px 8px;border:1px solid #ddd">' + e2(r.mat) + '</td>' +
+        '<td style="padding:6px 8px;border:1px solid #ddd;text-align:right">' + r.qty + '</td>' +
+        '<td style="padding:6px 8px;border:1px solid #ddd;text-align:right">$' + money(r.unit) + '</td>' +
+        '<td style="padding:6px 8px;border:1px solid #ddd;text-align:right"><b>$' + money(r.amt) + '</b></td></tr>').join('') +
+      '</tbody></table>' +
+      '<table style="width:320px;margin-left:auto;font-size:12px;margin-top:10px">' +
+      '<tr><td style="color:#666;padding:3px 0">' + LZ('商品金额', 'Goods') + '</td><td style="text-align:right">$' + money(d.amount) + '</td></tr>' +
+      '<tr><td style="color:#666;padding:3px 0">' + LZ('运费（预估）', 'Freight (est.)') + '</td><td style="text-align:right">$' + money(d.freight) + '</td></tr>' +
+      '<tr style="border-top:1px solid #111"><td style="padding:6px 0;font-weight:700">' + LZ('应付总额 USD', 'Total due USD') + '</td>' +
+      '<td style="text-align:right;font-weight:800;font-size:15px">$' + money(d.total) + '</td></tr></table>' +
+      '<div style="margin-top:16px;font-size:11px;color:#777;line-height:1.7">' +
+      LZ('本单为结算预估，运费按目的地与体积重最终核定；正式合同以双方确认为准。', 'This is an estimated settlement. Freight is finalised by destination and volumetric weight; the contract prevails.') +
+      '</div></div>';
+  }
+
+  function showSettleDoc(title, html) {
+    modal(title, '<div style="background:#fff">' + html + '</div>',
+      '<button class="btn" data-act="closeModal">' + LZ('关闭', 'Close') + '</button><button class="btn primary" data-act="printNow">' + LZ('打印 / 另存 PDF', 'Print / PDF') + '</button>', true);
+  }
+
+  /* ---- 我的结算记录 ---- */
+  function ordersCard() {
+    const list = S.myOrders || [];
+    return `<div class="card mt">
+      <div class="card-h"><h3>${LZ('我的结算记录', 'My settlements')}</h3>
+        <span class="sub">${list.length ? list.length + LZ(' 单 · 提交后自动留档', ' records · saved automatically') : LZ('提交后自动留档，随时能查', 'Saved automatically after you submit')}</span></div>
+      <div class="card-b" style="padding:0">
+        ${list.length ? `<div class="tbl-wrap"><table><thead><tr>
+          <th>${LZ('单号', 'No.')}</th><th>${LZ('时间', 'Date')}</th>
+          <th class="right">${LZ('型号', 'Items')}</th><th class="right">${LZ('数量', 'Qty')}</th>
+          <th class="right">${LZ('金额', 'Amount')}</th><th>${LZ('状态', 'Status')}</th><th></th></tr></thead><tbody>
+          ${list.map(o => {
+      const qty = o.rows.reduce((s, r) => s + Number(r.qty || 0), 0);
+      return `<tr>
+            <td class="mono b">${esc(o.no)}</td>
+            <td class="small mono muted">${esc(o.at)}</td>
+            <td class="right mono small">${o.rows.length}</td>
+            <td class="right mono small">${qty}</td>
+            <td class="right mono b">$${money(o.total)}</td>
+            <td>${tag(o.status || '已提交', 'o')}</td>
+            <td><div class="row" style="gap:6px;justify-content:flex-end">
+              <button class="btn xs" data-act="reorderOrder" data-id="${o.id}">${LZ('再来一单', 'Reorder')}</button>
+              <button class="btn xs" data-act="printOrder" data-id="${o.id}">${LZ('打印', 'Print')}</button>
+            </div></td></tr>`;
+    }).join('')}
+        </tbody></table></div>` : `<div class="card-b muted small" style="padding:18px">${LZ('还没有结算记录。提交后会在这里留档，随时能查、能再下一单。', 'No settlements yet — once you submit one it is kept here.')}</div>`}
+      </div>
+    </div>`;
+  }
   /* ================= 客户结算单 ================= */
   function vSettle(c, rows, calc) {
     const u = A.me() || {};
@@ -1060,7 +1133,8 @@
           </div>
         </div>
       </div>
-    </div>`;
+    </div>
+    ${ordersCard()}`;
     const bind = (id, ev, fn) => { const n = $('#' + id); if (n) n[ev] = fn; };
     bind('qInco', 'oninput', e => { S.quoteMeta.incoterm = e.target.value; });
     bind('qPay', 'oninput', e => { S.quoteMeta.pay = e.target.value; });
@@ -2271,51 +2345,46 @@
       modal('报价单预览', `<div style="background:#fff">${html}</div>`,
         `<button class="btn" data-act="closeModal">关闭</button><button class="btn primary" data-act="printNow">打印 / 另存 PDF</button>`, true);
     },
-    /** 客户侧：打印结算单（不复用报价单模板，避免把阶梯价条款带给客户） */
+        /** 客户侧：打印当前结算单 */
     printSettle() {
       const rows = cartRows();
       if (!rows.length) { toast(LZ('先加入型号', 'Add parts first')); return; }
       const c = customer();
       const calc = E.quoteCalc(rows.map(r => ({ pid: r.pid, qty: r.qty, mat: r.mat })), c);
       const u = A.me() || {};
-      const e2 = s => String(s == null ? '' : s).replace(/[&<>"]/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[m]));
-      const no = S.quoteMeta.no || autoNo();
-      const html = '<div style="padding:26px 30px;font-family:-apple-system,Segoe UI,Roboto,sans-serif;color:#111">' +
-        '<div style="display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid #111;padding-bottom:10px">' +
-        '<div><div style="font-size:22px;font-weight:800">' + LZ('结算单', 'SETTLEMENT') + '</div>' +
-        '<div style="font-size:12px;color:#666;margin-top:2px">KOOYING · ' + LZ('浙江冠英汽车零部件有限公司', 'Zhejiang Kooying Auto Parts Co., Ltd.') + '</div></div>' +
-        '<div style="font-size:12px;text-align:right;color:#333">' + LZ('单号', 'No.') + ' <b>' + e2(no) + '</b><br>' + e2(S.quoteMeta.date) + '</div></div>' +
-        '<table style="width:100%;font-size:12px;margin-top:12px">' +
-        '<tr><td style="color:#666;padding:2px 0">' + LZ('客户', 'Customer') + '</td><td>' + e2(u.company || u.name || '') + '</td>' +
-        '<td style="color:#666;padding:2px 0">' + LZ('联系方式', 'Contact') + '</td><td>' + e2((u.contact || {}).value || '') + '</td></tr>' +
-        '<tr><td style="color:#666;padding:2px 0">' + LZ('贸易术语', 'Incoterm') + '</td><td>' + e2(S.quoteMeta.incoterm || c.incoterm) + '</td>' +
-        '<td style="color:#666;padding:2px 0">' + LZ('付款方式', 'Payment') + '</td><td>' + e2(S.quoteMeta.pay || c.pay) + '</td></tr></table>' +
-        '<table style="width:100%;border-collapse:collapse;font-size:12px;margin-top:14px">' +
-        '<thead><tr style="background:#f3f4f6">' +
-        '<th style="text-align:left;padding:7px 8px;border:1px solid #ddd">' + LZ('型号', 'Part no.') + '</th>' +
-        '<th style="text-align:left;padding:7px 8px;border:1px solid #ddd">' + LZ('材质', 'Material') + '</th>' +
-        '<th style="text-align:right;padding:7px 8px;border:1px solid #ddd">' + LZ('数量', 'Qty') + '</th>' +
-        '<th style="text-align:right;padding:7px 8px;border:1px solid #ddd">' + LZ('单价', 'Unit') + '</th>' +
-        '<th style="text-align:right;padding:7px 8px;border:1px solid #ddd">' + LZ('金额', 'Amount') + '</th></tr></thead><tbody>' +
-        calc.rows.map(r => '<tr>' +
-          '<td style="padding:6px 8px;border:1px solid #ddd"><b>' + e2(r.product.code) + '</b></td>' +
-          '<td style="padding:6px 8px;border:1px solid #ddd">' + e2(r.mat || r.product.material) + '</td>' +
-          '<td style="padding:6px 8px;border:1px solid #ddd;text-align:right">' + r.qty + '</td>' +
-          '<td style="padding:6px 8px;border:1px solid #ddd;text-align:right">$' + money(r.unit) + '</td>' +
-          '<td style="padding:6px 8px;border:1px solid #ddd;text-align:right"><b>$' + money(r.amt) + '</b></td></tr>').join('') +
-        '</tbody></table>' +
-        '<table style="width:320px;margin-left:auto;font-size:12px;margin-top:10px">' +
-        '<tr><td style="color:#666;padding:3px 0">' + LZ('商品金额', 'Goods') + '</td><td style="text-align:right">$' + money(calc.amount) + '</td></tr>' +
-        '<tr><td style="color:#666;padding:3px 0">' + LZ('运费（预估）', 'Freight (est.)') + '</td><td style="text-align:right">$' + money(calc.freight) + '</td></tr>' +
-        '<tr style="border-top:1px solid #111"><td style="padding:6px 0;font-weight:700">' + LZ('应付总额 USD', 'Total due USD') + '</td>' +
-        '<td style="text-align:right;font-weight:800;font-size:15px">$' + money(calc.total) + '</td></tr></table>' +
-        '<div style="margin-top:16px;font-size:11px;color:#777;line-height:1.7">' +
-        LZ('本单为结算预估，运费按目的地与体积重最终核定；正式合同以双方确认为准。', 'This is an estimated settlement. Freight is finalised by destination and volumetric weight; the contract prevails.') +
-        '</div></div>';
+      showSettleDoc(LZ('结算单预览', 'Settlement preview'), settleDocHtml({
+        no: S.quoteMeta.no || autoNo(), at: S.quoteMeta.date,
+        cust: u.company || u.name || '', contact: (u.contact || {}).value || '',
+        incoterm: S.quoteMeta.incoterm || c.incoterm, pay: S.quoteMeta.pay || c.pay,
+        rows: calc.rows.map(r => ({ code: r.product.code, mat: r.mat || r.product.material, qty: r.qty, unit: r.unit, amt: r.amt })),
+        amount: calc.amount, freight: calc.freight, total: calc.total
+      }));
       A.track('quote', {});
-      modal(LZ('结算单预览', 'Settlement preview'), '<div style="background:#fff">' + html + '</div>',
-        '<button class="btn" data-act="closeModal">' + LZ('关闭', 'Close') + '</button><button class="btn primary" data-act="printNow">' + LZ('打印 / 另存 PDF', 'Print / PDF') + '</button>', true);
-    },    printPack() {
+    },
+    /** 客户侧：打印某一张历史结算单 */
+    printOrder(id) {
+      const o = (S.myOrders || []).find(x => x.id === id);
+      if (!o) { toast(LZ('找不到这张单', 'Record not found')); return; }
+      showSettleDoc(LZ('结算单预览', 'Settlement preview'), settleDocHtml(o));
+    },
+    /** 客户侧：按历史单再来一次 */
+    reorderOrder(id) {
+      const o = (S.myOrders || []).find(x => x.id === id);
+      if (!o) return;
+      const miss = [];
+      o.rows.forEach(r => {
+        const p = D.products.find(x => x.code === r.code);
+        if (!p) { miss.push(r.code); return; }
+        const hit = S.cart.find(x => x.pid === p.id);
+        if (hit) hit.qty += Number(r.qty) || 1;
+        else S.cart.push({ pid: p.id, qty: Number(r.qty) || 1, mat: p.material });
+      });
+      save(); vQuote();
+      toast(miss.length
+        ? LZ('已加回购物车；这些型号已下架：', 'Added back; discontinued: ') + miss.join('、')
+        : LZ('已按原单加回购物车', 'Added back to your cart'));
+    },
+    printPack() {
       const rows = cartRows();
       if (!rows.length) { toast('先加入型号'); return; }
       const html = E.docPack({ customer: customer(), items: rows.map(r => ({ pid: r.pid, qty: r.qty, mat: r.mat })), no: S.quoteMeta.no || autoNo(), date: S.quoteMeta.date });
@@ -2439,6 +2508,23 @@
         <div class="small muted" style="margin-top:8px">${LZ('我们会在 2 小时内回复到这个联系方式：','We will reply within 2 hours to:')}<br><b>${esc(u.contact.value)}</b></div>
         <div class="tiny muted" style="margin-top:12px">${LZ('数量按阶梯价计算，运费按目的地另算。','Tier pricing applies; freight depends on destination.')}</div></div>`,
         `<button class="btn primary" data-act="closeModal">${LZ('知道了','Got it')}</button>`);
+      /* 客户侧留档：把当前价格算一遍存成快照，以后改价也不会改历史 */
+      try {
+        const uu = A.me() || {};
+        const cl = E.quoteCalc(items.map(it => ({ pid: it.pid, qty: it.qty, mat: '' })), customer());
+        (S.myOrders = S.myOrders || []).unshift({
+          id: 'SO' + Date.now(), no: r.no,
+          at: new Date().toISOString().slice(0, 16).replace('T', ' '),
+          cust: uu.company || uu.name || '', contact: (uu.contact || {}).value || '',
+          incoterm: S.quoteMeta.incoterm || customer().incoterm, pay: S.quoteMeta.pay || customer().pay,
+          rows: cl.rows.map(x => ({ code: x.product.code, mat: mName(D.materials.find(m => m.id === (x.mat || x.product.material)) || { id: '', name: '' }) || (x.mat || x.product.material), qty: x.qty, unit: x.unit, amt: x.amt })),
+          amount: cl.amount, freight: cl.freight, total: cl.total,
+          note, status: '已提交'
+        });
+        save();
+      } catch (e) { }
+      /* 客户还停在结算页：立刻刷新，好让「我的结算记录」马上多一行 */
+      if (A.me() && A.me().role === 'customer' && S.tab === 'quote') vQuote();
       toast(LZ('询价 ' + r.no + ' 已提交', 'Inquiry ' + r.no + ' sent'));
       A.track('inquiry', { no: r.no, n: items.length });
       RQ = null;
