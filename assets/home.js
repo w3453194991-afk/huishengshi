@@ -118,7 +118,7 @@
         ${!isCust ? `<button class="tool-card" data-act="tab" data-id="xref"><span class="ti">⇄</span><b>${zh ? '编号对照' : 'Cross reference'}</b><i>${zh ? 'WVA / FMSI / OE / 车桥 → 自家型号，还差什么一眼看到' : 'WVA, FMSI, OE or axle to your part number'}</i></button>` : ''}
         ${!isCust ? `<button class="tool-card" data-act="tab" data-id="deals"><span class="ti">✎</span><b>${zh ? '成交台账' : 'Deals'}</b><i>${zh ? '记一笔成交 / 改状态，老板那边立刻看到' : 'Log a deal and its status'}</i></button>` : ''}
         ${!isCust && isBoss ? `<button class="tool-card" data-act="tab" data-id="boss"><span class="ti">▦</span><b>${zh ? '业绩总览' : 'Overview'}</b><i>${zh ? '员工成交、转化率、产品结构 + 一句话总结' : 'Staff performance and product mix'}</i></button>` : ''}
-        ${!isCust ? `<button class="tool-card" data-act="tab" data-id="redfox"><span class="ti">⌁</span><b>${zh ? '短视频接口' : 'Short-video API'}</b><i>${zh ? 'RedFox 短视频数据：TikTok / IG / YouTube → 选题与线索' : 'RedFox short-video data into ideas and leads'}</i></button>` : ''}
+        ${!isCust ? `<button class="tool-card" data-act="tab" data-id="redfox"><span class="ti">⌁</span><b>${zh ? '热门追踪' : 'Trending'}</b><i>${zh ? 'TikTok / IG / YouTube 热门内容 → 选题与线索' : 'Trending posts on TikTok, IG and YouTube → ideas and leads'}</i></button>` : ''}
         ${!isCust ? `<button class="tool-card" data-act="tab" data-id="inquiries"><span class="ti">✉</span><b>${zh ? '客户询价' : 'Inquiries'}</b><i>${zh ? '客户提交的清单，一键载入报价' : 'Customer requests, load into a quote'}</i></button>` : ''}
         ${!isCust ? `<button class="tool-card" data-act="tab" data-id="visits"><span class="ti">👁</span><b>${zh ? '客户浏览' : 'Activity'}</b><i>${zh ? '谁在看、看什么、意向多少' : 'Who is browsing, and how deep'}</i></button>` : ''}
       </div>
@@ -215,7 +215,7 @@
       </div>
     </details>`;
 
-    return hero + about + cats + tools + news + contact + statline + todoCard + why + `
+    return hero + about + cats + tools + news + contact + statline + (isCust ? '' : todoCard) + why + `
       <footer class="site-foot">
         <img src="assets/img/site/logo-site.png" alt="KOOYING">
         <span>© 2026 浙江冠英汽车零部件有限公司 · ZHEJIANG KOOYING AUTO PARTS CO., LTD.</span>

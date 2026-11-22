@@ -224,7 +224,7 @@
     return `
     <div class="rf-head">
       <div>
-        <h1 style="margin:0">${t2('短视频接口', 'Social data')} · RedFox</h1>
+        <h1 style="margin:0">${t2('热门追踪', 'Trending')} · RedFox</h1>
         <div class="muted small">${t2('选平台 → 填一个词 → 直接出图和表。Key 只存在这台电脑，按次计费。', 'Pick a platform, type a keyword, get charts and a table. The key stays on this machine; calls are billed per request.')}</div>
       </div>
       <div class="rf-head-r">

@@ -186,7 +186,7 @@
   const STAFF_TABS = ['home', 'select', 'products', 'quote', 'pack'];
   /** 仅员工可见的 9 个页面，按用途收进 2 个分组菜单（14 个入口一个不丢） */
   const NAV_GROUPS = [
-    // 客户线索：客户提的需求 + 客户在我方站内的行为 + 我们要主动找的人
+    // 客户管理：客户提的需求 + 客户在我方站内的行为 + 我们要主动找的人
     { key: 'clues', label: 'nav.g.clues', items: ['addcust', 'inquiries', 'aftersales', 'leads', 'visits', 'network', 'deals', 'redfox'] },
     // 工具书：查税率、查库里没有的型号
     { key: 'tools', label: 'nav.g.tools', items: ['tax', 'model', 'fx'] },
@@ -328,8 +328,8 @@
     ['用户画像', '画像 + 客户搜索 + 获客内容，一个入口三段切换'],
     ['适配图谱', '车型 → 车桥 → 型号的对应关系'],
     ['数据导入', 'Excel 批量导入型号 / 适配'],
-    ['短视频接口', 'RedFox 短视频数据 → 选题与线索'],
-    ['转单云（外部）', '「客户线索」菜单最后一项，新窗口打开转单云后台'],
+    ['热门追踪', 'TikTok / IG / YouTube 热门内容 → 选题与线索'],
+    ['转单云（外部）', '「客户管理」菜单最后一项，新窗口打开转单云后台'],
     ['报价与资料', '同上，但可回写客户档案']
   ];
   function openPerm() {
@@ -2039,6 +2039,7 @@
     tab(id) {
       if (!allowedTab(id)) { toast(LZ('这一页是员工端的', 'Staff only')); return; }
       S.tab = id; navOpen = ''; render();
+      if (id === 'home') window.scrollTo({ top: 0, behavior: 'smooth' });
     },
     openGate() { openGate(); },
     closeGate() { closeGate(); if (window.__askLang) { window.__askLang = false; setTimeout(openLang, 40); } },
@@ -3062,6 +3063,11 @@
     document.title = I.getLang() === 'zh' ? '冠英 · 选型与报价中台 · KOOYING Hub' : 'KOOYING · Selection & Quotation Hub';
     const bt = document.querySelector('.brand-t');
     if (bt) bt.textContent = I.getLang() === 'zh' ? '选型与报价中台' : 'Selection & Quotation Hub';
+    const bh = $('#brandHome');
+    if (bh) {
+      const back = I.getLang() === 'zh' ? '回到首页' : 'Back to home';
+      bh.title = back; bh.setAttribute('aria-label', back);
+    }
   }
 
   /* ================= 入口（员工 / 客户） ================= */
@@ -3097,7 +3103,9 @@
     }
     const b = $('#userBtn');
     if (b) b.title = u ? esc(u.contact.value) : T('gate.choose');
-    if (u && u.role === 'customer' && !CUST_TABS.includes(S.tab)) S.tab = 'home';
+    // 换身份（员工 / 客户 / 老板 / 退出）后一律回首页，避免停在只有对方能看的页面
+    S.tab = 'home';
+    S.match = null;
     renderNav();
     render();
   }
@@ -3512,6 +3520,11 @@
   });
   $('#drawerMask').onclick = closeDrawer;
   $('#modalMask').onclick = e => { if (e.target.id === 'modalMask') closeModal(); };
+  // 点左上角 Logo 回首页（键盘 Enter / 空格同样有效）
+  const brandHome = $('#brandHome');
+  if (brandHome) brandHome.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); ACT.tab('home'); }
+  });
   // 视口变化时（拖动窗口 / 手机转屏）把展开中的菜单重新夹回屏幕内
   window.addEventListener('resize', () => { clampNavMenu(); });
 
