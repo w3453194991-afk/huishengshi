@@ -3772,6 +3772,20 @@
 
   /* ================= 启动 ================= */
   $('#tzNow').textContent = '本地 ' + E.localTime('Asia/Shanghai').text;
+  /* 代码版本徽标：只在本地服务下显示，用来一眼识破「浏览器还跑着旧文件」 */
+  (function showBuild() {
+    const tag = $('#buildTag');
+    if (!tag || location.protocol === 'file:') return;
+    fetch('/api/version', { cache: 'no-store' })
+      .then(r => r.json())
+      .then(j => {
+        if (!j || !j.ok) return;
+        tag.textContent = '代码 ' + j.at.slice(5);
+        tag.title = '当前加载的代码版本：assets/app.js 更新于 ' + j.at + (j.size ? '（' + j.size + ' 字节）' : '');
+        tag.style.display = '';
+      })
+      .catch(() => { });
+  })();
   let savedLang = null, rememberLang = '1';
   try {
     savedLang = localStorage.getItem('gy_lang');

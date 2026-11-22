@@ -257,10 +257,27 @@ async function fxApi(req, res) {
   }
 }
 
+/* ---- 版本：/api/version（告诉页面当前磁盘上的代码是什么时候的，用来识破浏览器缓存） ---- */
+function versionApi(req, res) {
+  try {
+    const st = fs.statSync(path.join(ROOT, 'assets/app.js'));
+    const d = new Date(st.mtimeMs);
+    const p = n => String(n).padStart(2, '0');
+    return sendJson(res, 200, {
+      ok: true,
+      at: d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + ' ' + p(d.getHours()) + ':' + p(d.getMinutes()),
+      size: st.size
+    });
+  } catch (e) {
+    return sendJson(res, 200, { ok: false, error: String((e && e.message) || e) });
+  }
+}
+
 http.createServer((req, res) => {
   if (req.url.indexOf('/api/redfox') === 0) return redfoxApi(req, res);
   if (req.url.indexOf('/api/lookup') === 0) return lookupApi(req, res);
   if (req.url.indexOf('/api/fx') === 0) return fxApi(req, res);
+  if (req.url.indexOf('/api/version') === 0) return versionApi(req, res);
   let rel = decodeURIComponent(url.parse(req.url).pathname);
   if (rel === '/') rel = '/index.html';
   const fp = path.join(ROOT, rel);
