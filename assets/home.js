@@ -156,10 +156,6 @@
             <button class="btn" data-act="tab" data-id="select">${zh ? '先选型' : 'Match a part first'}</button>
           </div>
         </div>
-        <div class="contact-qr">
-          <div class="qr-box"><img src="assets/img/site/logo-site.png" alt=""></div>
-          <div class="tiny muted">${zh ? '扫码或直接询价，我们 2 小时内回复' : 'Scan or send an inquiry; reply within 2 hours'}</div>
-        </div>
       </div>
     </section>`;
 
