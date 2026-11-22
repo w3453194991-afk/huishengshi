@@ -3199,6 +3199,7 @@
       }).catch(() => done([]));
     },
     rfPlat(id) { window.REDFOX.setPlatform(id); vRedfox(); },
+    rfRetry() { window.REDFOX.retry(() => vRedfox()); },
     rfKind(id) { window.REDFOX.setKind(id); vRedfox(); },
     rfQuery() { window.REDFOX.runQuery(() => vRedfox()); },
     rfImportLead() {
@@ -3206,6 +3207,13 @@
         addLead: (lead) => { S.leads.unshift(lead); save(); renderNav(); }
       });
       vRedfox();
+    },
+    rfProfile(id) { window.REDFOX.openProfile(Number(id), { esc, LZ, modal }); },
+    rfCopyName(id) { window.REDFOX.copyName(Number(id)); },
+    rfLeadFrom(id) {
+      window.REDFOX.leadFrom(Number(id), {
+        addLead: (lead) => { S.leads.unshift(lead); save(); renderNav(); }
+      });
     },
     rfSaveIdea() { window.REDFOX.saveIdea(); vRedfox(); },
     rfCopy() { window.REDFOX.copyJson(); },

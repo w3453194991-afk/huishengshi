@@ -3,7 +3,8 @@
   const PLATS = [
     ['tiktok', 'TikTok', '话题 / 关键词 / 账号'],
     ['facebook', 'Facebook', '帖子评论'],
-    ['x', 'X (Twitter)', '关键词搜索']
+    ['x', 'X (Twitter)', '关键词搜索'],
+    ['xiaohongshu', '小红书', '爆款笔记 / 榜单 / 搜索 / 短剧']
   ];
 
   /* 每个平台可用的查询类型。path 走本地 /api/redfox/rest 代理 */
@@ -39,6 +40,37 @@
           { k: 'searchType', label: '搜索类型', select: [['Top', '热门'], ['Latest', '最新'], ['Media', '媒体'], ['People', '用户'], ['Lists', '列表']] }
         ]
       }
+    ],
+    /* 小红书：tool = 走 MCP 工具（/api/redfox/call），path = 走 REST 代理 */
+    xiaohongshu: [
+      {
+        id: 'hot', name: '爆款笔记', tool: 'xiaohongshu_search_hot_notes',
+        fields: [{ k: 'keyword', label: '关键词（可不填，空了就按互动量取最热）', ph: '短剧 / 童装' }]
+      },
+      {
+        id: 'search', name: '笔记搜索', tool: 'xiaohongshu_search_articles',
+        fields: [
+          { k: 'keyword', label: '关键词', ph: '短剧', req: true },
+          { k: 'sort_type', label: '排序', select: [['_0', '相关'], ['_2', '最新'], ['_4', '最热']] }
+        ]
+      },
+      {
+        id: 'rank', name: '每日爆款榜', tool: 'xiaohongshu_get_daily_hot_rank',
+        fields: [
+          { k: 'rank_date', label: '榜单日期', ph: '2026-11-21', req: true },
+          {
+            k: 'category', label: '分类', select: [['综合全部', '综合全部'], ['影视娱乐', '影视娱乐'], ['时尚穿搭', '时尚穿搭'],
+            ['美味佳肴', '美味佳肴'], ['居家装修', '居家装修'], ['亲子育儿', '亲子育儿'], ['新闻资讯', '新闻资讯']]
+          }
+        ]
+      },
+      {
+        id: 'playlet', name: '短剧爆款', path: '/story/api/parseWork/queryPlayletMsgs',
+        fields: [
+          { k: 'day', label: '日期', ph: '2026-11-21', req: true },
+          { k: 'keyword', label: '题材词（可不填）', ph: '穿越 / 霸总' }
+        ]
+      }
     ]
   };
 
@@ -47,7 +79,8 @@
   const ST = {
     plat: 'tiktok', kind: 'topic', count: 20,
     args: {}, res: null, norm: null, err: '', busy: false, msg: '',
-    keySet: false, synced: false, serverOk: null, statusAt: 0, busySync: false
+    keySet: false, synced: false, serverOk: null, statusAt: 0, busySync: false,
+    retryT: 0, tries: 0, noApi: false, pages: 1
   };
   try { ST.count = Number(localStorage.getItem(COUNT_LS)) || 20; } catch (e) { }
 
@@ -63,6 +96,18 @@
     if (n < 10000) return String(n);
     if (n < 1e8) return (n / 1e4).toFixed(1).replace(/\.0$/, '') + '万';
     return (n / 1e8).toFixed(2).replace(/\.?0+$/, '') + '亿';
+  }
+  /* 小红书榜单里的数字是「24w+」这种写法，转成数字才画得了图 */
+  function cnNum(v) {
+    if (v === null || v === undefined || v === '') return '';
+    if (typeof v === 'number') return v;
+    const m = /^\s*([\d.]+)\s*([wW万kK千]?)\s*\+?\s*$/.exec(String(v));
+    if (!m) return v;
+    let n = Number(m[1]);
+    const u = (m[2] || '').toLowerCase();
+    if (u === 'w' || u === '万') n *= 1e4;
+    else if (u === 'k' || u === '千') n *= 1e3;
+    return Math.round(n);
   }
   function tsShort(v) {
     if (!v) return '';
@@ -83,7 +128,7 @@
     const d = (raw && raw.data) || raw || {};
     let arr = [];
     if (Array.isArray(d)) arr = d;
-    else arr = d.workList || d.videos || d.list || d.comments || d.tweets || d.users || d.userList || d.items || [];
+    else arr = d.workList || d.videos || d.list || d.comments || d.tweets || d.users || d.userList || d.items || d.articles || [];
 
     const items = (arr || []).map(o => {
       if (plat === 'tiktok') {
@@ -98,6 +143,17 @@
           time: tsShort(o.publishTime || o.createTime),
           link: o.shareLink || (o.workId ? 'https://www.tiktok.com/@' + (au.userHandle || '') + '/video/' + o.workId : ''),
           cover: vd.coverImage || o.coverUrl || '',
+          p: {
+            name: au.userName || au.nickname || '',
+            handle: au.userHandle || au.uniqueId || '',
+            avatar: au.avatarImage || au.avatar || '',
+            bio: au.userSignature || au.signature || '',
+            area: au.userArea || '',
+            verified: !!(au.verifyInfo || au.enterpriseVerify),
+            uid: au.userId || '',
+            secUid: au.secUserId || '',
+            link: au.userHandle ? 'https://www.tiktok.com/@' + au.userHandle : ''
+          },
           m: {
             views: pick(st, ['viewCount', 'playCount']),
             likes: pick(st, ['likeCount', 'diggCount']),
@@ -117,12 +173,59 @@
           time: tsShort(o.createdAt),
           link: o.tweetId ? 'https://x.com/' + (o.username || 'i') + '/status/' + o.tweetId : '',
           cover: (Array.isArray(o.medias) && o.medias[0] && o.medias[0].coverUrl) || '',
+          p: {
+            name: u.displayName || o.username || '',
+            handle: o.username || '',
+            avatar: u.avatar || '',
+            bio: u.description || '',
+            area: u.location || '',
+            verified: !!u.verified,
+            uid: u.userId || '',
+            followers: u.followers,
+            link: o.username ? 'https://x.com/' + o.username : ''
+          },
           m: {
             views: pick(o, ['viewCount']),
             likes: pick(o, ['likeCount']),
             comments: pick(o, ['replyCount']),
             shares: pick(o, ['retweetCount']),
             collects: pick(o, ['bookmarkCount'])
+          }
+        };
+      }
+      if (plat === 'xiaohongshu') {
+        /* 三种返回长不一样：爆款笔记(articles) / 笔记搜索(list.work*) / 每日榜单(list.anaAdd) */
+        const rank = kind === 'rank';
+        const a = o.anaAdd || {};
+        const work = !!(o.workId || o.workTitle);
+        const title = rank ? (o.title || o.desc) : work ? (o.workTitle || o.workDesc) : (o.title || o.desc);
+        const author = rank ? o.userName : work ? o.accountNickname : o.authorNickname;
+        const likes = rank ? (a.useLikeCount || a.interactiveCount) : work ? o.workLikedCount : o.likedCount;
+        const comments = rank ? a.useCommentCount : work ? o.workCommentsCount : o.commentsCount;
+        const shares = rank ? a.useShareCount : work ? o.workSharedCount : o.sharedCount;
+        const collects = rank ? a.collectedCount : work ? o.workCollectedCount : o.collectedCount;
+        const link = rank ? o.photoJumpUrl : work ? o.workUrl : o.shareInfoLink;
+        const uid = rank ? '' : work ? o.accountUserid : o.authorId;
+        return {
+          title: String(title || '').replace(/\s+/g, ' ').trim(),
+          author: author || '—',
+          handle: '',
+          avatar: rank ? (o.userHeadUrl || '') : (o.authorAvatar || ''),
+          time: tsShort(rank ? o.publicTime : work ? o.workPublishTime : o.createTime),
+          link: link || (o.id ? 'https://www.xiaohongshu.com/explore/' + o.id : ''),
+          cover: rank ? (o.coverUrl || '') : (o.cover || o.coverUrl || ''),
+          p: {
+            name: author || '', handle: '', avatar: rank ? (o.userHeadUrl || '') : (o.authorAvatar || ''),
+            bio: '', area: '', verified: false, uid: uid,
+            followers: rank ? cnNum(o.fans) : o.authorFans,
+            link: rank ? (o.userJumpUrl || '') : (uid ? 'https://www.xiaohongshu.com/user/profile/' + uid : '')
+          },
+          m: {
+            views: '',
+            likes: cnNum(likes),
+            comments: cnNum(comments),
+            shares: cnNum(shares),
+            collects: cnNum(collects)
           }
         };
       }
@@ -134,8 +237,19 @@
         handle: '',
         avatar: au.avatar || '',
         time: tsShort(o.publishedAt || o.createdTime),
-        link: o.commentId ? 'https://www.facebook.com/' + (o.commentId || '') : '',
+        link: '',
         cover: '',
+        p: {
+          name: au.displayName || au.name || '',
+          handle: '',
+          avatar: au.avatar || '',
+          bio: '',
+          area: '',
+          verified: false,
+          uid: au.id || '',
+          link: '',
+          search: au.displayName ? 'https://www.facebook.com/search/top?q=' + encodeURIComponent(au.displayName) : ''
+        },
         m: {
           views: '',
           likes: pick(o, ['likeCount', 'likes']),
@@ -200,16 +314,209 @@
       { k: 'comments', label: '评论', on: norm.totals.comments > 0 },
       { k: 'shares', label: '分享', on: norm.totals.shares > 0 }
     ].filter(c => c.on);
+    const av = (x, i) => {
+      const ini = esc(String(x.author || '?').trim().slice(0, 1) || '?');
+      /* TikTok 的头像链接是 HEIC，Chromium 解不了：加载失败就退回首字母，别留个空白 */
+      return `<button class="rf-av${x.avatar ? '' : ' noimg'}" data-act="rfProfile" data-id="${i}" title="看这个人的主页资料">
+        <span class="rf-av-fb">${ini}</span>
+        ${x.avatar ? `<img src="${esc(x.avatar)}" alt="" loading="lazy" onerror="this.parentNode.classList.add('noimg');this.remove()">` : ''}
+      </button>`;
+    };
     return `<div class="rf-tbl-wrap"><table class="rf-tbl">
       <thead><tr><th>#</th><th>作者</th><th>内容</th>${cols.map(c => `<th>${c.label}</th>`).join('')}<th>时间</th></tr></thead>
       <tbody>${show.map((x, i) => `<tr>
         <td class="rf-num">${i + 1}</td>
-        <td class="rf-au">${x.avatar ? `<img src="${esc(x.avatar)}" alt="" loading="lazy" onerror="this.style.display='none'">` : ''}<span>${esc(x.author)}${x.link ? `<a href="${esc(x.link)}" target="_blank" rel="noopener" title="打开原帖">↗</a>` : ''}</span></td>
+        <td class="rf-au">${av(x, i)}<span><button class="rf-nmb" data-act="rfProfile" data-id="${i}" title="看这个人的主页资料">${esc(x.author)}</button>${x.link ? `<a href="${esc(x.link)}" target="_blank" rel="noopener" title="打开原帖">↗</a>` : ''}</span></td>
         <td class="rf-txt">${esc(x.title || '（无文字）')}</td>
         ${cols.map(c => `<td class="rf-num">${fmt(x.m[c.k])}</td>`).join('')}
         <td class="rf-num muted">${esc(x.time)}</td>
       </tr>`).join('')}</tbody>
-    </table></div>`;
+    </table></div>
+    <div class="tiny muted" style="margin-top:6px">点头像或作者名，可以看这个人的主页资料（粉丝数、简介、主页链接）</div>`;
+  }
+
+  /* ---------------- 人物资料：点头像看主页 ---------------- */
+  const PROF = {};                       // 本次会话缓存：同一个人只拉一次，反复点开不再花钱
+  const profKey = it => ST.plat + '|' + ((it && it.p && (it.p.uid || it.p.handle || it.p.name)) || '');
+  const canFetchProfile = it => !!(it && it.p && it.p.handle && (ST.plat === 'tiktok' || ST.plat === 'x'));
+
+  async function restPost(path, payload) {
+    const r = await fetch('/api/redfox/rest', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ path, payload })
+    });
+    const text = await r.text();
+    let j = null;
+    try { j = JSON.parse(text); } catch (e) { }
+    if (!j) throw new Error('接口返回的不是数据（HTTP ' + r.status + '）');
+    if (!j.ok) throw new Error(j.error || '拉取失败');
+    return j;
+  }
+
+  /** 按平台拉一次这个人的主页资料（TikTok 用账号搜索，X 用 userInfo） */
+  async function fetchProfile(it) {
+    const inner = j => (j.data && j.data.data) || {};
+    if (ST.plat === 'tiktok') {
+      const d = inner(await restPost('/story/api/tiktok/ability/searchUser', { keyword: it.p.handle, count: 1, offset: 0 }));
+      const list = d.userList || [];
+      const hit = list.find(u => String(u.userHandle || '').toLowerCase() === String(it.p.handle).toLowerCase());
+      if (!hit) throw new Error('没搜到这个账号（可能在搜索里排到后面了）');
+      return {
+        name: hit.userName || it.p.name, avatar: hit.avatarImage || it.p.avatar,
+        followers: hit.fansCount, following: hit.followCount, likes: hit.likedTotal, works: hit.workCount
+      };
+    }
+    if (ST.plat === 'x') {
+      const u = inner(await restPost('/story/api/x/userInfo', { screen_name: it.p.handle }));
+      if (!u.username) throw new Error('没查到这个账号');
+      return {
+        name: u.displayName || it.p.name, avatar: u.avatar || it.p.avatar,
+        followers: u.followers, following: u.following, works: u.tweetCount || u.mediaCount,
+        bio: u.description || it.p.bio, area: u.location || it.p.area,
+        verified: !!u.verified, site: u.website || ''
+      };
+    }
+    throw new Error('这个平台没有按人查资料的接口');
+  }
+
+  /** 这个人在本次结果里的条数与合计（本地算，不花钱） */
+  function batchOf(it) {
+    if (!ST.norm) return null;
+    const k = profKey(it);
+    const rows = ST.norm.items.filter(x => profKey(x) === k);
+    if (!rows.length) return null;
+    const sum = key => rows.reduce((s, x) => s + (Number(x.m[key]) || 0), 0);
+    return { n: rows.length, views: sum('views'), likes: sum('likes') };
+  }
+
+  function profileBody(it, info, o) {
+    const { t2, esc, loading, err } = o;
+    const b = batchOf(it);
+    const cell = (label, v) => (v === undefined || v === null || v === '' ? '' :
+      `<div class="rf-pstat"><span>${label}</span><b>${fmt(v)}</b></div>`);
+    const stats = [
+      cell(t2('粉丝', 'Followers'), info.followers),
+      cell(t2('关注', 'Following'), info.following),
+      cell(t2('获赞', 'Likes'), info.likes),
+      cell(t2('作品', 'Posts'), info.works)
+    ].join('');
+    const meta = [info.handle ? '@' + info.handle : '', info.area || ''].filter(Boolean).join(' · ');
+    const batch = b ? `${b.n} ${t2('条', 'items')}${b.views ? ' · ' + fmt(b.views) + t2(' 播放', ' views') : ''}${b.likes ? ' · ' + fmt(b.likes) + t2(' 赞', ' likes') : ''}` : '';
+    return `<div class="rf-prof">
+      <div class="rf-prof-h">
+        <div class="rf-prof-av-box${info.avatar ? '' : ' noimg'}">
+          <span class="rf-prof-av ph">${esc(String(info.name || it.author || '?').trim().slice(0, 1) || '?')}</span>
+          ${info.avatar ? `<img class="rf-prof-av" src="${esc(info.avatar)}" alt="" onerror="this.parentNode.classList.add('noimg');this.remove()">` : ''}
+        </div>
+        <div class="rf-prof-meta">
+          <div class="rf-prof-nm">${esc(info.name || it.author || '—')}${info.verified ? ` <span class="rf-vf" title="${t2('平台认证账号', 'Verified')}">✓</span>` : ''}</div>
+          ${meta ? `<div class="tiny muted">${esc(meta)}</div>` : ''}
+          ${info.site ? `<div class="tiny muted">${esc(info.site)}</div>` : ''}
+        </div>
+        <span class="flex1"></span>
+      </div>
+      ${info.bio ? `<div class="rf-prof-bio">${esc(info.bio)}</div>` : ''}
+      ${stats ? `<div class="rf-prof-stats">${stats}</div>` : ''}
+      ${batch ? `<div class="tiny muted" style="margin-top:10px">${t2('本次结果里', 'In this result')}：${esc(batch)}</div>` : ''}
+      ${loading ? `<div class="tiny muted" style="margin-top:8px">${t2('正在拉取主页资料…（1 次调用，约 ¥0.02；同一个人只拉一次）', 'Fetching profile… (1 call, ≈¥0.02; cached per person)')}</div>` : ''}
+      ${err ? `<div class="rf-err">${t2('资料没拉到', 'Could not load profile')}：${esc(err)}</div>` : ''}
+      ${!canFetchProfile(it) && !info.followers ? `<div class="tiny muted" style="margin-top:8px">${t2(
+        '这个平台只回了昵称和头像，没有按人查资料的公开接口；名字可以直接复制，去 App 里搜。',
+        'This platform only returns the display name and avatar — copy the name and search in the app.'
+      )}</div>` : ''}
+    </div>`;
+  }
+
+  function profileFoot(it, i, info, o) {
+    const { t2, esc } = o;
+    const url = info.link || (it.p && it.p.link) || '';
+    /* 只有 TikTok / X 有真正能打开的主页；Facebook 的「搜索链接」在没登录时会跳到 Not Found，干脆不给外链 */
+    const first = url
+      ? `<a class="btn sm" href="${esc(url)}" target="_blank" rel="noopener">${t2('打开主页 ↗', 'Open profile ↗')}</a>`
+      : `<button class="btn sm" data-act="rfCopyName" data-id="${i}">${t2('复制名字', 'Copy name')}</button>`;
+    return `${first}
+      <button class="btn sm" data-act="rfLeadFrom" data-id="${i}">${t2('存为线索', 'Save as lead')}</button>
+      <span class="flex1"></span>
+      <button class="btn sm ghost" data-act="closeModal">${t2('关闭', 'Close')}</button>`;
+  }
+
+  function copyName(i) {
+    const it = ST.norm && ST.norm.items[i];
+    const name = (it && (it.author || (it.p && it.p.name))) || '';
+    if (!name) return;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(name).then(() => toast('已复制：' + name), () => toast('复制失败'));
+    } else toast('复制失败');
+  }
+
+  /** 打开某条结果作者的资料卡；资料缺失时自动拉一次（有缓存就不再请求） */
+  function openProfile(i, ui) {
+    if (!ui || !ui.modal) return;
+    const it = ST.norm && ST.norm.items[i];
+    if (!it) return;
+    const esc = ui.esc || (s => String(s == null ? '' : s));
+    const t2 = (zh, en) => (ui.LZ ? ui.LZ(zh, en) : zh);
+    const key = profKey(it);
+    const paint = o => {
+      const info = Object.assign({}, it.p || {}, PROF[key] || {}, (o && o.stats) || {});
+      ui.modal(
+        t2('人物资料', 'Profile') + ' · ' + esc(info.name || it.author || ''),
+        profileBody(it, info, { t2, esc, loading: !!(o && o.loading), err: (o && o.err) || '' }),
+        profileFoot(it, i, info, { t2, esc }),
+        true
+      );
+    };
+    const need = !PROF[key] && canFetchProfile(it);
+    paint({ loading: need });
+    if (!need) return;
+    fetchProfile(it)
+      .then(st => { PROF[key] = st; paint({}); })
+      .catch(e => paint({ err: String((e && e.message) || e) }));
+  }
+
+  /* ---------------- 本地服务连不上时的提示：分「file:// 直开」「本机服务没启动」「服务器连不上」三种 ---------------- */
+  const RF_HOME = 'http://127.0.0.1:8765/index.html';
+  const isFilePage = () => typeof location !== 'undefined' && location.protocol === 'file:';
+  const isLocalPage = () => /^(127\.0\.0\.1|localhost|\[::1\])$/i.test(location.hostname || '');
+
+  function rfOffline(t2) {
+    const at = ST.statusAt ? new Date(ST.statusAt).toTimeString().slice(0, 8) : '';
+    const btn = `<button class="btn sm ghost" data-act="rfRetry">${t2('重新检测', 'Check now')}</button>`;
+    const stamp = at ? t2('上次检测 ' + at + '。', ' Last check ' + at + '.') : '';
+    if (isFilePage()) {
+      return `<div class="rf-err">${t2(
+        '这个页面是直接双击打开的（file://），这种打开方式没有本地接口。请双击「启动.bat」启动服务，再打开 ',
+        'This page was opened straight from disk (file://), so there is no local API. Run 启动.bat, then open '
+      )}<a href="${RF_HOME}">${RF_HOME}</a></div>`;
+    }
+    if (isLocalPage()) {
+      return `<div class="rf-err">${t2(
+        '连不上本地服务（' + location.host + ' 没响应）。双击「启动.bat」把它拉起来就行，本页会自己重连，不用刷新。',
+        'The local server on ' + location.host + ' is not responding. Start it with 启动.bat — this page reconnects on its own, no refresh needed.'
+      )}${stamp} ${btn}</div>`;
+    }
+    if (ST.noApi) {
+      return `<div class="rf-err">${t2(
+        '这个地址上没有查询接口：/api 返回的是网页，不是数据，所以查询用不了。放到服务器上时，nginx 要把 /api 转发给 server.js'
+          + '（配置见 tools/deploy/nginx-kooying.conf）；本地请用 http://127.0.0.1:8765/index.html 打开。当前地址：',
+        'This address has no query API: /api returns a web page instead of data. On a server, nginx must forward /api to server.js'
+          + ' (see tools/deploy/nginx-kooying.conf); locally open http://127.0.0.1:8765/index.html. Current address: '
+      )}${location.origin} ${btn}</div>`;
+    }
+    return `<div class="rf-err">${t2(
+      '连不上服务端（' + location.host + ' 没响应），可能是服务停了或者网络断了。稍后会自动重试。',
+      'Cannot reach the server at ' + location.host + ' — it may be down or the network dropped. Retrying automatically.'
+    )}${stamp} ${btn}</div>`;
+  }
+
+  /* 预计要调几次：接口一页 8~10 条，取多了会自动翻页，每次调用都计费 */
+  function costHint(t2) {
+    const k = curKind();
+    const pages = (k && k.tool) ? 1 : (ST.count <= 10 ? 1 : Math.min(6, Math.ceil(ST.count / 8)));
+    if (pages <= 1) return t2('单次调用约 ¥0.02–0.06', '≈ ¥0.02–0.06 per call');
+    return t2('取 ' + ST.count + ' 条约 ' + pages + ' 次调用（¥' + (pages * 0.02).toFixed(2) + '–' + (pages * 0.06).toFixed(2) + '）',
+      ST.count + ' items ≈ ' + pages + ' calls');
   }
 
   /* ---------------- 页面 ---------------- */
@@ -254,10 +561,10 @@
         <div class="row wrap-gap" style="margin-top:10px">
           <button class="btn primary" data-act="rfQuery">${ST.busy ? t2('查询中…', 'Loading…') : t2('开始查询', 'Search')}</button>
           ${n ? `<button class="btn sm" data-act="rfClearRes">${t2('清空结果', 'Clear')}</button>` : ''}
-          <span class="tiny muted">${t2('单次约 ¥0.02–0.06', '≈ ¥0.02–0.06 per call')}</span>
+          <span class="tiny muted">${costHint(t2)}</span>
         </div>
         ${ST.err ? `<div class="rf-err">${esc(ST.err)}</div>` : (ST.msg ? `<div class="rf-ok">${esc(ST.msg)}</div>` : '')}
-        ${ST.synced && ST.serverOk === false ? `<div class="rf-err">${t2('连不上本地服务：页面能打开，但查询接口用不了。请用「启动.bat」启动，并访问 http://127.0.0.1:8765/index.html ；直接双击 index.html（file://）时没有本地接口。', 'Cannot reach the local server. Start it with 启动.bat and open http://127.0.0.1:8765/index.html — opening index.html by double-click (file://) has no API.')}</div>` : ''}
+        ${ST.synced && ST.serverOk === false ? rfOffline(t2) : ''}
         ${ST.synced && ST.serverOk && !ST.keySet ? `<div class="rf-err">${t2('服务端还没配 RedFox Key：把 Key 写进 tools/redfox-key.txt（或环境变量 REDFOX_KEY）后重启服务即可，页面上不用再填。', 'No RedFox key on the server yet. Put it in tools/redfox-key.txt (or REDFOX_KEY) and restart the server; nothing to type here.')}</div>` : ''}
       </div>
     </div>
@@ -359,7 +666,7 @@
       p.count = ST.count;
       if (kind.id === 'topic') {
         p.ch_id = Number(a.ch_id) || 0;
-        p.cursor = 0;
+        p.cursor = '0';
       } else {
         p.keyword = a.keyword || '';
         p.offset = 0;
@@ -367,10 +674,74 @@
     } else if (ST.plat === 'facebook') {
       p.url = a.url || '';
       p.cursor = '';
+    } else if (ST.plat === 'xiaohongshu') {
+      if (kind.id === 'playlet') {
+        const day = a.day || new Date(Date.now() - 864e5).toISOString().slice(0, 10);
+        p.msgType = '短剧';
+        p.platform = 3;                    // 3 = 小红书
+        p.pageNum = 1;
+        p.pageSize = ST.count;
+        p.startTime = day + ' 00:00:00';
+        p.endTime = day + ' 23:59:59';
+        if (a.keyword) p.keyword = a.keyword;
+      }
     } else {
       p.keyword = a.keyword || '';
       p.searchType = a.searchType || 'Top';
     }
+    return p;
+  }
+
+  /** MCP 工具参数（小红书走工具，不走 REST 代理） */
+  function mcpArgs(kind) {
+    const a = ST.args;
+    if (kind.id === 'hot') {
+      const args = { page_num: 1, page_size: Math.max(1, Math.min(50, ST.count)) };
+      if (a.keyword) args.keyword = a.keyword;
+      return args;
+    }
+    if (kind.id === 'search') {
+      const args = { keyword: a.keyword || '', offset: 0 };
+      if (a.sort_type) args.sort_type = a.sort_type;
+      return args;
+    }
+    return { rank_date: a.rank_date || '', category: a.category || '综合全部' };
+  }
+
+  async function callTool(tool, args) {
+    const r = await fetch('/api/redfox/call?platform=' + encodeURIComponent(ST.plat), {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tool, args })
+    });
+    const text = await r.text();
+    let j = null;
+    try { j = JSON.parse(text); } catch (e) { }
+    if (!j) throw new Error('接口返回的不是数据（HTTP ' + r.status + '）');
+    if (!j.ok) throw new Error(j.error || '调用失败');
+    return j;
+  }
+
+  /* 一页只回 8~10 条：要更多就顺着游标多翻几页（每页算一次调用） */
+  const PAGES_MAX = 6;
+  const idOf = o => o && (o.workId || o.tweetId || o.commentId || o.userId || o.secUserId || o.id) || '';
+
+  function pageView(plat, j) {
+    const d = (j && j.data && j.data.data) || {};
+    if (Array.isArray(d)) return { key: 'workList', arr: d, next: null, more: false };
+    if (plat === 'tiktok') {
+      if (d.workList) return { key: 'workList', arr: d.workList, next: d.nextCursor, more: d.hasMore };
+      return { key: 'userList', arr: d.userList || [], next: d.cursor, more: d.hasMore };
+    }
+    if (plat === 'x') return { key: 'tweets', arr: d.tweets || [], next: d.nextCursor, more: !!d.nextCursor };
+    return { key: 'comments', arr: d.comments || [], next: d.paginationToken, more: !!d.paginationToken };
+  }
+
+  function nextPayload(kind, next) {
+    const p = buildPayload(kind);
+    if (ST.plat === 'tiktok' && kind.id === 'topic') p.cursor = String(next);
+    else if (ST.plat === 'x' || ST.plat === 'facebook') p.cursor = String(next);
+    else p.offset = Number(next) || 0;
     return p;
   }
 
@@ -382,20 +753,80 @@
 
     ST.busy = true; ST.err = ''; ST.msg = ''; render();
     try {
-      const r = await fetch('/api/redfox/rest', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ path: kind.path, payload: buildPayload(kind) })
-      });
-      const j = await r.json();
+      let j = null;
+      if (kind.tool) {
+        j = await callTool(kind.tool, mcpArgs(kind));   // 小红书：走 MCP 工具
+      } else {
+        const r = await fetch('/api/redfox/rest', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ path: kind.path, payload: buildPayload(kind) })
+        });
+        const text = await r.text();
+        try { j = JSON.parse(text); } catch (e) { }
+        if (!j) {
+          /* 回来的是一整页 HTML：这个地址上根本没有接口（多数是静态站点 / 只发了文件，没把 /api 转给 server.js） */
+          if (/^\s*</.test(text)) {
+            ST.err = '这个地址上没有查询接口：/api/redfox/rest 返回的是一整页 HTML，不是数据（HTTP ' + r.status + '）。'
+              + '本页要用 http://127.0.0.1:8765/index.html 打开；放到服务器上的话，nginx 得把 /api 转发给 server.js'
+              + '（配置见 tools/deploy/nginx-kooying.conf）。当前地址：' + location.origin;
+            ST.serverOk = false; ST.statusAt = Date.now(); ST.noApi = true;
+          } else {
+            ST.err = '返回的不是 JSON（HTTP ' + r.status + '）：' + String(text).slice(0, 80);
+          }
+          ST.norm = null; ST.res = null;
+          ST.busy = false; render(); return;
+        }
+      }
       if (!j.ok) {
         ST.err = j.error || '查询失败';
         ST.norm = null; ST.res = j.data || null;
       } else {
         ST.res = j.data;
+        /* 一页只有 8~10 条：不够就翻页凑，最多 PAGES_MAX 次调用（每次计费） */
+        let pages = 1;
+        let view = pageView(ST.plat, j);
+        if (view.arr.length && view.arr.length < ST.count && view.more && view.next != null) {
+          const all = view.arr.slice();
+          const seen = new Set(all.map(idOf).filter(Boolean));
+          while (all.length < ST.count && view.more && view.next != null && pages < PAGES_MAX) {
+            const nx = await restPost(kind.path, nextPayload(kind, view.next));
+            pages += 1;
+            view = pageView(ST.plat, nx);
+            if (!view.arr.length) break;
+            let added = 0;
+            view.arr.forEach(x => {
+              const id = idOf(x);
+              if (id && seen.has(id)) return;
+              if (id) seen.add(id);
+              all.push(x);
+              added += 1;
+            });
+            if (!added) break;   // 这一页全是重复的（游标没用），别再白花钱
+          }
+          const key = pageView(ST.plat, j).key;
+          if (Array.isArray(j.data.data)) j.data.data = all;
+          else j.data.data[key] = all;
+        }
+        ST.pages = pages;
         ST.norm = normalize(ST.plat, kind.id, j.data);
-        if (!ST.norm.items.length) { ST.err = '没有拿到条目，换个关键词或参数试试'; ST.norm = null; }
-        else ST.msg = '已取回 ' + ST.norm.items.length + ' 条';
+        /* Facebook 评论没有自己的链接，那行 ↗ 就指回你查的这条原帖，别再拼 commentId（会 404） */
+        if (ST.plat === 'facebook' && ST.args.url) ST.norm.items.forEach(x => { x.link = ST.args.url; });
+        /* 各家一次回的条数不完全听话（TikTok 一页 10 条、FB 固定 10 条）：统一按「取几条」截，合计重算 */
+        if (ST.norm.items.length > ST.count) {
+          ST.norm.items = ST.norm.items.slice(0, ST.count);
+          const t = { views: 0, likes: 0, comments: 0, shares: 0, collects: 0 };
+          ST.norm.items.forEach(x => { Object.keys(t).forEach(k => { t[k] += Number(x.m[k]) || 0; }); });
+          ST.norm.totals = t;
+        }
+        if (!ST.norm.items.length) {
+          ST.err = kind.id === 'playlet'
+            ? '红狐短剧库这一天没有数据（接口正常，返回 0 条），换一天或换题材再试'
+            : '没有拿到条目，换个关键词或参数试试';
+          ST.norm = null;
+        }
+        else ST.msg = '已取回 ' + ST.norm.items.length + ' 条'
+          + (pages > 1 ? '（分 ' + pages + ' 次调用，约 ¥' + (pages * 0.02).toFixed(2) + '–' + (pages * 0.06).toFixed(2) + '）' : '');
       }
     } catch (e) {
       ST.err = '请求失败（本地服务没开？用「启动.bat」）: ' + e.message;
@@ -423,34 +854,61 @@
     ST.statusAt = Date.now();
     try {
       const r = await fetch('/api/redfox/status', { cache: 'no-store' });
-      if (!r.ok) throw new Error('HTTP ' + r.status);
-      const j = await r.json();
-      if (!j || !j.ok) throw new Error('bad status body');
-      ST.serverOk = true; ST.keySet = !!j.keySet;
+      const text = await r.text();
+      let j = null;
+      try { j = JSON.parse(text); } catch (e) { }
+      if (!j) { ST.noApi = /^\s*</.test(text); throw new Error('HTTP ' + r.status); }
+      if (!j.ok) throw new Error('bad status body');
+      ST.serverOk = true; ST.keySet = !!j.keySet; ST.noApi = false;
     } catch (e) {
       ST.serverOk = false; ST.keySet = false;
     }
   }
-  /** 进页面核对一次 Key 状态；连不上服务端时 3 秒后自动重试，不用手动刷新 */
-  function sync(cb) {
+  /* 重试间隔：先 3 秒一探，越试越慢，封顶 20 秒——服务起来后几秒内自己接上 */
+  const RETRY_MS = [3000, 3000, 4000, 5000, 8000, 12000, 20000];
+  function stopRetry() { if (ST.retryT) { clearTimeout(ST.retryT); ST.retryT = 0; } }
+
+  /** 进页面核对一次服务端状态；连不上就自动重试，直到连上为止（状态变了才重绘，不冲掉正在输入的字） */
+  function sync(cb, force) {
     if (ST.busySync) return;
-    if (ST.synced && (ST.serverOk !== false || Date.now() - (ST.statusAt || 0) < 3000)) return;
+    if (!force && ST.synced && ST.serverOk !== false) return;  // 已知连得上
+    if (!force && ST.retryT) return;                           // 已经有排队中的重试
     ST.busySync = true;
     (async () => {
+      const before = ST.serverOk + '|' + ST.keySet;
       if (!ST.synced) await migrateLegacyKey();
       ST.synced = true;
       await refreshStatus();
       ST.busySync = false;
-      if (typeof cb === 'function') cb();
+      if (force || before !== (ST.serverOk + '|' + ST.keySet)) {
+        try { readArgs(); } catch (e) { }   // 保住已经填好的参数，重绘后还在
+        if (typeof cb === 'function') cb();
+      }
+      stopRetry();
+      if (ST.serverOk === false && !isFilePage() && !ST.noApi) {
+        const wait = RETRY_MS[Math.min(ST.tries, RETRY_MS.length - 1)];
+        ST.tries += 1;
+        ST.retryT = setTimeout(() => { ST.retryT = 0; sync(cb); }, wait);
+      } else {
+        ST.tries = 0;
+      }
     })();
   }
 
-  function importLead(ctx) {
+  /** 手动点「重新检测」：立刻问一次，并把当前状态画出来 */
+  function retry(cb) {
+    ST.tries = 0;
+    stopRetry();
+    ST.busySync = false;
+    sync(cb, true);
+  }
+
+  function leadFrom(i, ctx) {
     const n = ST.norm;
     if (!n || !n.items.length) { toast('还没有可导入的结果'); return; }
-    const o = n.items[0];
+    const o = n.items[i] || n.items[0];
     ctx.addLead({
-      id: 'L' + Date.now(), company: o.author || '未知作者', country: '',
+      id: 'L' + Date.now(), company: o.author || '未知作者', country: (o.p && o.p.area) || '',
       contact: o.handle || '', need: String(o.title || '').slice(0, 80), needZh: String(o.title || '').slice(0, 80),
       src: 'RedFox · ' + ST.plat + ' · ' + String(o.title || '').slice(0, 24),
       kind: '社媒', status: '待跟进',
@@ -459,6 +917,7 @@
     });
     toast('已导入线索：' + (o.author || ''));
   }
+  function importLead(ctx) { leadFrom(0, ctx); }
 
   function saveIdea() {
     const n = ST.norm;
@@ -484,7 +943,7 @@
   }
 
   window.REDFOX = {
-    html, runQuery, sync, importLead, saveIdea, copyJson, copyMcp,
+    html, runQuery, sync, retry, importLead, leadFrom, openProfile, copyName, saveIdea, copyJson, copyMcp,
     state: ST,
     setPlatform(p) { if (ST.plat === p) return; ST.plat = p; ST.kind = (kindsOf(p)[0] || {}).id; ST.args = {}; ST.norm = null; ST.res = null; ST.err = ''; ST.msg = ''; },
     setKind(k) { ST.kind = k; ST.args = {}; ST.norm = null; ST.res = null; ST.err = ''; ST.msg = ''; },

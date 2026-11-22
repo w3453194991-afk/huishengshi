@@ -969,6 +969,30 @@ tr.fu-has-flag td{background:#fffdfd}
 .rf-tbl .rf-au img{width:22px;height:22px;border-radius:50%;object-fit:cover;flex:none;background:#eef2f7}
 .rf-tbl .rf-au a{color:#c2410c;text-decoration:none;margin-left:4px}
 .rf-tbl .rf-txt{max-width:420px;line-height:1.55;color:#334155}
+/* 头像 / 作者名可点：看人物资料 */
+.rf-tbl .rf-av{padding:0;border:0;background:none;cursor:pointer;flex:none;width:22px;height:22px;border-radius:50%;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;transition:box-shadow .15s}
+.rf-tbl .rf-av:hover{box-shadow:0 0 0 2px #fdba74}
+.rf-tbl .rf-av img{width:22px;height:22px;border-radius:50%;object-fit:cover;display:block}
+.rf-tbl .rf-av .rf-av-fb{display:none;width:22px;height:22px;border-radius:50%;background:#e2e8f0;color:#475569;font-size:11px;align-items:center;justify-content:center;text-transform:uppercase}
+.rf-tbl .rf-av.noimg .rf-av-fb{display:flex}
+.rf-tbl .rf-nmb{padding:0;border:0;background:none;font:inherit;color:inherit;cursor:pointer;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:bottom}
+.rf-tbl .rf-nmb:hover{color:#c2410c;text-decoration:underline}
+/* 人物资料卡 */
+.rf-prof-h{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.rf-prof-av{width:64px;height:64px;border-radius:50%;object-fit:cover;background:#dbe3ec;flex:none}
+.rf-prof-av-box{width:64px;height:64px;flex:none;position:relative}
+.rf-prof-av-box .rf-prof-av.ph{display:none}
+.rf-prof-av-box.noimg .rf-prof-av.ph{display:flex}
+.rf-prof-av.ph{display:flex;align-items:center;justify-content:center;font-size:24px;color:#64748b;background:#e2e8f0}
+.rf-prof-meta{min-width:0}
+.rf-prof-nm{font-size:18px;font-weight:600;color:#0f172a;line-height:1.3}
+.rf-vf{color:#0284c7;font-weight:700}
+.rf-prof-bio{margin-top:14px;font-size:13px;line-height:1.7;color:#334155;white-space:pre-wrap;word-break:break-word}
+.rf-prof-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:14px}
+.rf-pstat{background:#f8fafc;border:1px solid var(--line);border-radius:10px;padding:10px 12px;min-width:0}
+.rf-pstat span{display:block;font-size:11.5px;color:#64748b}
+.rf-pstat b{font-size:18px;color:#0f172a;font-variant-numeric:tabular-nums}
+@media (max-width:640px){.rf-prof-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
 
 /* ---------- 增加客户：拍照名片 ---------- */
 .photo-drop{
