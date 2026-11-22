@@ -42,6 +42,7 @@
     quoteMeta: { no: '', date: new Date().toISOString().slice(0, 10), incoterm: '', pay: '', note: '' }
   };
   let storageOK = true;
+  let VIEWQ = null;
   let RQ = null;
   let PRICE_ROWS = [];
   /** 名片识别演示：定时器与样例索引（识别结果仅演示，接口接上后换成真 OCR） */
@@ -1046,6 +1047,33 @@
       </div>
     </div>`;
   }
+  /* ---- 客户侧：收到的员工报价 ---- */
+  function quotesCard() {
+    const u = A.me() || {};
+    const list = (S.quotes || []).filter(q => q.customerId === u.id).slice().reverse();
+    if (!list.length) return '';
+    return `<div class="card mt">
+      <div class="card-h"><h3>${LZ('收到的报价', 'Quotes from sales')}</h3>
+        <span class="sub">${list.length} ${LZ('份 · 点开看明细', 'quotes · click to open')}</span></div>
+      <div class="card-b" style="padding:0">
+        <div class="tbl-wrap"><table><thead><tr>
+          <th>${LZ('报价单号', 'Quote No.')}</th><th>${LZ('日期', 'Date')}</th>
+          <th class="right">${LZ('型号', 'Items')}</th><th class="right">${LZ('合计', 'Total')}</th>
+          <th>${LZ('状态', 'Status')}</th><th></th></tr></thead><tbody>
+          ${list.map(q => `<tr>
+            <td class="mono b">${esc(q.no)}</td>
+            <td class="small mono muted">${esc(q.date || '')}</td>
+            <td class="right mono small">${(q.items || []).length}</td>
+            <td class="right mono b">$${money(q.total)}</td>
+            <td><span class="tag o">${LZ('已报价', 'Quoted')}</span></td>
+            <td><div class="row" style="gap:6px;justify-content:flex-end">
+              <button class="btn xs" data-act="viewQuote" data-id="${esc(q.id)}">${LZ('看明细', 'Details')}</button>
+              <button class="btn xs primary" data-act="acceptQuote" data-id="${esc(q.id)}">${LZ('按此下单', 'Order this')}</button>
+            </div></td></tr>`).join('')}
+        </tbody></table></div>
+      </div>
+    </div>`;
+  }
   /* ================= 客户结算单 ================= */
   function vSettle(c, rows, calc) {
     const u = A.me() || {};
@@ -1134,6 +1162,7 @@
         </div>
       </div>
     </div>
+    ${quotesCard()}
     ${ordersCard()}`;
     const bind = (id, ev, fn) => { const n = $('#' + id); if (n) n[ev] = fn; };
     bind('qInco', 'oninput', e => { S.quoteMeta.incoterm = e.target.value; });
@@ -2359,7 +2388,56 @@
       }));
       A.track('quote', {});
     },
-    /** 客户侧：打印某一张历史结算单 */
+    /** 客户侧：看某张报价的明细 */
+    viewQuote(id) {
+      const q = (S.quotes || []).find(x => x.id === id);
+      if (!q) { toast(LZ('找不到这张报价', 'Quote not found')); return; }
+      VIEWQ = q;
+      const rows = q.items.map(it => {
+        const p = D.products.find(x => x.id === it.pid) || { code: it.pid };
+        return `<tr><td class="mono b">${esc(p.code)}</td><td class="mono">${it.qty}</td>
+          <td class="right mono">$${money(it.price)}</td>
+          <td class="right mono b">$${money(Math.round(it.price * it.qty * 100) / 100)}</td></tr>`;
+      }).join('');
+      modal(LZ('报价单 ' + q.no, 'Quote ' + q.no),
+        `<div class="small muted mb">${esc(q.date || '')} · ${LZ('合计', 'Total')} <b>$${money(q.total)}</b>${q.note ? ' · ' + esc(q.note) : ''}</div>
+         <table style="font-size:12.5px"><thead><tr>
+           <th>${LZ('编码', 'Code')}</th><th>${LZ('数量', 'Qty')}</th>
+           <th class="right">${LZ('单价', 'Unit')}</th><th class="right">${LZ('金额', 'Amount')}</th>
+         </tr></thead><tbody>${rows}</tbody></table>
+         <div class="small" style="margin-top:10px">${LZ('商品金额', 'Goods')} <b class="mono">$${money(q.amount)}</b> ＋ ${LZ('运费', 'Freight')} <b class="mono">$${money(q.freight)}</b></div>
+         <div class="tiny muted" style="margin-top:8px">${LZ('确认要这批货就点「按此报价下单」，会填进结算单，可以核对后再提交。', 'Hit Order to load these lines into your settlement.')}</div>`,
+        `<button class="btn" data-act="closeModal">${LZ('关闭', 'Close')}</button>
+         <button class="btn" data-act="printQuoteDoc">${LZ('打印报价单', 'Print')}</button>
+         <button class="btn primary" data-act="acceptQuote" data-id="${esc(q.id)}">${LZ('按此报价下单', 'Order this')}</button>`);
+    },
+    /** 客户侧：打印刚才查看的报价单 */
+    printQuoteDoc() {
+      const q = VIEWQ;
+      if (!q) return;
+      const html = E.docQuote({
+        customer: customer(), items: q.items.map(it => ({ pid: it.pid, qty: it.qty, mat: it.mat })),
+        no: q.no, date: q.date, valid: '30 days', incoterm: S.quoteMeta.incoterm, pay: S.quoteMeta.pay
+      });
+      modal(LZ('报价单预览', 'Quote preview'), `<div style="background:#fff">${html}</div>`,
+        `<button class="btn" data-act="closeModal">${LZ('关闭', 'Close')}</button><button class="btn primary" data-act="printNow">${LZ('打印 / 另存 PDF', 'Print / PDF')}</button>`, true);
+    },
+    /** 客户侧：按报价单填进结算单 */
+    acceptQuote(id) {
+      const q = (S.quotes || []).find(x => x.id === id);
+      if (!q) return;
+      let n = 0;
+      q.items.forEach(it => {
+        const p = D.products.find(x => x.id === it.pid);
+        if (!p) return;
+        const hit = S.cart.find(x => x.pid === p.id);
+        if (hit) hit.qty = it.qty;
+        else S.cart.push({ pid: p.id, qty: it.qty, mat: it.mat || p.material });
+        n++;
+      });
+      save(); closeModal(); vQuote();
+      toast(LZ('已把 ' + n + ' 个型号填进结算单', 'Loaded ' + n + ' items into your settlement'));
+    },    /** 客户侧：打印某一张历史结算单 */
     printOrder(id) {
       const o = (S.myOrders || []).find(x => x.id === id);
       if (!o) { toast(LZ('找不到这张单', 'Record not found')); return; }
@@ -2449,8 +2527,9 @@
       const total = Math.round((amount + calc.freight) * 100) / 100;
       const note = ($('#ppNote') || {}).value || '';
       const no = S.quoteMeta.no || autoNo();
+      const qid = 'Q' + Date.now();
       S.quotes.push({
-        id: 'Q' + Date.now(), no, customer: c.name, customerId: c.id, total, amount, freight: calc.freight,
+        id: qid, no, customer: c.name, customerId: c.id, total, amount, freight: calc.freight,
         date: S.quoteMeta.date, items, note, sent: true
       });
       S.quoteMeta.no = '';
@@ -2459,6 +2538,8 @@
         from: 'bot', time: chatTime(),
         text: LZ(`报价单 ${no}：${items.length} 个型号，合计 $${money(total)}（含运费 $${money(calc.freight)}）。${note ? '备注：' + note : ''}`,
           `Quotation ${no}: ${items.length} items, total $${money(total)} (freight $${money(calc.freight)}). ${note ? 'Note: ' + note : ''}`)
+,
+        acts: '<button class="btn xs primary" data-act="viewQuote" data-id="' + qid + '">' + LZ('查看报价单', 'View quote') + '</button>'
       });
       save();
       closeModal();
