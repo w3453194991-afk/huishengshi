@@ -3293,12 +3293,12 @@
       : LZ('用手机号 / 邮箱 / WhatsApp 登录，看型号、看价格、收报价。', 'Sign in with phone, email or WhatsApp to browse parts and get quotes.');
     body.innerHTML = `
     ${modeStaff ? `<div class="gate-roles">
-      <button class="gate-role ${staff ? '' : 'on'}" data-act="gateRole" data-id="customer">
+      <button class="gate-role ${gateRole === 'customer' ? 'on' : ''}" data-act="gateRole" data-id="customer">
         <div class="ic">🛒</div>
         <div class="t">${T('gate.cust')}</div>
         <div class="d">${T('gate.custSub')}</div>
       </button>
-      <button class="gate-role ${staff ? 'on' : ''}" data-act="gateRole" data-id="staff">
+      <button class="gate-role ${gateRole === 'staff' ? 'on' : ''}" data-act="gateRole" data-id="staff">
         <div class="ic">🗂</div>
         <div class="t">${T('gate.staff')}</div>
         <div class="d">${T('gate.staffSub')}</div>
