@@ -1015,3 +1015,11 @@ tr.fu-has-flag td{background:#fffdfd}
   animation:scanline 1.15s linear infinite
 }
 @keyframes scanline{0%{transform:translateY(-45%)}100%{transform:translateY(240%)}}
+
+/* ===== 演示 / 取证模式提示条（?view=guest） ===== */
+.guest-bar{
+  position:sticky;top:0;z-index:60;background:#111827;color:#fff;
+  font-size:12px;line-height:24px;text-align:center;letter-spacing:.3px;
+}
+body.has-guestbar .topbar{top:24px}
+body.has-guestbar .nav{top:calc(var(--topbar-h,57px) + 24px)}

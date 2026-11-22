@@ -45,6 +45,8 @@
   let VIEWQ = null;
   /* 跨窗口同步用：记下本标签页最后写入的内容，避免自己写自己读形成循环 */
   let LAST_HUB = '', LAST_USERS = '', SYNCING = false;
+  /* 记住上一次的登录身份：只有真正换人时才跳回首页，否则深链接会被打断 */
+  let LAST_UID;
   let RQ = null;
   let PRICE_ROWS = [];
   /** 名片识别演示：定时器与样例索引（识别结果仅演示，接口接上后换成真 OCR） */
@@ -3546,9 +3548,11 @@
     }
     const b = $('#userBtn');
     if (b) b.title = u ? esc(u.contact.value) : T('gate.choose');
-    // 换身份（员工 / 客户 / 老板 / 退出）后一律回首页，避免停在只有对方能看的页面
-    S.tab = 'home';
-    S.match = null;
+    // 只有真的换了身份才回首页；首次加载保持地址栏里的页面（深链接、取证链接）
+    const _uid = u ? u.id : '';
+    const _switched = LAST_UID !== undefined && LAST_UID !== _uid;
+    LAST_UID = _uid;
+    if (_switched) { S.tab = 'home'; S.match = null; }
     renderNav();
     render();
   }
@@ -4027,11 +4031,23 @@
       S.tab = id; renderNav(); render(); window.scrollTo({ top: 0, behavior: 'instant' });
     });
   })();
+  /* ===== 演示 / 取证模式：网址带 ?view=guest 时，直接以只读客户身份进入 =====
+     - 不弹登录窗、不弹语言窗，打开即见页面
+     - 只能看客户侧页面（产品库、选型、购物车、售后），员工数据仍被权限挡住
+     - 用途：网页取证、给客户发一个「免登录试用」链接 */
+  const GUEST_MODE = /(?:^|[?&])view=guest(?:[&=#]|$)/.test(location.search + location.hash);
+  if (GUEST_MODE) {
+    try { A.loginDemo('customer'); } catch (e) { }
+    try { I.setLang('zh'); applyLangChrome(); window.__askLang = false; } catch (e) { }
+    const gm = /^#\/?([a-z]+)$/i.exec(location.hash || '');
+    const gtab = gm ? gm[1].toLowerCase() : '';
+    S.tab = (tab => ['home', 'select', 'products', 'custom', 'quote', 'aftersale'].indexOf(tab) >= 0 ? tab : 'products')(gtab || S.tab);
+  }
   ensureDeals();
   render();
   applySession();
   window.__askLang = (!savedLang || rememberLang !== '1');
-  setTimeout(openGate, 80);
+  if (!GUEST_MODE) setTimeout(openGate, 80);
   pushChat(true);
   $('#chatBadge').textContent = S.chat.msgs.filter(m => m.match && m.match.top).length;
   $('#chatBadge').style.display = S.chat.msgs.some(m => m.match && m.match.top) ? 'inline-block' : 'none';
@@ -4045,6 +4061,13 @@
       mergeNet();
       if (first || sig() !== lastSig) { lastSig = sig(); render(); }
     });
+  }
+  if (GUEST_MODE) {
+    const gb = document.createElement('div');
+    gb.className = 'guest-bar';
+    gb.textContent = '演示模式 · 只读浏览（不含员工数据）';
+    document.body.appendChild(gb);
+    document.body.classList.add('has-guestbar');
   }
   if (!storageOK) {
     const n = document.createElement('div');
