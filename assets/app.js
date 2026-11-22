@@ -394,6 +394,60 @@
     $('#permMask').classList.add('on');
   }
   function closePerm() { $('#permMask').classList.remove('on'); }
+  /* ================= 服务器共享区 =================
+     跑在服务器上时，询价/报价/结算单/售后 都以服务端为准，本地只当缓存。
+     客户和员工在不同电脑上，靠这个把数据连起来。 */
+  function custKeyOf(u) {
+    const x = u || {};
+    const name = String(x.company || x.name || '').trim().toLowerCase();
+    const tel = String(((x.contact || {}).value) || '').replace(/[\s\-().+]/g, '');
+    return name + '|' + tel;
+  }
+  function netReady() { return !!(window.SYN && SYN.available() && SYN.on()); }
+  function mergeNet() {
+    if (!netReady()) return false;
+    let changed = false;
+    const seen = (arr, item, key) => {
+      if (arr.some(x => key(x) === key(item))) return false;
+      arr.push(item); return true;
+    };
+    (SYN.list('quotes') || []).forEach(q => {
+      if (seen(S.quotes, q, x => (x.no || '') + '|' + (x.customer || ''))) changed = true;
+    });
+    (SYN.list('settlements') || []).forEach(o => {
+      S.myOrders = S.myOrders || [];
+      if (seen(S.myOrders, o, x => x.no || x.id)) changed = true;
+    });
+    const role = A.isBoss() ? 'boss' : 'staff';
+    (SYN.list('aftersales') || []).forEach(a => {
+      if ((a.deletedBy || []).indexOf(role) >= 0) return;
+      S.asStaff = S.asStaff || []; S.asBoss = S.asBoss || [];
+      if (seen(S.asStaff, a, x => x.id)) changed = true;
+      S.asBoss = S.asBoss || [];
+      if (seen(S.asBoss, a, x => x.id)) changed = true;
+    });
+    if (changed) save();
+    return changed;
+  }
+  /** 所有询价 = 本机（离线/演示）+ 服务器共享区 */
+  function inquiriesAll() {
+    const local = (A.inquiries() || []);
+    if (!netReady()) return local;
+    const out = local.slice();
+    (SYN.list('inquiries') || []).forEach(q => {
+      if (out.some(x => x.no === q.no)) return;
+      out.push({
+        user: {
+          id: q.userId || ('net_' + q.id), name: q.userName || q.custKey || '—',
+          company: q.company || '', demo: !!q.demo,
+          contact: q.contact || { type: '—', value: '' }
+        },
+        no: q.no, items: q.items || [], note: q.note || '', t: q.t || 0, net: true
+      });
+    });
+    return out.sort((a, b) => (b.t || 0) - (a.t || 0));
+  }
+
   function render() {
     renderNav();
     // 容错：缺页面容器时自动补上（旧版 index.html 有 8 个 section）
@@ -1064,7 +1118,11 @@
 
   /* ---- 我的结算记录 ---- */
   function ordersCard() {
-    const list = S.myOrders || [];
+    const u = A.me() || {};
+    const mine = custKeyOf(u);
+    let list = S.myOrders || [];
+    if (netReady()) list = list.filter(o => !o.custKey || o.custKey === mine);
+    list = list.slice().sort((a, b) => String(b.at || '').localeCompare(String(a.at || '')));
     return `<div class="card mt">
       <div class="card-h"><h3>${LZ('我的结算记录', 'My settlements')}</h3>
         <span class="sub">${list.length ? list.length + LZ(' 单 · 提交后自动留档', ' records · saved automatically') : LZ('提交后自动留档，随时能查', 'Saved automatically after you submit')}</span></div>
@@ -1094,7 +1152,19 @@
   /* ---- 客户侧：收到的员工报价 ---- */
   function quotesCard() {
     const u = A.me() || {};
-    const list = (S.quotes || []).filter(q => q.customerId === u.id).slice().reverse();
+    const mine = custKeyOf(u);
+    const myName = String(u.company || u.name || '').trim();
+    const seenNo = {};
+    const list = (S.quotes || []).filter(q => {
+      const hit = q.customerId === u.id
+        || (q.custKey && q.custKey === mine)
+        || (!!myName && String(q.customer || '').trim() === myName);
+      if (!hit) return false;
+      const k = q.no || q.id;
+      if (seenNo[k]) return false;
+      seenNo[k] = 1;
+      return true;
+    }).slice().reverse();
     if (!list.length) return '';
     return `<div class="card mt">
       <div class="card-h"><h3>${LZ('收到的报价', 'Quotes from sales')}</h3>
@@ -2596,6 +2666,10 @@
         <div class="tiny muted" style="margin-top:10px">${LZ('客户登录后，在右下角「客服解答」里能看到这条报价。', 'The customer sees it in the Support panel after login.')}</div></div>`,
         `<button class="btn primary" data-act="closeModal">${LZ('知道了', 'Got it')}</button>`);
       toast(LZ('报价 ' + no + ' 已发送', 'Quote ' + no + ' sent'));
+      if (window.SYN && SYN.available()) {
+        const o = (S.quotes || [])[S.quotes.length - 1];
+        if (o) SYN.add('quotes', Object.assign({}, o, { custKey: custKeyOf(c), t: Date.now() }));
+      }
       PRICE_ROWS = [];
     },
     askPrice(pid) {
@@ -2646,14 +2720,25 @@
         });
         save();
       } catch (e) { }
-      /* 客户还停在结算页：立刻刷新，好让「我的结算记录」马上多一行 */
+      /* 服务器模式：把这张单推到共享区，员工在别的电脑上也能看到 */
+      if (window.SYN && SYN.available() && (A.me() || {}).role === 'customer') {
+        const uu2 = A.me() || {};
+        SYN.add('inquiries', {
+          no: r.no, userId: uu2.id, userName: uu2.name || '', company: uu2.company || '',
+          contact: uu2.contact || {}, demo: !!uu2.demo, custKey: custKeyOf(uu2),
+          items: items, note: note, t: Date.now()
+        }).then(function () {
+          const o = (S.myOrders || [])[0];
+          if (o) SYN.add('settlements', Object.assign({ custKey: custKeyOf(uu2) }, o));
+        });
+      }      /* 客户还停在结算页：立刻刷新，好让「我的结算记录」马上多一行 */
       if (A.me() && A.me().role === 'customer' && S.tab === 'quote') vQuote();
       toast(LZ('询价 ' + r.no + ' 已提交', 'Inquiry ' + r.no + ' sent'));
       A.track('inquiry', { no: r.no, n: items.length });
       RQ = null;
     },
     loadInquiry(no) {
-      const q = A.inquiries().find(x => x.no === no);
+      const q = inquiriesAll().find(x => x.no === no);
       if (!q) { toast('询价单不存在'); return; }
       S.cart = q.items.map(it => ({ pid: it.pid, qty: it.qty, mat: (D.products.find(p => p.id === it.pid) || {}).material }));
       save(); ACT.tab('quote');
@@ -3172,6 +3257,7 @@
       S.asStaff.push(Object.assign({}, rec));
       S.asBoss.push(Object.assign({}, rec));
       save(); vAfterSale();
+      if (window.SYN && SYN.available()) SYN.add('aftersales', Object.assign({}, rec, { deletedBy: [] }));
       toast(LZ('已提交，销售和老板都会看到', 'Submitted — sales and owner can see it'));
     },
     asSt(id, t) {
@@ -3183,7 +3269,16 @@
     asDel(id) {
       const arr = A.isBoss() ? S.asBoss : S.asStaff;
       const i = arr.findIndex(x => x.id === id);
-      if (i >= 0) { arr.splice(i, 1); save(); vAfterSales(); toast(LZ('已删除（只删这边这份）', 'Deleted on this side only')); }
+      if (i >= 0) {
+        const rec = arr[i];
+        arr.splice(i, 1); save(); vAfterSales();
+        if (window.SYN && SYN.available() && rec.net !== undefined && rec.id) {
+          const who = A.isBoss() ? 'boss' : 'staff';
+          const cur = (SYN.list('aftersales') || []).find(x => x.id === rec.id);
+          if (cur) SYN.patch('aftersales', rec.id, { deletedBy: (cur.deletedBy || []).concat([who]) });
+        }
+        toast(LZ('已删除（只删这边这份）', 'Deleted on this side only'));
+      }
     },
     bossStaff(name) {
       if (!name) return;
@@ -3577,7 +3672,7 @@
 
   /* ================= 客户询价（员工端） ================= */
   function vInquiries() {
-    const list = A.inquiries();
+    const list = inquiriesAll();
     const el = $('#p-inquiries');
     if (!list.length) {
       el.innerHTML = `<h1>${T('nav.inquiries')}</h1>
@@ -3917,6 +4012,16 @@
   $('#chatBadge').textContent = S.chat.msgs.filter(m => m.match && m.match.top).length;
   $('#chatBadge').style.display = S.chat.msgs.some(m => m.match && m.match.top) ? 'inline-block' : 'none';
   render();
+  /* ---- 共享区：服务器模式下拉数据 + 轮询（客户和员工不在同一台电脑也能互通） ---- */
+  if (window.SYN && SYN.available()) {
+    const sig = () => [SYN.list('quotes').length, SYN.list('settlements').length,
+      SYN.list('inquiries').length, SYN.list('aftersales').length].join('/');
+    let lastSig = '';
+    SYN.start(function (first) {
+      mergeNet();
+      if (first || sig() !== lastSig) { lastSig = sig(); render(); }
+    });
+  }
   if (!storageOK) {
     const n = document.createElement('div');
     n.className = 'notice warn';

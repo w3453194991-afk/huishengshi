@@ -7,6 +7,8 @@ const url = require('url');
 
 const ROOT = path.resolve(__dirname, '..');
 const PORT = Number(process.env.PORT) || 8765;
+/* 监听地址：默认只听本机；要放到服务器上给别人访问，用 HOST=0.0.0.0 启动 */
+const HOST = process.env.HOST || '127.0.0.1';
 const MIME = {
   '.html': 'text/html; charset=utf-8',
   '.js': 'text/javascript; charset=utf-8',
@@ -273,13 +275,123 @@ function versionApi(req, res) {
   }
 }
 
+/* ---------- 共享数据仓库：/api/store ----------
+   放服务器上跑的时候，询价 / 报价 / 结算单 / 售后 存这里，所有人看到的是同一份。
+   落盘到 data/store.json（原子写：先写 .tmp 再改名），最多保留每类 3000 条。 */
+const STORE_DIR = path.join(ROOT, 'data');
+const STORE_FILE = path.join(STORE_DIR, 'store.json');
+const COLLS = ['inquiries', 'quotes', 'settlements', 'aftersales'];
+const COLL_MAX = 3000;
+let STORE = null, STORE_T = null;
+
+function storeLoad() {
+  if (STORE) return STORE;
+  STORE = { v: 1, seq: 0 };
+  COLLS.forEach(c => { STORE[c] = []; });
+  try {
+    const o = JSON.parse(fs.readFileSync(STORE_FILE, 'utf8'));
+    STORE.seq = Number(o.seq) || 0;
+    COLLS.forEach(c => { if (Array.isArray(o[c])) STORE[c] = o[c]; });
+  } catch (e) { /* 首次运行没有文件，正常 */ }
+  return STORE;
+}
+function storeFlush() {
+  if (STORE_T) return;
+  STORE_T = setTimeout(() => {
+    STORE_T = null;
+    try {
+      fs.mkdirSync(STORE_DIR, { recursive: true });
+      const tmp = STORE_FILE + '.tmp';
+      fs.writeFileSync(tmp, JSON.stringify(STORE), 'utf8');
+      fs.renameSync(tmp, STORE_FILE);
+    } catch (e) { console.error('[store] 写盘失败:', e.message); }
+  }, 150);
+}
+function readBody(req, limit) {
+  return new Promise((resolve, reject) => {
+    let n = 0; const chunks = [];
+    req.on('data', c => {
+      n += c.length;
+      if (n > (limit || 4 * 1024 * 1024)) { reject(new Error('body too large')); req.destroy(); return; }
+      chunks.push(c);
+    });
+    req.on('end', () => {
+      const raw = Buffer.concat(chunks).toString('utf8');
+      if (!raw) return resolve({});
+      try { resolve(JSON.parse(raw)); } catch (e) { reject(new Error('bad json')); }
+    });
+    req.on('error', reject);
+  });
+}
+function storeAdd(coll, item) {
+  const st = storeLoad();
+  if (!COLLS.includes(coll)) throw new Error('unknown collection: ' + coll);
+  const it = Object.assign({}, item);
+  st.seq += 1;
+  it.seq = st.seq;
+  it.id = it.id || (coll.slice(0, 2) + '_' + st.seq);
+  it.t = it.t || Date.now();
+  st[coll].push(it);
+  if (st[coll].length > COLL_MAX) st[coll] = st[coll].slice(-COLL_MAX);
+  storeFlush();
+  return it;
+}
+async function storeApi(req, res) {
+  const u = url.parse(req.url, true);
+  const p = u.pathname.replace(/\/+$/, '');
+  try {
+    if (p === '/api/store/all' || p === '/api/store/ping') {
+      const st = storeLoad();
+      if (p === '/api/store/ping') return sendJson(res, 200, { ok: true, mode: 'server', seq: st.seq });
+      const data = {};
+      COLLS.forEach(c => { data[c] = st[c]; });
+      return sendJson(res, 200, { ok: true, seq: st.seq, data });
+    }
+    if (req.method === 'POST' && p === '/api/store/add') {
+      const b = await readBody(req);
+      const it = storeAdd(String(b.coll || ''), b.item || {});
+      return sendJson(res, 200, { ok: true, item: it });
+    }
+    if (req.method === 'POST' && p === '/api/store/patch') {
+      const b = await readBody(req);
+      const st = storeLoad();
+      const arr = st[String(b.coll || '')];
+      if (!Array.isArray(arr)) return sendJson(res, 200, { ok: false, error: 'unknown collection' });
+      const it = arr.find(x => x.id === b.id || String(x.seq) === String(b.id));
+      if (!it) return sendJson(res, 200, { ok: false, error: 'not found' });
+      Object.assign(it, b.patch || {});
+      storeFlush();
+      return sendJson(res, 200, { ok: true, item: it });
+    }
+    if (req.method === 'POST' && p === '/api/store/del') {
+      const b = await readBody(req);
+      const st = storeLoad();
+      const arr = st[String(b.coll || '')];
+      if (!Array.isArray(arr)) return sendJson(res, 200, { ok: false, error: 'unknown collection' });
+      const i = arr.findIndex(x => x.id === b.id);
+      if (i >= 0) arr.splice(i, 1);
+      storeFlush();
+      return sendJson(res, 200, { ok: true, removed: i >= 0 });
+    }
+    return sendJson(res, 404, { ok: false, error: 'no such store endpoint' });
+  } catch (e) {
+    return sendJson(res, 200, { ok: false, error: String((e && e.message) || e) });
+  }
+}
+
 http.createServer((req, res) => {
   if (req.url.indexOf('/api/redfox') === 0) return redfoxApi(req, res);
   if (req.url.indexOf('/api/lookup') === 0) return lookupApi(req, res);
   if (req.url.indexOf('/api/fx') === 0) return fxApi(req, res);
   if (req.url.indexOf('/api/version') === 0) return versionApi(req, res);
+  if (req.url.indexOf('/api/store') === 0) return storeApi(req, res);
   let rel = decodeURIComponent(url.parse(req.url).pathname);
   if (rel === '/') rel = '/index.html';
+  /* 不进静态目录：数据与工具（含 Key）不能被浏览器直接下载 */
+  if (/^\/data\//i.test(rel) || /^\/tools\//i.test(rel) || /^\/\./.test(rel) || /\/(\.git|\.env)/i.test(rel)) {
+    res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
+    return res.end('404 Not Found: ' + rel);
+  }
   const fp = path.join(ROOT, rel);
   // 防目录穿越
   if (!fp.startsWith(ROOT)) { res.writeHead(403); return res.end('403'); }
@@ -323,10 +435,13 @@ http.createServer((req, res) => {
     if (req.method === 'HEAD') return res.end();
     fs.createReadStream(fp).pipe(res);
   });
-}).listen(PORT, '127.0.0.1', () => {
+}).listen(PORT, HOST, () => {
   console.log('');
   console.log('  冠英 · 选型与报价中台已启动');
-  console.log('  浏览器打开： http://127.0.0.1:' + PORT + '/index.html');
+  console.log('  监听: ' + HOST + ':' + PORT);
+  console.log('  本机打开： http://127.0.0.1:' + PORT + '/index.html');
+  if (HOST !== '127.0.0.1') console.log('  局域网/服务器访问： http://<这台机器的IP>:' + PORT + '/index.html');
+  console.log('  共享数据文件： ' + STORE_FILE);
   console.log('  关闭本窗口即停止服务。');
   console.log('');
 });

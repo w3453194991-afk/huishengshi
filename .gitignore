@@ -18,3 +18,5 @@ node_modules/
 
 # RedFox Key 只放服务端，绝不进仓库
 tools/redfox-key.txt
+data/
+kooying.tar.gz
