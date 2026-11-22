@@ -27,12 +27,17 @@ window.AUTH = (function () {
   function save() {
     try { localStorage.setItem(KEY, JSON.stringify(db)); } catch (e) { }
   }
+  /** 另一个窗口改了数据：重读 db，但保留本标签页的登录身份（两个窗口可以一个是员工一个是客户） */
+  function reload() { db = load(); return db; }
   function readSession() {
+    /* 先看本标签页自己的身份：同一个浏览器开两个窗口（一个员工一个客户）时互不顶掉 */
+    try { const s = sessionStorage.getItem(SES); if (s) return s; } catch (e) { }
     try { return localStorage.getItem(SES) || null; } catch (e) { return null; }
   }
   function writeSession(id) {
     session = id || null;
     try { session ? localStorage.setItem(SES, id) : localStorage.removeItem(SES); } catch (e) { }
+    try { session ? sessionStorage.setItem(SES, id) : sessionStorage.removeItem(SES); } catch (e) { }
   }
 
   function seed() {
@@ -303,6 +308,7 @@ window.AUTH = (function () {
   return {
     CONTACT_TYPES, STAFF_CODE, BOSS_CODE,
     me, isStaff, isBoss, isDemoStaff, login, loginDemo, logout, track, stats, customers, sendUrl, setTag, submitInquiry, inquiries, addCustomer,
+    reload, KEY,
     all: () => db.users
   };
 })();

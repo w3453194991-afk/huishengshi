@@ -43,6 +43,8 @@
   };
   let storageOK = true;
   let VIEWQ = null;
+  /* 跨窗口同步用：记下本标签页最后写入的内容，避免自己写自己读形成循环 */
+  let LAST_HUB = '', LAST_USERS = '', SYNCING = false;
   let RQ = null;
   let PRICE_ROWS = [];
   /** 名片识别演示：定时器与样例索引（识别结果仅演示，接口接上后换成真 OCR） */
@@ -50,13 +52,15 @@
 
   function save() {
     try {
-      localStorage.setItem(KEY, JSON.stringify({
+      const json = JSON.stringify({
         cart: S.cart, customerId: S.customerId, leads: S.leads, quotes: S.quotes,
         overrides: S.overrides, draftFits: S.draftFits, quoteMeta: S.quoteMeta, custMsgs: S.custMsgs, deals: S.deals,
         fuMute: S.fuMute, fuFlags: S.fuFlags, fuNotes: S.fuNotes,
         /* 新增：售后服务两份独立清单 + 税务查询上次所选市场 */
         asStaff: S.asStaff, asBoss: S.asBoss, tax: S.tax, myOrders: S.myOrders, fx: { amt: S.fx.amt, from: S.fx.from, to: S.fx.to }
-      }));
+      });
+      localStorage.setItem(KEY, json);
+      LAST_HUB = json;
     } catch (e) { storageOK = false; }
   }
   function load() {
@@ -80,6 +84,46 @@
     });
   }
   load();
+
+  /* ================= 跨窗口同步 =================
+     同一个浏览器开两个窗口（一个员工、一个客户）时，两个窗口各有一份内存数据。
+     一边提交询价 / 改购物车，另一边靠 storage 事件重读并重绘，不用手动刷新。
+     注意：只重读数据，不改本窗口的登录身份——两个窗口才能同时一个员工一个客户。 */
+  LAST_HUB = (function () { try { return localStorage.getItem(KEY) || ''; } catch (e) { return ''; } })();
+  LAST_USERS = (function () { try { return localStorage.getItem(A.KEY) || ''; } catch (e) { return ''; } })();
+  function syncRender() {
+    clearTimeout(syncRender._t);
+    syncRender._t = setTimeout(() => {
+      if (SYNCING) return;
+      SYNCING = true;
+      try { render(); } catch (e) { }
+      setTimeout(() => { SYNCING = false; }, 600);
+    }, 120);
+  }
+  window.addEventListener('storage', e => {
+    try {
+      if (!e.key) return;
+      if (e.key === A.KEY) {
+        if (e.newValue === LAST_USERS) return;
+        LAST_USERS = e.newValue || '';
+        const before = (A.inquiries() || []).length;
+        A.reload();
+        const after = (A.inquiries() || []).length;
+        if (A.isStaff() && after > before) {
+          const q = A.inquiries()[0];
+          if (q) toast('收到新询价 ' + (q.no || '') + (q.user ? ' · ' + q.user.name : ''));
+        }
+        syncRender();
+        return;
+      }
+      if (e.key === KEY) {
+        if (e.newValue === LAST_HUB) return;
+        LAST_HUB = e.newValue || '';
+        load();
+        syncRender();
+      }
+    } catch (err) { }
+  });
 
   const customer = () => {
     const base = D.customers.find(c => c.id === S.customerId) || D.customers[0];
