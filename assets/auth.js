@@ -44,7 +44,7 @@ window.AUTH = (function () {
     const users = [
       {
         id: 'U1', role: 'customer', name: 'Carlos Mendoza', company: 'Transportes Mendoza', country: '墨西哥',
-        contact: { type: 'WhatsApp', value: '+52 55 1234 5678' }, tags: ['车队', '墨西哥', 'A 类'],
+        contact: { type: 'WhatsApp', value: '+52 55 1234 5678' }, tags: ['母婴连锁', '墨西哥', 'A 类'],
         created: min(60 * 24 * 9), lastSeen: min(35),
         events: [
           { t: min(60 * 5), type: 'search', d: { q: 'también necesitamos pastillas traseras 200 sets' } },
@@ -113,7 +113,7 @@ window.AUTH = (function () {
       let u = db.users.find(x => x.role === 'boss' && !x.demo);
       if (!u) {
         u = {
-          id: 'B1', role: 'boss', name: o.name || '老板', company: 'KOOYING', country: '中国',
+          id: 'B1', role: 'boss', name: o.name || '老板', company: 'MIANDOU', country: '中国',
           contact: { type: 'Email', value: o.value || 'boss@kooying.com' }, tags: [], created: now(), lastSeen: now(), events: []
         };
         db.users.push(u);
@@ -126,7 +126,7 @@ window.AUTH = (function () {
       let u = db.users.find(x => x.role === 'staff' && !x.demo);
       if (!u) {
         u = {
-          id: 'S1', role: 'staff', name: o.name || '销售顾问', company: 'KOOYING', country: '中国',
+          id: 'S1', role: 'staff', name: o.name || '销售顾问', company: 'MIANDOU', country: '中国',
           contact: { type: 'Email', value: o.value || 'sales@kooying.com' }, tags: [], created: now(), lastSeen: now(), events: []
         };
         db.users.push(u);
@@ -161,7 +161,7 @@ window.AUTH = (function () {
   function submitInquiry(items, note) {
     const u = me();
     if (!u || u.role !== 'customer') return { ok: false, msg: '请先登录' };
-    if (!items || !items.length) return { ok: false, msg: '没有型号' };
+    if (!items || !items.length) return { ok: false, msg: '没有款号' };
     u.events = u.events || [];
     const seq = u.events.filter(e => e.type === 'inquiry').length + 1;
     const d = new Date();
@@ -192,13 +192,13 @@ window.AUTH = (function () {
     if (!u) {
       u = boss
         ? {
-          id, role: 'boss', demo: true, name: '体验老板', company: 'KOOYING (demo)', country: '中国',
+          id, role: 'boss', demo: true, name: '体验老板', company: 'MIANDOU (demo)', country: '中国',
           contact: { type: 'Demo', value: 'demo.boss@kooying.local' }, tags: ['体验版'],
           created: now(), lastSeen: now(), events: []
         }
         : staff
         ? {
-          id, role: 'staff', demo: true, name: '体验员工', company: 'KOOYING (demo)', country: '中国',
+          id, role: 'staff', demo: true, name: '体验员工', company: 'MIANDOU (demo)', country: '中国',
           contact: { type: 'Demo', value: 'demo.staff@kooying.local' }, tags: ['体验版'],
           created: now(), lastSeen: now(), events: []
         }
@@ -252,7 +252,7 @@ window.AUTH = (function () {
     const c = (u && u.contact) || {};
     const v = (c.value || '').trim();
     const digits = v.replace(/[^\d]/g, '');
-    if (v.includes('@')) return 'mailto:' + v + '?subject=' + encodeURIComponent('KOOYING brake pads') + '&body=' + encodeURIComponent(text);
+    if (v.includes('@')) return 'mailto:' + v + '?subject=' + encodeURIComponent('MIANDOU brake pads') + '&body=' + encodeURIComponent(text);
     if (digits) return 'https://wa.me/' + digits + '?text=' + encodeURIComponent(text);
     return '';
   }

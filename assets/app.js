@@ -1,4 +1,4 @@
-/* 冠英 · 选型与报价中台 —— 界面层 */
+/* 棉豆 · 童装选款与订货中台 —— 界面层 */
 (function () {
   const D = window.DB, E = window.Engine;
   const esc = E.esc, money = E.money, norm = E.norm;
@@ -20,7 +20,7 @@
     draftFits: [],
     filters: { cat: '', brand: '', mat: '', q: '', onlyFit: false, sort: '' },
     packCfg: { cover: true, quote: true, spec: true, test: true, confirm: true },
-    content: { pid: (D.products.find(p => p.code === 'HOWO1') || D.products[0]).id, market: '墨西哥', lang: 'ES', platform: 'TikTok', seconds: 30, pain: '同车型装不同桥，买错就抖、就吃片' },
+    content: { pid: (D.products.find(p => p.code === 'HOWO1') || D.products[0]).id, market: '墨西哥', lang: 'ES', platform: 'TikTok', seconds: 30, pain: '同适用场景装不同桥，买错就抖、就吃片' },
     script: null,
     chat: { open: false, msgs: [], auto: true, idx: 0 },
     custMsgs: [],
@@ -73,13 +73,13 @@
     } catch (e) { storageOK = false; }
     // 覆盖产品字段
     Object.keys(S.overrides || {}).forEach(pid => { const p = E.byId.get(pid); if (p) Object.assign(p, S.overrides[pid]); });
-    // 草稿适配并入
+    // 草稿适用并入
     (S.draftFits || []).forEach(f => {
       if (!E.byId.has(f.pid)) return;
       D.fitments.push({
         id: f.id, vid: f.vid, aid: f.aid, pid: f.pid, pos: f.pos, fit: f.fit, conf: f.conf, src: f.src, q: f.q || [],
         vName: (D.vehicles.find(v => v.id === f.vid) || {}).brand ? `${(D.vehicles.find(v => v.id === f.vid)).brand} ${D.vehicles.find(v => v.id === f.vid).series} ${D.vehicles.find(v => v.id === f.vid).model}` : '通用',
-        aName: (D.axles.find(a => a.id === f.aid) || {}).brand ? `${(D.axles.find(a => a.id === f.aid)).brand} ${D.axles.find(a => a.id === f.aid).model}` : '按旧件确认'
+        aName: (D.axles.find(a => a.id === f.aid) || {}).brand ? `${(D.axles.find(a => a.id === f.aid)).brand} ${D.axles.find(a => a.id === f.aid).model}` : '按旧款确认'
       });
     });
   }
@@ -186,24 +186,24 @@
   }
   function seedDeals() {
     const C = [
-      ['Transportes Mendoza', '墨西哥'],
-      ['Al-Sayed Auto Parts', '沙特阿拉伯'],
-      ['Minh Phat Trucking', '越南'],
-      ['Frenos Brasil Ltda', '巴西']
+      ['Babyland Retail', '墨西哥'],
+      ['Kinderwelt Handel', '德国'],
+      ['Rainbow Kids Ltd.', '英国'],
+      ['萌宝童装批发商行', '中国']
     ];
     const RAW = [
-      ['HOWO1', 1200, '已成交', 4, '李娜', 0, 'A7 后桥 HC16，第三次复购'],
-      ['29087', 600, '已成交', 9, '李娜', 3, 'BPW TS2 挂车，随资料包一起'],
-      ['HOWO2', 800, '谈判中', 12, '李娜', 0, '要 12 孔版本，等样品确认'],
-      ['4515EA', 1500, '已成交', 18, '张伟', 1, '沙特批发，先走一个柜'],
-      ['29090', 400, '已报价', 21, '张伟', 1, '价格卡在 4.2，等对方回'],
-      ['19049-1', 900, '已成交', 27, '张伟', 1, '老客户补单'],
-      ['4709', 2000, '已成交', 33, '王强', 2, '越南车队，年单第一笔'],
-      ['17276', 300, '已丢单', 39, '王强', 2, '对手便宜 8%，价格没跟上'],
-      ['19150', 700, '谈判中', 44, '王强', 2, '想先要试验报告'],
-      ['17991', 500, '已成交', 52, '张伟', 1, ''],
-      ['19010', 1000, '已成交', 61, '李娜', 3, '巴西进口商，走海运'],
-      ['29088', 350, '已报价', 70, '张伟', 1, '等对方确认车型']
+      ['MD1001', 1200, '已成交', 4, '李娜', 0, '100 码短袖T恤，春季档第三次返单'],
+      ['MD1016', 600, '已成交', 9, '李娜', 3, '110 码公主纱裙，随订货资料一起'],
+      ['MD1027', 800, '谈判中', 12, '李娜', 0, '卫衣卫裤套装，等配色确认'],
+      ['MD1023', 1500, '已成交', 18, '张伟', 1, '防晒外套 UPF50+，走一个柜'],
+      ['MD1009', 400, '已报价', 21, '张伟', 1, '大童牛仔裤，价格卡在 6.8'],
+      ['MD1030', 900, '已成交', 27, '张伟', 1, '婴儿哈衣 A 类，老客户补单'],
+      ['MD1031', 700, '已成交', 33, '李娜', 0, '分体家居服，有机棉'],
+      ['MD1005', 1100, '已成交', 38, '张伟', 1, '连帽卫衣，冬季备货'],
+      ['MD1029', 350, '已报价', 45, '李娜', 2, '婴儿睡袋，等 OEKO-TEX 报告'],
+      ['MD1050', 900, '已成交', 52, '张伟', 1, '针织连衣裙，秋冬款'],
+      ['MD1077', 260, '谈判中', 61, '李娜', 0, '防晒外套，先要样衣'],
+      ['MD1092', 1400, '已成交', 74, '张伟', 1, '女童百褶裙，校服配套']
     ];
     return RAW.map((r, i) => {
       const p = D.products.find(x => x.code === r[0]) || {};
@@ -222,12 +222,12 @@
 
   /* ================= 路由 ================= */
   const TABS = [
-    ['home', '工作台', '◱'], ['select', '智能选型', '◎'], ['products', '产品库', '▤'],
-    ['graph', '适配图谱', '⋔'], ['quote', '报价单', '￥'], ['pack', '资料包', '❐'],
+    ['home', '工作台', '◱'], ['select', '智能选款', '◎'], ['products', '产品库', '▤'],
+    ['graph', '适用图谱', '⋔'], ['quote', '报价单', '￥'], ['pack', '资料包', '❐'],
     ['visits', '客户浏览', '👁'], ['leads', '询盘线索', '✉'], ['network', '用户画像', '◉'], ['content', '获客内容', '▶'],
     ['import', '数据导入', '⇪']
   ];
-  // 客户能看的：首页 / 选型 / 产品库 / 我的报价 / 自定义定制
+  // 客户能看的：首页 / 选款 / 产品库 / 我的报价 / 自定义定制
   const CUST_TABS = ['home', 'select', 'products', 'quote', 'custom', 'aftersale'];
   // 员工视角的基础页（比客户多一个「资料包」）
   const STAFF_TABS = ['home', 'select', 'products', 'quote', 'pack'];
@@ -235,9 +235,9 @@
   const NAV_GROUPS = [
     // 客户管理：客户提的需求 + 客户在我方站内的行为 + 我们要主动找的人
     { key: 'clues', label: 'nav.g.clues', items: ['addcust', 'inquiries', 'aftersales', 'leads', 'visits', 'network', 'deals', 'redfox'] },
-    // 工具书：查税率、查库里没有的型号
+    // 工具书：查税率、查库里没有的款号
     { key: 'tools', label: 'nav.g.tools', items: ['tax', 'model', 'fx'] },
-    // 型号数据：都是「补充 / 校正型号与适配」的维护动作
+    // 款号数据：都是「补充 / 校正款号与适用」的维护动作
     { key: 'data', label: 'nav.g.data', items: ['xref', 'graph', 'import'] }
   ];
   const STAFF_ONLY = NAV_GROUPS.reduce((a, g) => a.concat(g.items), []);
@@ -252,7 +252,7 @@
   let navOpen = '';
   /** 获客的三种视图都收进「用户画像」这一个入口 */
   const ACQ_PAGES = ['network', 'search', 'content'];
-  /** 客户只看选型、产品、报价、资料包；其余是员工端 */
+  /** 客户只看选款、产品、报价、资料包；其余是员工端 */
   function allowedTab(k) {
     if (A.isBoss()) return true;
     if (A.isStaff()) return k !== 'boss';
@@ -283,12 +283,12 @@
   const CUST_LABEL = { home: 'nav.homeCust', quote: 'nav.cart', aftersale: 'nav.aftersale' };
   /** 客户端只有「选购」一个入口：首页也收进同一个菜单里 */
   const CUST_MENU = [
-    ['home', '⌂', '看类别、找型号、进客服', 'Categories, search and chat'],
-    ['select', '◎', '车型 / 车桥 / 编码 → 候选型号', 'Vehicle, axle or code to candidates'],
-    ['products', '▤', '全部型号，规格 · 材质 · 图片', 'All parts with specs and photos'],
-    ['custom', '✂', '非标尺寸 / 材质 / 包装 / 打标', 'Non-standard size, mix, packing, marking'],
-    ['quote', '￥', '已选型号，核对金额后提交结算', 'Your picks — check the amount and submit'],
-    ['aftersale', '☎', '装车问题、退换、索赔都在这儿提', 'Install issues, returns and claims']
+    ['home', '⌂', '看类别、找款号、进客服', 'Categories, search and chat'],
+    ['select', '◎', '适用场景 / 尺码 / 编码 → 候选款号', 'Vehicle, axle or code to candidates'],
+    ['products', '▤', '全部款号，规格 · 面料 · 图片', 'All parts with specs and photos'],
+    ['custom', '✂', '非标尺寸 / 面料 / 包装 / 打标', 'Non-standard size, mix, packing, marking'],
+    ['quote', '￥', '已选款号，核对金额后提交结算', 'Your picks — check the amount and submit'],
+    ['aftersale', '☎', '尺码不合适、色差、开线，都在这儿提', 'Size, colour or stitching issues']
   ];
   /** 顶栏真实高度 → 导航吸顶位置，避免被压住 */
   function syncTopbarH() {
@@ -360,9 +360,9 @@
   }
   /** 权限一览弹层 */
   const PERM_CUST = [
-    ['首页', '看类别、找型号、提交询价'],
-    ['智能选型', '报车型 / 车桥 / 旧件编码，出候选型号'],
-    ['产品库', '看规格、材质、编码、图片'],
+    ['首页', '看类别、找款号、提交询价'],
+    ['智能选款', '报适用场景 / 尺码 / 旧款编码，出候选款号'],
+    ['产品库', '看规格、面料、编码、图片'],
     ['我的报价', '自己组的单子，阶梯价 + 运费'],
     ['我的资料', '把报价 + 产品页 + 试验打包下载'],
     ['提交询价', '填数量，等员工回价（2 小时内）']
@@ -373,8 +373,8 @@
     ['客户浏览', '谁在看、看了什么、意向分'],
     ['询盘线索', '跟进状态、下一步动作'],
     ['用户画像', '画像 + 客户搜索 + 获客内容，一个入口三段切换'],
-    ['适配图谱', '车型 → 车桥 → 型号的对应关系'],
-    ['数据导入', 'Excel 批量导入型号 / 适配'],
+    ['适用图谱', '适用场景 → 尺码 → 款号的对应关系'],
+    ['数据导入', 'Excel 批量导入款号 / 适用'],
     ['热门追踪', 'TikTok / IG / YouTube 热门内容 → 选题与线索'],
     ['转单云（外部）', '「客户管理」菜单最后一项，新窗口打开转单云后台'],
     ['报价与资料', '同上，但可回写客户档案']
@@ -471,7 +471,7 @@
     const zh = I.getLang() === 'zh';
     const caps = [
       ['尺寸', '厚度 / 宽度 / 长度按图纸做，公差 ±0.3mm', 'Size', 'Thickness, width, length to drawing, ±0.3mm'],
-      ['材质', '半金属 / 陶瓷 / 风电专用配方可调', 'Compound', 'Semi-metallic, ceramic or wind-turbine mixes'],
+      ['面料', '半金属 / 陶瓷 / 风电专用配方可调', 'Compound', 'Semi-metallic, ceramic or wind-turbine mixes'],
       ['包装', '彩盒 / 中性盒 / 一箱几套，贴标自定义', 'Packing', 'Colour or neutral box, sets per carton, labels'],
       ['打标', '激光打标、丝印 logo、钢印编码', 'Marking', 'Laser, silk-screen logo, stamped code'],
       ['打样', '7 天出样，样品费下单可抵', 'Sampling', 'Sample in 7 days, cost credited to the order']
@@ -479,21 +479,21 @@
     const sentRows = (S.custMsgs || []).filter(m => m.from === 'me' && /^定制需求/.test(m.text)).slice(-3).reverse();
     $('#p-custom').innerHTML = `
       <h1>${T('nav.custom')}</h1>
-      <p class="muted" style="margin:-4px 0 16px">${zh ? '非标尺寸、材质、包装、打标都能做。填完提交，2 小时内回你方案和打样价。' : 'Non-standard size, material, packing or marking — fill this in and we reply within 2 hours.'}</p>
+      <p class="muted" style="margin:-4px 0 16px">${zh ? '非标尺寸、面料、包装、打标都能做。填完提交，2 小时内回你方案和打样价。' : 'Non-standard size, material, packing or marking — fill this in and we reply within 2 hours.'}</p>
       ${CU_SENT ? `<div class="cu-ok"><b>${zh ? '已提交' : 'Submitted'}</b><span>${esc(CU_SENT.prod)} × ${CU_SENT.qty}</span><i>${esc(CU_SENT.need)}</i></div>` : ''}
       <div class="cu-grid">
         <div class="card">
           <div class="field"><label>${zh ? '要定制的产品' : 'Product'}</label>
-            <input id="cuProd" placeholder="${zh ? '如 HOWO1 鼓式衬片 / 风电片 / 制动蹄' : 'e.g. HOWO1 brake lining'}"></div>
+            <input id="cuProd" placeholder="${zh ? '如 HOWO1 鼓式款式 / 风电片 / 童装套装' : 'e.g. HOWO1 brake lining'}"></div>
           <div class="field"><label>${zh ? '数量' : 'Quantity'}</label>
             <input id="cuQty" type="number" min="1" value="200"></div>
-          <div class="field"><label>${zh ? '改哪里（尺寸 / 材质 / 包装 / 打标）' : 'What to change'}</label>
+          <div class="field"><label>${zh ? '改哪里（尺寸 / 面料 / 包装 / 打标）' : 'What to change'}</label>
             <textarea id="cuNeed" rows="4" placeholder="${zh ? '如：厚度加 2mm，改成 4 套一箱，箱面印我们的 logo' : 'e.g. +2mm thickness, 4 sets per carton, our logo on the box'}"></textarea></div>
           <div class="field"><label>${zh ? '联系方式' : 'Contact'}</label>
             <input id="cuContact" value="${esc(contact)}"></div>
           <div class="cu-act">
             <button class="btn primary" data-act="customSubmit">${zh ? '提交定制需求' : 'Send request'}</button>
-            <button class="btn" data-act="tab" data-id="products">${zh ? '先看常规型号' : 'Browse standard parts'}</button>
+            <button class="btn" data-act="tab" data-id="products">${zh ? '先看常规款号' : 'Browse standard parts'}</button>
           </div>
         </div>
         <div class="card cu-side">
@@ -556,35 +556,22 @@
     all.sort((a, b) => b.likes - a.likes);
     return { posts: ps, videos: vs, likes, count: all.length, top: all[0] || null };
   }
-  /** 官网标题里的品牌标签 → 库里已建档的车型（用于没有逐条适配关系时兜底） */
+  /** 官网标题里的品牌标签 → 库里已建档的适用场景（用于没有逐条适用关系时兜底） */
   const APP_VEH = {
-    '重汽豪沃': ['V-HOWO-A7', 'V-HOWO-TH7'],
-    '一汽解放': ['V-J6P', 'V-JH6', 'V-J7'],
-    '东风': ['V-TIANLONG', 'V-TIANJIN'],
-    '陕汽/斯太尔': ['V-DELONG'],
-    '福田': ['V-AUMAN'],
-    '江淮格尔发': ['V-JAC'],
-    '大运': ['V-DAYUN'],
-    '上汽红岩': ['V-HONGYAN'],
-    '宇通': ['V-YUTONG'],
-    '金龙': ['V-KINGLONG'],
-    '现代客车/卡车': ['V-HYUNDAI-BUS'],
-    '大宇': ['V-DAEWOO-BUS'],
-    '日野 500': ['V-HINO500'],
-    '五十铃 FVR/FSR': ['V-ISUZU-FVR'],
-    '三菱 FUSO': ['V-FUSO'],
-    '日产 Condor': ['V-NISSAN'],
-    'DAF XF/CF': ['V-DAF-XF'],
-    '奔驰 Actros': ['V-ACTROS'],
-    '沃尔沃 FH': ['V-VOLVO-FH'],
-    'BPW 挂车桥': ['V-TRAILER-BPW'],
-    '富华桥挂车': ['V-TRAILER-FUWA'],
-    '约克挂车桥': ['V-TRAILER-BPW'],
-    'SAF 挂车桥': ['V-TRAILER-BPW'],
-    'Trailor 挂车桥': ['V-TRAILER-BPW'],
-    'ROR 挂车桥': ['V-TRAILER-BPW']
+    '幼儿园日常': ['V-KG'],
+    '户外运动': ['V-SC'],
+    '居家睡眠': ['V-HM'],
+    '派对演出': ['V-PT'],
+    '校园通勤': ['V-SH'],
+    '出行防晒': ['V-SU'],
+    '冬季保暖': ['V-WN'],
+    '婴儿爬服': ['V-BB'],
+    '牛仔系列': ['V-DN'],
+    '校服配套': ['V-SP'],
+    '旅行出行': ['V-TR'],
+    '送礼礼盒': ['V-GF']
   };
-  /** 某型号的常用车型：先取已建适配关系，再用官网标题的品牌推断兜底，按点赞量从高到低 */
+  /** 某款号的常用适用场景：先取已建适用关系，再用官网标题的品牌推断兜底，按点赞量从高到低 */
   function productVehicles(p) {
     const fits = E.fitsByP.get(p.id) || [];
     const map = new Map();
@@ -597,7 +584,7 @@
       if (f.conf === '已确认') e.conf = '已确认';
       map.set(f.vid, e);
     });
-    // 兜底：官网标题里写了适配哪个品牌/车系，但没有逐条适配关系
+    // 兜底：官网标题里写了适用哪个品牌/系列，但没有逐条适用关系
     (p.apps || []).forEach(app => {
       (APP_VEH[app] || []).forEach(vid => {
         if (map.has(vid)) return;
@@ -615,20 +602,20 @@
   function heatTable(p) {
     const rows = productVehicles(p);
     if (!rows.length) {
-      return `<div class="notice warn" style="font-size:12px">${I.getLang() === 'zh' ? '这个型号既没有适配关系，官网标题里也没有可识别的品牌。请在「适配图谱 → 新增适配关系」补一条，或先用「三步定位法」让客户确认车桥。' : 'No fitment and no brand in the catalog title. Add a fitment link, or confirm the axle with the customer first.'}</div>`;
+      return `<div class="notice warn" style="font-size:12px">${I.getLang() === 'zh' ? '这个款号既没有适用关系，官网标题里也没有可识别的品牌。请在「适用图谱 → 新增适用关系」补一条，或先用「三步定位法」让客户确认尺码。' : 'No fitment and no brand in the catalog title. Add a fitment link, or confirm the axle with the customer first.'}</div>`;
     }
     const max = Math.max(...rows.map(r => r.heat.likes), 1);
     const anyInferred = rows.some(r => r.inferred);
     return `<table class="heat-tbl">
-      <thead><tr><th style="width:34px">#</th><th>${T('h.apps')}</th><th>${I.getLang() === 'zh' ? '车桥 / 部位' : 'Axle / position'}</th><th>${T('h.code')}</th><th class="right">${T('nav.content')}</th><th class="right">${T('h.likes')}</th><th style="width:110px">${I.getLang() === 'zh' ? '热度' : 'Heat'}</th></tr></thead>
+      <thead><tr><th style="width:34px">#</th><th>${T('h.apps')}</th><th>${I.getLang() === 'zh' ? '尺码 / 部位' : 'Axle / position'}</th><th>${T('h.code')}</th><th class="right">${T('nav.content')}</th><th class="right">${T('h.likes')}</th><th style="width:110px">${I.getLang() === 'zh' ? '热度' : 'Heat'}</th></tr></thead>
       <tbody>${rows.map((r, i) => {
         const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `<span class="muted">${i + 1}</span>`;
         const pct = Math.max(4, Math.round(r.heat.likes / max * 100));
         return `<tr${r.inferred ? ' style="background:#fcfcfd"' : ''}>
           <td class="center">${medal}</td>
-          <td><b>${esc(I.getLang() === 'zh' ? r.vName : vehEn(r.vName))}</b> ${r.inferred ? `<span class="tag n" title="${LZ('依据官网标题里的品牌推断，尚未逐车型确认', 'Inferred from the catalogue title brand, not confirmed per model')}">${LZ('推断', 'inferred')}</span>` : confTag(r.conf)}
+          <td><b>${esc(I.getLang() === 'zh' ? r.vName : vehEn(r.vName))}</b> ${r.inferred ? `<span class="tag n" title="${LZ('依据官网标题里的品牌推断，尚未逐适用场景确认', 'Inferred from the catalogue title brand, not confirmed per model')}">${LZ('推断', 'inferred')}</span>` : confTag(r.conf)}
             ${r.heat.top ? `<div class="tiny muted">${esc(r.heat.top.author)} · ${esc(r.heat.top.platform)} · ${fmtN(r.heat.top.likes)} ${LZ('赞', 'likes')}</div>` : `<div class="tiny muted">${LZ('暂无内容', 'No content')}</div>`}</td>
-          <td class="small">${esc([...r.axles].join(' / ') || (r.inferred ? LZ('按车型确认', 'confirm by model') : LZ('按旧件', 'by old part')))}<div class="tiny muted">${r.pos.size ? esc([...r.pos].join('/')) + LZ('片', ' pcs') : '—'}</div></td>
+          <td class="small">${esc([...r.axles].join(' / ') || (r.inferred ? LZ('按适用场景确认', 'confirm by model') : LZ('按旧款', 'by old part')))}<div class="tiny muted">${r.pos.size ? esc([...r.pos].join('/')) + LZ('片', ' pcs') : '—'}</div></td>
           <td class="mono tiny">${esc([...r.codes].join(' / '))}</td>
           <td class="right small">${r.heat.count || '—'}</td>
           <td class="right mono b">${r.heat.likes ? fmtN(r.heat.likes) : '0'}</td>
@@ -654,10 +641,10 @@
     return [
       [zhL ? '编码' : 'Codes', cnt(codes, '条', 'items')],
       [zhL ? '试验' : 'Tests', cnt(tests, '条', 'reports')],
-      [zhL ? '适配车型' : 'Fitments', cnt(rows.length, '个', 'vehicles')],
-      [zhL ? '同车型其他型号' : 'Other codes', cnt(others.size, '个', 'codes')],
+      [zhL ? '适用场景' : 'Fitments', cnt(rows.length, '个', 'vehicles')],
+      [zhL ? '同适用场景其他款号' : 'Other codes', cnt(others.size, '个', 'codes')],
       [zhL ? '社媒内容' : 'Social posts', cnt(c.count, '条', 'posts')],
-      [zhL ? '车型点赞' : 'Likes', likes ? fmtN(likes) : '0']
+      [zhL ? '适用场景点赞' : 'Likes', likes ? fmtN(likes) : '0']
     ].map(([k, v]) => `<span class="chip"><span class="muted">${k}</span> <b>${v}</b></span>`).join('');
   }
 
@@ -669,18 +656,18 @@
     return [...m.entries()];
   }
 
-  /* ================= 智能选型 ================= */
+  /* ================= 智能选款 ================= */
   const EXAMPLES = {
-    zh: ['豪沃A7 后片 200套', '解放J6P 457桥 后片', '天龙 153桥 后刹车片 100片', 'BPW TS2 370 盘片', '奔驰Actros 后片', '58144-45211', '富华13吨桥 刹车蹄', '德龙X3000 汉德桥 后片 陶瓷', 'HINO 500 后片', '客户说：我这车用哪个刹车片？'],
-    en: ['HOWO A7 rear pads 200 pcs', 'FAW J6P 457 axle rear pads', 'Dongfeng Tianlong 153 axle rear 100 pcs', 'BPW TS2 370 disc pads', 'Mercedes Actros rear pads', '58144-45211', 'FUWA 13t axle brake shoes', 'Shacman X3000 rear ceramic pads', 'HINO 500 rear pads', 'Customer says: which pad fits my truck?'],
-    es: ['HOWO A7 pastillas traseras 200 pzas', 'FAW J6P eje 457 pastillas traseras', 'Dongfeng Tianlong eje 153 traseras 100 pzas', 'BPW TS2 370 pastillas de disco', 'Mercedes Actros pastillas traseras', '58144-45211', 'FUWA eje 13t zapatas de freno', 'Shacman X3000 traseras cerámicas', 'HINO 500 pastillas traseras', 'Cliente: ¿qué pastilla lleva mi camión?'],
-    pt: ['HOWO A7 pastilhas traseiras 200 pçs', 'FAW J6P eixo 457 pastilhas traseiras', 'Dongfeng Tianlong eixo 153 traseiras 100 pçs', 'BPW TS2 370 pastilhas de disco', 'Mercedes Actros pastilhas traseiras', '58144-45211', 'FUWA eixo 13t lonas de freio', 'Shacman X3000 traseiras cerâmicas', 'HINO 500 pastilhas traseiras', 'Cliente: qual pastilha serve no meu caminhão?'],
-    ar: ['HOWO A7 فحمات خلفية 200 قطعة', 'FAW J6P محور 457 فحمات خلفية', 'Dongfeng Tianlong محور 153 خلفية 100 قطعة', 'BPW TS2 370 فحمات قرصية', 'Mercedes Actros فحمات خلفية', '58144-45211', 'FUWA محور 13 طن أحذية فرامل', 'Shacman X3000 خلفية سيراميك', 'HINO 500 فحمات خلفية', 'العميل: أي فحمات تناسب شاحنتي؟'],
-    ru: ['HOWO A7 задние колодки 200 шт', 'FAW J6P мост 457 задние колодки', 'Dongfeng Tianlong мост 153 задние 100 шт', 'BPW TS2 370 дисковые колодки', 'Mercedes Actros задние колодки', '58144-45211', 'FUWA мост 13т тормозные накладки', 'Shacman X3000 задние керамика', 'HINO 500 задние колодки', 'Клиент: какие колодки подходят к моему грузовику?'],
-    id: ['HOWO A7 kampas rem belakang 200 pcs', 'FAW J6P axle 457 kampas belakang', 'Dongfeng Tianlong axle 153 belakang 100 pcs', 'BPW TS2 370 kampas cakram', 'Mercedes Actros kampas belakang', '58144-45211', 'FUWA axle 13t kampas tromol', 'Shacman X3000 belakang keramik', 'HINO 500 kampas belakang', 'Pelanggan: kampas apa yang cocok untuk truk saya?'],
-    vi: ['HOWO A7 má phanh sau 200 bộ', 'FAW J6P cầu 457 má phanh sau', 'Dongfeng Tianlong cầu 153 sau 100 bộ', 'BPW TS2 370 má phanh đĩa', 'Mercedes Actros má phanh sau', '58144-45211', 'FUWA cầu 13 tấn guốc phanh', 'Shacman X3000 sau gốm', 'HINO 500 má phanh sau', 'Khách: xe tôi dùng má phanh nào?'],
-    th: ['HOWO A7 ผ้าเบรกหลัง 200 ชุด', 'FAW J6P เพลา 457 ผ้าเบรกหลัง', 'Dongfeng Tianlong เพลา 153 หลัง 100 ชุด', 'BPW TS2 370 ผ้าเบรกจาน', 'Mercedes Actros ผ้าเบรกหลัง', '58144-45211', 'FUWA เพลา 13 ตัน ผ้าเบรก drum', 'Shacman X3000 หลัง เซรามิก', 'HINO 500 ผ้าเบรกหลัง', 'ลูกค้า: รถผมใช้ผ้าเบรกรุ่นไหน?'],
-    tr: ['HOWO A7 arka balata 200 adet', 'FAW J6P 457 aks arka balata', 'Dongfeng Tianlong 153 aks arka 100 adet', 'BPW TS2 370 disk balata', 'Mercedes Actros arka balata', '58144-45211', 'FUWA 13t aks kampana balatası', 'Shacman X3000 arka seramik', 'HINO 500 arka balata', 'Müşteri: benim kamyonuma hangi balata uyar?']
+    zh: ['100 码 短袖T恤 300 件', '防晒外套 90-130 码 800 件', '女童公主纱裙 110 码 200 件', '连体哈衣 80 码 A 类', 'MD1001', '纯棉 卫衣套装 500 套', '客户说：孩子 110 高，穿多大？', '牛仔背带裤 大童 2000 件', '有机棉 家居服 600 套', '要 A 类，OEKO-TEX 有吗？'],
+    en: ['size 100 cotton tee 300 pcs', 'sun protection jacket 90-130, 800 pcs', 'girls tulle dress size 110, 200 pcs', 'baby romper size 80, A class', 'MD1001', 'cotton sweatsuit 500 sets', 'Customer: child is 110 cm, which size?', 'denim dungarees 8-14, 2000 pcs', 'organic cotton pyjamas 600 sets', 'Do you have A class and OEKO-TEX?'],
+    es: ['playera algodón talla 100, 300 pzas', 'chaqueta solar 90-130, 800 pzas', 'vestido de tul talla 110, 200 pzas', 'romper talla 80 clase A', 'MD1001', 'conjunto algodón 500 juegos', 'Cliente: mide 110 cm, ¿qué talla?', 'peto denim 8-14, 2000 pzas', 'pijama algodón orgánico 600', '¿Tienen clase A y OEKO-TEX?'],
+    pt: ['camiseta algodão tam 100, 300 pçs', 'jaqueta solar 90-130, 800 pçs', 'vestido de tule tam 110, 200 pçs', 'macacão tam 80 classe A', 'MD1001', 'conjunto moletom 500 conj', 'Cliente: 110 cm, qual tamanho?', 'macacão jeans 8-14, 2000 pçs', 'pijama algodão orgânico 600', 'Tem classe A e OEKO-TEX?'],
+    ar: ['تيشيرت قطني مقاس 100، 300 قطعة', 'سترة واقية من الشمس 90-130، 800 قطعة', 'فستان تول مقاس 110، 200 قطعة', 'أفرول مقاس 80 فئة A', 'MD1001', 'طقم رياضي قطني 500 طقم', 'العميل: طوله 110 سم، أي مقاس؟', 'سروال دنيم 8-14، 2000 قطعة', 'بيجامة قطن عضوي 600 طقم', 'هل لديكم فئة A و OEKO-TEX؟'],
+    ru: ['футболка хлопок размер 100, 300 шт', 'солнцезащитная куртка 90-130, 800 шт', 'платье из фатина размер 110, 200 шт', 'комбинезон размер 80 класс A', 'MD1001', 'хлопковый костюм 500 компл', 'Клиент: рост 110 см, какой размер?', 'джинсовый комбинезон 8-14, 2000 шт', 'пижама органический хлопок 600', 'Есть класс A и OEKO-TEX?'],
+    id: ['kaos katun size 100, 300 pcs', 'jaket pelindung matahari 90-130, 800 pcs', 'gaun tulle size 110, 200 pcs', 'romper size 80 kelas A', 'MD1001', 'setelan katun 500 set', 'Pelanggan: tinggi 110 cm, ukuran apa?', 'dungaree denim 8-14, 2000 pcs', 'piyama katun organik 600 set', 'Ada kelas A dan OEKO-TEX?'],
+    vi: ['áo thun cotton size 100, 300 cái', 'áo chống nắng 90-130, 800 cái', 'váy voan size 110, 200 cái', 'bodysuit size 80 loại A', 'MD1001', 'bộ cotton 500 bộ', 'Khách: cao 110 cm, mặc size nào?', 'quần yếm jean 8-14, 2000 cái', 'đồ ngủ cotton hữu cơ 600 bộ', 'Có loại A và OEKO-TEX không?'],
+    th: ['เสื้อยืดคอตตอน size 100, 300 ตัว', 'เสื้อกันแดด 90-130, 800 ตัว', 'ชุดเดรสทูล size 110, 200 ตัว', 'ชุดบอดี้ size 80 คลาส A', 'MD1001', 'ชุดคอตตอน 500 ชุด', 'ลูกค้า: สูง 110 ซม. ใส่ไซซ์ไหน', 'เอี๊ยมยีนส์ 8-14, 2000 ตัว', 'ชุดนอนคอตตอนออร์แกนิก 600 ชุด', 'มีคลาส A และ OEKO-TEX ไหม'],
+    tr: ['pamuk tişört 100 beden, 300 adet', 'güneş koruyucu ceket 90-130, 800 adet', 'tül elbise 110 beden, 200 adet', 'tulum 80 beden A sınıfı', 'MD1001', 'pamuk takım 500 takım', 'Müşteri: 110 cm, hangi beden?', 'denim tulum 8-14, 2000 adet', 'organik pamuk pijama 600 takım', 'A sınıfı ve OEKO-TEX var mı?']
   };
   const examples = () => EXAMPLES[I.getLang()] || EXAMPLES.en;
 
@@ -709,11 +696,11 @@
           <div>${T('home.s1')}</div>
           <div>${T('home.s2')}</div>
           <div>${T('home.s3')}</div>
-          ${I.getLang() === 'zh' ? '<div class="notice mt-s">把这段存成话术，客户说不清型号时直接发过去，比反复追问体面得多。</div>' : ''}
+          ${I.getLang() === 'zh' ? '<div class="notice mt-s">把这段存成话术，客户说不清款号时直接发过去，比反复追问体面得多。</div>' : ''}
         </div>
       </div>
     </div>
-    <div id="matchOut" class="mt">${m ? renderMatch(m) : `<div class="card"><div class="empty"><div class="ic">◎</div>${I.getLang() === 'zh' ? '输入车型、车桥、编码或客户原话，开始匹配' : 'Enter a vehicle, axle, part number or the customer\'s words.'}</div></div>`}</div>`;
+    <div id="matchOut" class="mt">${m ? renderMatch(m) : `<div class="card"><div class="empty"><div class="ic">◎</div>${I.getLang() === 'zh' ? '输入适用场景、尺码、编码或客户原话，开始匹配' : 'Enter a vehicle, axle, part number or the customer\'s words.'}</div></div>`}</div>`;
     const ta = $('#q');
     if (ta) { ta.oninput = e => { S.q = e.target.value; }; }
   }
@@ -721,7 +708,7 @@
   function renderMatch(m) {
     const top = m.top;
     if (!top) {
-      return `<div class="card"><div class="card-b"><div class="notice warn">${I.getLang() === 'zh' ? '没有匹配到型号。建议：① 换成车桥型号（如 457桥、BPW TS2）② 直接粘贴旧件上的编码 ③ 让客户拍旧件照片。' : 'No match. Try the axle (457 / BPW TS2), paste the number on the old pad, or ask for a photo.'}</div>
+      return `<div class="card"><div class="card-b"><div class="notice warn">${I.getLang() === 'zh' ? '没有匹配到款号。建议：① 换成尺码款号（如 457桥、BPW TS2）② 直接粘贴旧款上的编码 ③ 让客户拍旧款照片。' : 'No match. Try the axle (457 / BPW TS2), paste the number on the old pad, or ask for a photo.'}</div>
       <div class="mt-s"><button class="btn sm" data-act="tab" data-id="products">${T('nav.products')}</button></div></div></div>`;
     }
     const p = top.product;
@@ -798,17 +785,17 @@
           <span class="tiny muted">${T('sel.other')}:</span>
           ${otherModels(p).slice(0, 8).map(([code, pid]) => `<span class="chip" data-act="openProduct" data-id="${pid}">${esc(code)}</span>`).join('')}
         </div>` : ''}
-        ${!rows.length ? `<div class="row" style="margin-top:8px"><button class="btn sm" data-act="newFit">补一条适配关系</button></div>` : ''}
+        ${!rows.length ? `<div class="row" style="margin-top:8px"><button class="btn sm" data-act="newFit">补一条适用关系</button></div>` : ''}
       </div></div>`;
     })()}
 
     ${m.parsed.vehicle ? `<div class="card mt">
-      <div class="card-h"><h3>${esc(m.parsed.vehicle.brand + ' ' + m.parsed.vehicle.series + ' ' + m.parsed.vehicle.model)} · 车桥对应表</h3>
-      <span class="sub">同一个车型，不同桥 → 不同片</span></div>
+      <div class="card-h"><h3>${esc(m.parsed.vehicle.brand + ' ' + m.parsed.vehicle.series + ' ' + m.parsed.vehicle.model)} · 尺码对应表</h3>
+      <span class="sub">同一个适用场景，不同桥 → 不同片</span></div>
       <div class="card-b" style="padding:0">
-        <table><thead><tr><th>车桥</th><th>部位</th><th>型号</th><th>规格</th><th>适配</th><th>置信度</th><th>来源</th><th></th></tr></thead><tbody>
+        <table><thead><tr><th>尺码</th><th>部位</th><th>款号</th><th>规格</th><th>适用</th><th>置信度</th><th>来源</th><th></th></tr></thead><tbody>
         ${E.matrix(m.parsed.vehicle.id).map(x => `<tr>
-          <td>${x.axle ? esc(x.axle.brand + ' ' + x.axle.model) : '<span class="muted">按旧件确认</span>'}</td>
+          <td>${x.axle ? esc(x.axle.brand + ' ' + x.axle.model) : '<span class="muted">按旧款确认</span>'}</td>
           <td>${esc(x.pos)}</td><td class="mono b">${esc(x.code)}</td>
           <td>${esc(x.axle ? x.axle.spec : '—')}</td><td>${esc(x.fit)}</td><td>${confTag(x.conf)}</td>
           <td class="tiny muted">${esc(x.src)}</td>
@@ -824,7 +811,7 @@
     if (q == null && qEl && typeof qEl.value === 'string') q = qEl.value;
     if (q != null) S.q = q;
     const text = (S.q || '').trim();
-    if (!text) { toast('请输入车型、车桥或编码'); return; }
+    if (!text) { toast('请输入适用场景、尺码或编码'); return; }
     S.match = E.match(text);
     A.track('search', { q: text, top: S.match.top ? S.match.top.product.code : '' });
     render();
@@ -913,16 +900,16 @@
     bind('fsort', 'onchange', e => { S.filters.sort = e.target.value; vProducts(); });
   }
 
-  /* ================= 适配图谱 ================= */
+  /* ================= 适用图谱 ================= */
   function vGraph() {
     const vs = D.vehicles.slice().sort((a, b) => (b.fitCount || 0) - (a.fitCount || 0));
     $('#p-graph').innerHTML = `
     <div class="row wrap-gap" style="justify-content:space-between;margin-bottom:12px">
-      <div><h1 style="margin:0">${T('nav.graph')}</h1><div class="muted small">${LZ('车型 → 车桥 → 型号。新增关系进入「待复核」队列，复核后才对外生效。','Vehicle → axle → part. New links wait for R&D review.')}</div></div>
-      <button class="btn primary" data-act="newFit">${LZ('新增适配关系','Add fitment')}</button>
+      <div><h1 style="margin:0">${T('nav.graph')}</h1><div class="muted small">${LZ('适用场景 → 尺码 → 款号。新增关系进入「待复核」队列，复核后才对外生效。','Vehicle → axle → part. New links wait for R&D review.')}</div></div>
+      <button class="btn primary" data-act="newFit">${LZ('新增适用关系','Add fitment')}</button>
     </div>
     <div class="split">
-      <div class="card"><div class="card-h"><h3>${T('h.apps')}（${D.vehicles.length}）</h3><span class="sub">${LZ('按适配条数排序','Sorted by fitment count')}</span></div>
+      <div class="card"><div class="card-h"><h3>${T('h.apps')}（${D.vehicles.length}）</h3><span class="sub">${LZ('按适用条数排序','Sorted by fitment count')}</span></div>
         <div class="card-b" style="padding:8px 10px;max-height:calc(100vh - 240px);overflow:auto">
         ${vs.map(v => `
           <div class="tree-node">
@@ -935,7 +922,7 @@
             <div class="tiny muted" style="margin-top:3px">${esc(v.cls)} · ${esc(v.note || '')}</div>
             ${v.fitCount ? `<div class="branch">${E.matrix(v.id).map(x => `
               <div class="leaf">
-                <span class="mono" style="width:120px">${x.axle ? esc(x.axle.brand + ' ' + x.axle.model) : '按旧件'}</span>
+                <span class="mono" style="width:120px">${x.axle ? esc(x.axle.brand + ' ' + x.axle.model) : '按旧款'}</span>
                 <span class="arrow">→</span><b class="mono" style="width:96px">${esc(x.code)}</b>
                 <span class="muted tiny">${esc(x.pos)} ${esc(x.fit)}</span>
                 <span class="flex1"></span>${confTag(x.conf)}
@@ -945,9 +932,9 @@
       </div>
       <div>
         <div class="card">
-          <div class="card-h"><h3>${LZ('车桥主数据','Axle master')}（${D.axles.length}）</h3></div>
+          <div class="card-h"><h3>${LZ('尺码主数据','Axle master')}（${D.axles.length}）</h3></div>
           <div class="card-b" style="padding:0">
-            <table><thead><tr><th>${LZ('车桥','Axle')}</th><th>${LZ('型式','Type')}</th><th>${T('h.spec')}</th><th>${T('h.apps')}</th></tr></thead><tbody>
+            <table><thead><tr><th>${LZ('尺码','Axle')}</th><th>${LZ('型式','Type')}</th><th>${T('h.spec')}</th><th>${T('h.apps')}</th></tr></thead><tbody>
             ${D.axles.map(a => {
               const n = new Set(D.fitments.filter(f => f.aid === a.id).map(f => f.vid)).size;
               return `<tr><td><b>${esc(a.brand)}</b><div class="tiny muted">${esc(a.model)}</div></td>
@@ -978,7 +965,7 @@
     const c = customer();
     const rows = cartRows();
     const calc = E.quoteCalc(rows.map(r => ({ pid: r.pid, qty: r.qty, mat: r.mat })), c);
-    /* 客户看的是结算单：只核对型号、数量、金额，不出现阶梯价公式和报价单号 */
+    /* 客户看的是结算单：只核对款号、数量、金额，不出现阶梯价公式和报价单号 */
     if (A.me() && A.me().role === 'customer') return vSettle(c, rows, calc);
     const meta = S.quoteMeta;
     $('#p-quote').innerHTML = `
@@ -1080,7 +1067,7 @@
     return '<div style="padding:26px 30px;font-family:-apple-system,Segoe UI,Roboto,sans-serif;color:#111">' +
       '<div style="display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid #111;padding-bottom:10px">' +
       '<div><div style="font-size:22px;font-weight:800">' + LZ('结算单', 'SETTLEMENT') + '</div>' +
-      '<div style="font-size:12px;color:#666;margin-top:2px">KOOYING · ' + LZ('浙江冠英汽车零部件有限公司', 'Zhejiang Kooying Auto Parts Co., Ltd.') + '</div></div>' +
+      '<div style="font-size:12px;color:#666;margin-top:2px">MIANDOU · ' + LZ('湖州棉豆服饰有限公司', 'Huzhou Miandou Garment Co., Ltd.') + '</div></div>' +
       '<div style="font-size:12px;text-align:right;color:#333">' + LZ('单号', 'No.') + ' <b>' + e2(d.no) + '</b><br>' + e2(d.at) + '</div></div>' +
       '<table style="width:100%;font-size:12px;margin-top:12px">' +
       '<tr><td style="color:#666;padding:2px 0">' + LZ('客户', 'Customer') + '</td><td>' + e2(d.cust) + '</td>' +
@@ -1089,8 +1076,8 @@
       '<td style="color:#666;padding:2px 0">' + LZ('付款方式', 'Payment') + '</td><td>' + e2(d.pay) + '</td></tr></table>' +
       '<table style="width:100%;border-collapse:collapse;font-size:12px;margin-top:14px">' +
       '<thead><tr style="background:#f3f4f6">' +
-      '<th style="text-align:left;padding:7px 8px;border:1px solid #ddd">' + LZ('型号', 'Part no.') + '</th>' +
-      '<th style="text-align:left;padding:7px 8px;border:1px solid #ddd">' + LZ('材质', 'Material') + '</th>' +
+      '<th style="text-align:left;padding:7px 8px;border:1px solid #ddd">' + LZ('款号', 'Part no.') + '</th>' +
+      '<th style="text-align:left;padding:7px 8px;border:1px solid #ddd">' + LZ('面料', 'Material') + '</th>' +
       '<th style="text-align:right;padding:7px 8px;border:1px solid #ddd">' + LZ('数量', 'Qty') + '</th>' +
       '<th style="text-align:right;padding:7px 8px;border:1px solid #ddd">' + LZ('单价', 'Unit') + '</th>' +
       '<th style="text-align:right;padding:7px 8px;border:1px solid #ddd">' + LZ('金额', 'Amount') + '</th></tr></thead><tbody>' +
@@ -1129,7 +1116,7 @@
       <div class="card-b" style="padding:0">
         ${list.length ? `<div class="tbl-wrap"><table><thead><tr>
           <th>${LZ('单号', 'No.')}</th><th>${LZ('时间', 'Date')}</th>
-          <th class="right">${LZ('型号', 'Items')}</th><th class="right">${LZ('数量', 'Qty')}</th>
+          <th class="right">${LZ('款号', 'Items')}</th><th class="right">${LZ('数量', 'Qty')}</th>
           <th class="right">${LZ('金额', 'Amount')}</th><th>${LZ('状态', 'Status')}</th><th></th></tr></thead><tbody>
           ${list.map(o => {
       const qty = o.rows.reduce((s, r) => s + Number(r.qty || 0), 0);
@@ -1172,7 +1159,7 @@
       <div class="card-b" style="padding:0">
         <div class="tbl-wrap"><table><thead><tr>
           <th>${LZ('报价单号', 'Quote No.')}</th><th>${LZ('日期', 'Date')}</th>
-          <th class="right">${LZ('型号', 'Items')}</th><th class="right">${LZ('合计', 'Total')}</th>
+          <th class="right">${LZ('款号', 'Items')}</th><th class="right">${LZ('合计', 'Total')}</th>
           <th>${LZ('状态', 'Status')}</th><th></th></tr></thead><tbody>
           ${list.map(q => `<tr>
             <td class="mono b">${esc(q.no)}</td>
@@ -1195,12 +1182,12 @@
     $('#p-quote').innerHTML = `
     <div class="row wrap-gap" style="justify-content:space-between;margin-bottom:12px">
       <div><h1 style="margin:0">${LZ('结算单', 'Settlement')}</h1>
-      <div class="muted small">${LZ('核对型号、数量和金额，确认无误后提交，销售会按这张单回复交期和运费。', 'Check the parts, quantity and amount, then submit — sales replies with lead time and freight.')}</div></div>
+      <div class="muted small">${LZ('核对款号、数量和金额，确认无误后提交，销售会按这张单回复交期和运费。', 'Check the parts, quantity and amount, then submit — sales replies with lead time and freight.')}</div></div>
       <div class="qt-actions">
         <div class="qt-tools">
-          <button class="qt-btn" data-act="tab" data-id="select" title="${LZ('继续选型', 'Keep matching')}">
+          <button class="qt-btn" data-act="tab" data-id="select" title="${LZ('继续选款', 'Keep matching')}">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-            <span class="qt-lbl">${LZ('继续选型', 'Keep matching')}</span>
+            <span class="qt-lbl">${LZ('继续选款', 'Keep matching')}</span>
           </button>
           <span class="qt-div"></span>
           <button class="qt-btn" data-act="printSettle" title="${LZ('打印结算单', 'Print settlement')}">
@@ -1232,7 +1219,7 @@
           <div class="card-h"><h3>${LZ('结算明细', 'Items')}（${rows.length}）</h3><span class="flex1"></span>
             <button class="btn sm" data-act="clearCart">${LZ('清空', 'Clear')}</button></div>
           <div class="card-b" style="padding:0">
-            ${rows.length ? `<table><thead><tr><th style="width:44px"></th><th>${LZ('型号', 'Part no.')}</th><th>${LZ('材质', 'Material')}</th><th class="right">${LZ('数量', 'Qty')}</th><th class="right">${LZ('单价', 'Unit')}</th><th class="right">${LZ('金额', 'Amount')}</th><th></th></tr></thead><tbody>
+            ${rows.length ? `<table><thead><tr><th style="width:44px"></th><th>${LZ('款号', 'Part no.')}</th><th>${LZ('面料', 'Material')}</th><th class="right">${LZ('数量', 'Qty')}</th><th class="right">${LZ('单价', 'Unit')}</th><th class="right">${LZ('金额', 'Amount')}</th><th></th></tr></thead><tbody>
             ${calc.rows.map((r, i) => `<tr>
               <td><div class="thumb sm">${r.product.img ? `<img src="${esc(r.product.img)}" loading="lazy" alt="">` : ''}</div></td>
               <td><b class="mono">${esc(r.product.code)}</b></td>
@@ -1242,7 +1229,7 @@
               <td class="right mono b">$${money(r.amt)}</td>
               <td><button class="btn xs" data-act="rmCart" data-id="${r.pid}">×</button></td>
             </tr>`).join('')}
-            </tbody></table>` : `<div class="empty">${LZ('结算单还是空的，先去产品库挑型号。', 'Nothing here yet — pick parts from the catalog first.')}</div>`}
+            </tbody></table>` : `<div class="empty">${LZ('结算单还是空的，先去产品库挑款号。', 'Nothing here yet — pick parts from the catalog first.')}</div>`}
           </div>
         </div>
       </div>
@@ -1304,11 +1291,11 @@
       <div class="card">
         <div class="card-h"><h3>${T('pk.contents')}</h3><span class="sub">${LZ('按客户视角组织，可直接转发','Organised for the customer, ready to forward')}</span></div>
         <div class="card-b">
-          ${[['cover', LZ('封面与选型依据','Cover & basis'), LZ('客户名 / 编号 / 型号清单 / 免责说明','Customer, part list, disclaimer')],
+          ${[['cover', LZ('封面与选款依据','Cover & basis'), LZ('客户名 / 编号 / 款号清单 / 免责说明','Customer, part list, disclaimer')],
             ['quote', LZ('报价单','Quotation'), LZ('条款、阶梯价、运费估算','Terms, volume price, freight')],
-            ['spec', LZ('产品数据页','Data sheets') + ` × ${rows.length}`, LZ('图片、规格、材质、编码对照、适配、试验摘要','Images, size, material, cross-reference, fitment')],
+            ['spec', LZ('产品数据页','Data sheets') + ` × ${rows.length}`, LZ('图片、规格、面料、编码对照、适用、试验摘要','Images, size, material, cross-reference, fitment')],
             ['test', LZ('试验报告摘要','Test summary') + ` ${testN}`, 'GB 5763 / ECE R90 / SAE J661'],
-            ['confirm', LZ('发货前确认页','Pre-shipment check'), LZ('把「同车型不同桥」的风险前置到发货前','Catch the wrong-axle risk before shipping')]].map(([k, t, d]) => `
+            ['confirm', LZ('发货前确认页','Pre-shipment check'), LZ('把「同适用场景不同桥」的风险前置到发货前','Catch the wrong-axle risk before shipping')]].map(([k, t, d]) => `
             <label class="chk" style="align-items:flex-start;padding:8px 0;border-bottom:1px solid var(--line-2)">
               <input type="checkbox" data-act="packCfg" data-id="${k}" ${cfg[k] ? 'checked' : ''}>
               <span><b>${t}</b><div class="tiny muted">${d}</div></span>
@@ -1364,7 +1351,7 @@
           <td class="right"><div class="row" style="justify-content:flex-end;gap:6px">
             <span class="mono b ${sc.score >= 75 ? 'c-hi' : sc.score >= 55 ? 'c-mid' : 'c-lo'}">${sc.score}</span>
             <span class="tag ${sc.tier.c}">${sc.tier.l.split(' ')[0]}</span></div></td>
-          <td><button class="btn xs" data-act="leadMatch" data-id="${l.id}">匹配型号</button></td>
+          <td><button class="btn xs" data-act="leadMatch" data-id="${l.id}">匹配款号</button></td>
         </tr>`;
       }).join('')}
       </tbody></table>
@@ -1380,7 +1367,7 @@
       <div class="card"><div class="card-h"><h3>止损线：什么时候该放弃</h3></div>
         <div class="card-b small" style="line-height:1.8">
           <div>· 名称含 <b>Trading / Import &amp; Export / FZE</b>，且拿不出终端地址 → 只发目录，不投技术资源。</div>
-          <div>· 只问价格、不给车型车桥、不接受小样 → 比价客户，报价即可，不做方案。</div>
+          <div>· 只问价格、不给适用场景尺码、不接受小样 → 比价客户，报价即可，不做方案。</div>
           <div>· 海关数据里<b>收货人</b>才是终端；发货人是贸易公司 → 顺着收货人找。</div>
           <div>· 社媒私信 48 小时无回复 → 移到「待甄别」，不占用跟进配额。</div>
         </div>
@@ -1402,12 +1389,12 @@
         <div class="card-b">
           <div class="field"><label>数据类型</label>
             <select id="impType">
-              <option value="fit">适配关系（车型,车桥,部位,型号,适配类型,置信度,来源）</option>
-              <option value="prod">产品更新（型号,规格,材质,价格,MOQ）</option>
+              <option value="fit">适用关系（适用场景,尺码,部位,款号,适用类型,置信度,来源）</option>
+              <option value="prod">产品更新（款号,规格,面料,价格,MOQ）</option>
               <option value="lead">询盘线索（公司,国家,来源,需求,联系人,时区）</option>
-              <option value="code">编码对照（型号,编码,类型,来源）</option>
+              <option value="code">编码对照（款号,编码,类型,来源）</option>
             </select></div>
-          <div class="field mt-s"><label>粘贴内容</label><textarea id="impText" style="min-height:180px;font-family:var(--mono);font-size:12px" placeholder="车型,车桥,部位,型号,适配类型,置信度,来源
+          <div class="field mt-s"><label>粘贴内容</label><textarea id="impText" style="min-height:180px;font-family:var(--mono);font-size:12px" placeholder="适用场景,尺码,部位,款号,适用类型,置信度,来源
 一汽解放 J6P,457桥,后,CA9T R,OE 替代,高,官网目录"></textarea></div>
           <div class="row mt-s"><button class="btn primary" data-act="runImport">校验并导入</button>
             <span class="tiny muted">导入后进入待复核队列，不直接影响对外报价</span></div>
@@ -1418,11 +1405,11 @@
         <div class="card-h"><h3>字段字典</h3><span class="sub">与 SQLite 库、Excel 模板一致</span></div>
         <div class="card-b" style="padding:0">
           <table style="font-size:12px"><thead><tr><th>表</th><th>关键字段</th><th>说明</th></tr></thead><tbody>
-            <tr><td class="b">products</td><td class="mono tiny">code, sku, cat, dim, material, price, moq</td><td class="tiny muted">型号主数据</td></tr>
+            <tr><td class="b">products</td><td class="mono tiny">code, sku, cat, dim, material, price, moq</td><td class="tiny muted">款号主数据</td></tr>
             <tr><td class="b">codes</td><td class="mono tiny">code, norm, type, pid, conf</td><td class="tiny muted">OE / WVA / 工厂码 / 客户叫法</td></tr>
-            <tr><td class="b">vehicles</td><td class="mono tiny">brand, series, model, alias[]</td><td class="tiny muted">车型及别名</td></tr>
-            <tr><td class="b">axles</td><td class="mono tiny">brand, model, type, spec, alias[]</td><td class="tiny muted">车桥主数据</td></tr>
-            <tr><td class="b">fitments</td><td class="mono tiny">vid, aid, pos, pid, conf, q[]</td><td class="tiny muted">适配关系 + 消歧问题</td></tr>
+            <tr><td class="b">vehicles</td><td class="mono tiny">brand, series, model, alias[]</td><td class="tiny muted">适用场景及别名</td></tr>
+            <tr><td class="b">axles</td><td class="mono tiny">brand, model, type, spec, alias[]</td><td class="tiny muted">尺码主数据</td></tr>
+            <tr><td class="b">fitments</td><td class="mono tiny">vid, aid, pos, pid, conf, q[]</td><td class="tiny muted">适用关系 + 消歧问题</td></tr>
             <tr><td class="b">tests</td><td class="mono tiny">pid, std, item, result, no</td><td class="tiny muted">试验报告</td></tr>
             <tr><td class="b">leads</td><td class="mono tiny">company, country, need, score, tz</td><td class="tiny muted">询盘线索</td></tr>
           </tbody></table>
@@ -1460,7 +1447,7 @@
     const rOf = f => 6 + Math.sqrt(f) / 55;
     const ranked = P.slice().sort((a, b) => b.intent - a.intent);
     const totalFans = P.reduce((s, p) => s + p.followers, 0);
-    const terminals = P.filter(p => /车队|修理厂|配件店|采购|司机/.test(p.type)).length;
+    const terminals = P.filter(p => /母婴连锁|修理厂|配件店|采购|司机/.test(p.type)).length;
 
     $('#p-network').innerHTML = acquireBar('network') + `
     <div class="row wrap-gap" style="justify-content:space-between;margin-bottom:12px">
@@ -1472,7 +1459,7 @@
     <div class="kpis mb">
       <div class="kpi"><div class="n">${P.length}</div><div class="l">已建档账号</div><div class="d">${new Set(P.map(p => p.platform)).size} 个平台 · ${new Set(P.map(p => p.lang)).size} 种语言</div></div>
       <div class="kpi"><div class="n">${(totalFans / 1000).toFixed(0)}k</div><div class="l">粉丝覆盖（去重前）</div><div class="d">按账号粉丝数汇总</div></div>
-      <div class="kpi"><div class="n">${terminals}</div><div class="l">终端型账号</div><div class="d">车队 / 修理厂 / 配件店 / 采购</div></div>
+      <div class="kpi"><div class="n">${terminals}</div><div class="l">终端型账号</div><div class="d">母婴连锁 / 修理厂 / 配件店 / 采购</div></div>
       <div class="kpi"><div class="n">${P.filter(p => p.intent >= 75).length}</div><div class="l">高意向（≥75）</div><div class="d">优先私信与寄样</div></div>
       <div class="kpi"><div class="n">${edges.length}</div><div class="l">关注关系</div><div class="d">用于找「关键节点」</div></div>
     </div>
@@ -1555,13 +1542,13 @@
         <div class="card" style="padding:8px 10px;box-shadow:none"><div class="tiny muted">互动率</div><div class="b">${p.engage}%</div></div>
       </div>
       <div class="sec-t">画像标签</div>
-      <div class="row wrap-gap" style="gap:6px">${(p.tags.length ? p.tags : ['无明确车型']).map(t => `<span class="chip">${esc(t)}</span>`).join('')}</div>
+      <div class="row wrap-gap" style="gap:6px">${(p.tags.length ? p.tags : ['无明确适用场景']).map(t => `<span class="chip">${esc(t)}</span>`).join('')}</div>
       <div class="notice mt-s">${esc(p.note)}</div>
       <div class="sec-t">关系网（粉丝 / 关注）</div>
       <div class="small muted">粉丝：${fans.length ? fans.map(f => esc(f.handle)).join('、') : '—'}</div>
       <div class="small muted mt-s">关注：${following.length ? following.map(f => esc(f.handle)).join('、') : '—'}</div>
-      ${skus.length ? `<div class="sec-t">提到车型 → 可推型号</div>
-        <table style="font-size:12px"><thead><tr><th>车型</th><th>型号</th><th>报价</th><th></th></tr></thead><tbody>
+      ${skus.length ? `<div class="sec-t">提到适用场景 → 可推款号</div>
+        <table style="font-size:12px"><thead><tr><th>适用场景</th><th>款号</th><th>报价</th><th></th></tr></thead><tbody>
         ${skus.map(s => `<tr><td>${esc(s.v)}</td><td class="mono b">${esc(s.code)}</td><td class="mono">$${money(E.priceOf(s.pid, 100, customer()))}</td>
           <td><button class="btn xs" data-act="addCart" data-id="${s.pid}">加入</button></td></tr>`).join('')}
         </tbody></table>` : ''}
@@ -1587,14 +1574,14 @@
     <div class="kpis mb">
       <div class="kpi"><div class="n">${V.length}</div><div class="l">热门选题（近 7 天）</div><div class="d">${plats.length} 个平台 · ${new Set(V.map(v => v.lang)).size} 种语言</div></div>
       <div class="kpi"><div class="n">${(V.reduce((s, v) => s + v.views, 0) / 1e6).toFixed(1)}M</div><div class="l">合计播放</div><div class="d">选题侧需求已被验证</div></div>
-      <div class="kpi"><div class="n">${V.filter(v => v.model).length}</div><div class="l">可直接挂型号</div><div class="d">选题 → SKU 一对多</div></div>
+      <div class="kpi"><div class="n">${V.filter(v => v.model).length}</div><div class="l">可直接挂款号</div><div class="d">选题 → SKU 一对多</div></div>
       <div class="kpi"><div class="n">7</div><div class="l">覆盖语种</div><div class="d">ES/PT/AR/EN/ID/VI/TR</div></div>
     </div>
     <div class="split" style="grid-template-columns:1.3fr 1fr">
       <div class="card">
         <div class="card-h"><h3>热门视频雷达</h3><span class="sub">按语种扒取，判断「那条片子为什么火」</span></div>
         <div class="card-b" style="padding:0;max-height:520px;overflow:auto">
-          <table><thead><tr><th>平台 / 语种</th><th>选题</th><th class="right">播放</th><th class="right">互动</th><th>关联型号</th><th></th></tr></thead><tbody>
+          <table><thead><tr><th>平台 / 语种</th><th>选题</th><th class="right">播放</th><th class="right">互动</th><th>关联款号</th><th></th></tr></thead><tbody>
           ${V.map(v => `<tr>
             <td class="small"><b>${esc(v.platform)}</b><div class="tiny muted">${esc(v.lang)} · ${esc(v.country)}</div></td>
             <td class="small" style="max-width:250px">${esc(v.title)}<div class="tiny muted">${esc(v.angle)} · 趋势 ${esc(v.trend)}</div></td>
@@ -1683,10 +1670,10 @@
           <dl class="kv">
             <dt>${LZ('中文名', 'Chinese name')}</dt><dd>${esc(p.nameZh || '')}</dd>
             <dt>${LZ('英文名', 'English name')}</dt><dd>${esc(p.nameEn)}</dd>
-            <dt>${LZ('常用车型', 'Common vehicles')}</dt><dd>${(p.appsAll || []).length ? esc(appsJoin(appsOf(p))) : LZ('待补', 'TBD')}</dd>
+            <dt>${LZ('常用适用场景', 'Common vehicles')}</dt><dd>${(p.appsAll || []).length ? esc(appsJoin(appsOf(p))) : LZ('待补', 'TBD')}</dd>
             <dt>${LZ('规格', 'Spec')}</dt><dd>${esc(p.dim || LZ('待补', 'TBD'))}${p.holes ? ` · ${p.holes} ${LZ('孔', 'holes')}` : ''}</dd>
-            <dt>${LZ('材质', 'Material')}</dt><dd>${esc(mName(mat))} μ ${esc(mat.mu)} / ${esc(mat.temp)}</dd>
-            <dt>${LZ('部位', 'Position')}</dt><dd>${esc(p.pos || LZ('按适配', 'as fitted'))}</dd>
+            <dt>${LZ('面料', 'Material')}</dt><dd>${esc(mName(mat))} μ ${esc(mat.mu)} / ${esc(mat.temp)}</dd>
+            <dt>${LZ('部位', 'Position')}</dt><dd>${esc(p.pos || LZ('按适用', 'as fitted'))}</dd>
             <dt>${LZ('包装', 'Packing')}</dt><dd>${esc(packText(p.pack.per))} · ${LZ('毛重', 'GW')} ${p.pack.gw} kg · ${p.pack.cbm} CBM</dd>
             <dt>MOQ</dt><dd>${p.moq}</dd>
             <dt>HS</dt><dd>${esc(p.hs)}</dd>
@@ -1699,11 +1686,11 @@
       <table style="font-size:12px"><thead><tr><th>${LZ('编码', 'Code')}</th><th>${LZ('类型', 'Type')}</th><th>${LZ('来源', 'Source')}</th><th>${LZ('置信度', 'Confidence')}</th></tr></thead><tbody>
       ${codes.map(x => `<tr><td class="mono">${esc(x.code)}</td><td>${esc(E.typeLabel(x.type))}</td><td class="tiny muted">${esc(srcI18n(x.source))}</td><td>${confTag(x.conf)}</td></tr>`).join('')}
       </tbody></table>
-      <div class="sec-t">${LZ('常用车型', 'Common vehicles')} · ${LZ('按点赞量排序', 'by popularity')}（${fits.length} ${LZ('条适配', 'fits')}）</div>
+      <div class="sec-t">${LZ('常用适用场景', 'Common vehicles')} · ${LZ('按点赞量排序', 'by popularity')}（${fits.length} ${LZ('条适用', 'fits')}）</div>
       <div class="row wrap-gap" style="gap:6px;margin-bottom:6px">${relatedChips(p)}</div>
       ${heatTable(p)}
       ${otherModels(p).length ? `<div class="row wrap-gap" style="gap:6px;margin-top:8px;align-items:center">
-        <span class="tiny muted">${LZ('同车型其他型号', 'Same vehicle, other codes')}：</span>
+        <span class="tiny muted">${LZ('同适用场景其他款号', 'Same vehicle, other codes')}：</span>
         ${otherModels(p).slice(0, 8).map(([code, pid]) => `<span class="chip" data-act="openProduct" data-id="${pid}">${esc(code)}</span>`).join('')}
       </div>` : ''}
       <div class="sec-t">${LZ('试验报告', 'Test reports')}（${ts.length}）</div>
@@ -1739,7 +1726,7 @@
         <div class="muted small">${esc(m.top.product.nameEn.slice(0, 70))}</div>
         <div class="reasons">${m.top.reasons.map(r => `<div class="reason"><i>✓</i><span>${r}</span></div>`).join('')}</div></div></div>
         ${m.questions.length ? `<div class="qbox" style="margin:0 16px 12px"><div class="t">需确认</div><ul>${m.questions.slice(0, 2).map(q => `<li>${q}</li>`).join('')}</ul></div>` : ''}
-      </div>` : '<div class="muted small">原文中没有可识别的车型/车桥/编码，建议用「三步定位法」索要照片。</div>'}
+      </div>` : '<div class="muted small">原文中没有可识别的适用场景/尺码/编码，建议用「三步定位法」索要照片。</div>'}
       <div class="sec-t">跟进</div>
       <div class="grid" style="grid-template-columns:1fr 1fr;gap:10px">
         <div class="field"><label>状态</label><select id="lStatus">${['待跟进', '待甄别', '已报价', '已成交', '已放弃'].map(s => `<option ${l.status === s ? 'selected' : ''}>${s}</option>`).join('')}</select></div>
@@ -1753,7 +1740,7 @@
       `<button class="btn" data-act="closeDrawer">关闭</button>`);
   }
 
-  /* ================= 聊天浮窗（消息监听 + 型号提醒） ================= */
+  /* ================= 聊天浮窗（消息监听 + 款号提醒） ================= */
   function chatTime() { return new Date().toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }); }
 
   function pushChat(silent) {
@@ -1770,7 +1757,7 @@
     const p = item.match.top.product;
     const box = $('#chatAlert');
     box.innerHTML = `<div class="ca-h"><span class="dot"></span> ${CT('alertTitle')}</div>
-      <div class="ca-b"><b>${esc(item.from.split('（')[0])}</b> ${CT('alertAsks')} ${esc(item.match.entities.find(e => e.k === '车型' || e.k === 'vehicle')?.v || item.match.entities.find(e => e.k === '车桥' || e.k === 'axle')?.v || CT('matchedLabel'))}
+      <div class="ca-b"><b>${esc(item.from.split('（')[0])}</b> ${CT('alertAsks')} ${esc(item.match.entities.find(e => e.k === '适用场景' || e.k === 'vehicle')?.v || item.match.entities.find(e => e.k === '尺码' || e.k === 'axle')?.v || CT('matchedLabel'))}
         <div class="ca-p">→ <b class="mono">${esc(p.code)}</b> · $${money(E.priceOf(p.id, 100, customer()))}${CT('perSet')} · ${esc(p.dim || CT('specPending'))}</div></div>
       <div class="row" style="gap:6px;margin-top:6px"><button class="btn xs primary" data-act="chatAlertGo" data-id="${p.id}">${CT('alertOpen')}</button>
         <button class="btn xs" data-act="chatToggle">${CT('alertOpenSupport')}</button></div>`;
@@ -1782,7 +1769,7 @@
   }
 
 
-  /** 客户端客服：本地规则回答（不联网），能识别型号就报型号和价 */
+  /** 客户端客服：本地规则回答（不联网），能识别款号就报款号和价 */
   function csSay(raw) {
     const text = String(raw || '').trim();
     if (!text) return;
@@ -2016,10 +2003,10 @@
     window.REDFOX.sync(() => vRedfox());   // Key 状态由服务端提供，拿到后重绘一次
   }
 
-  /* ================= 工具书：税务查询 / 型号查询 / 货币兑换 ================= */
+  /* ================= 工具书：税务查询 / 款号查询 / 货币兑换 ================= */
   const L = (zh, en) => LZ(zh, en);
 
-  /** 常用市场税率（刹车片 HS 8708.30；仅作报价参考，正式报关以当地税则为准） */
+  /** 常用市场税率（童装 HS 6111.20 / 6109.10；仅作报价参考，正式报关以当地税则为准） */
   const TAX_MK = [
     { k: 'US', n: '美国', en: 'United States', duty: 2.5, vat: 0, vatName: 'Sales tax', vatZh: '销售税（州级另计）', note: '301 条款加征 25% 需另算', noteEn: 'Section 301 adds 25% on top' },
     { k: 'DE', n: '德国', en: 'Germany', duty: 4.5, vat: 19, vatName: 'VAT', vatZh: '增值税', note: '欧盟统一税则', noteEn: 'EU common tariff' },
@@ -2038,7 +2025,7 @@
     { k: 'NG', n: '尼日利亚', en: 'Nigeria', duty: 10, vat: 7.5, vatName: 'VAT', vatZh: '增值税', note: '需 SONCAP 认证', noteEn: 'SONCAP certification required' },
     { k: 'IN', n: '印度', en: 'India', duty: 15, vat: 28, vatName: 'GST', vatZh: '消费税', note: 'BIS 认证强制', noteEn: 'BIS certification mandatory' }
   ];
-  const REBATE = 13; // 中国出口退税率（汽配 8708 类通常 13%）
+  const REBATE = 13; // 中国出口退税率（童装针织类通常 13%）
   const mkName = m => (I.getLang() === 'zh' ? m.n : m.en);
 
   function vTax() {
@@ -2070,7 +2057,7 @@
     </div></div>
 
     <div class="card"><div class="card-h"><h3>${esc(mkName(m))}</h3>
-      <span class="sub">HS 8708.30 · ${esc(I.getLang() === 'zh' ? m.note : m.noteEn)}</span></div>
+      <span class="sub">HS 6111.20 · ${esc(I.getLang() === 'zh' ? m.note : m.noteEn)}</span></div>
       <div class="card-b">
         <div class="rf-kpis">
           ${card(L('中国出口退税', 'China rebate'), REBATE + '%', val ? L('可退 $', 'refund $') + Math.round(rebate).toLocaleString() : L('按货值算', 'of invoice value'))}
@@ -2104,7 +2091,7 @@
     if (vi) vi.onchange = () => { S.tax.qty = Number(vi.value) || 0; save(); vTax(); };
   }
 
-  /* ================= 工具书：型号查询（联网） ================= */
+  /* ================= 工具书：款号查询（联网） ================= */
   function vModel() {
     const st = S.model;
     const q = (st.q || '').trim();
@@ -2116,19 +2103,19 @@
 
     $('#p-model').innerHTML = `
     <div class="row wrap-gap" style="justify-content:space-between;margin-bottom:12px">
-      <div><h1 style="margin:0">${L('型号查询', 'Part lookup')}</h1>
-      <div class="muted small">${L('先查本站型号库，库里没有就去互联网找。适配要自己复核，别直接照抄。', 'We search our own catalog first, then the web. Always re-check fitment before quoting.')}</div></div>
+      <div><h1 style="margin:0">${L('款号查询', 'Part lookup')}</h1>
+      <div class="muted small">${L('先查本站款号库，库里没有就去互联网找。适用要自己复核，别直接照抄。', 'We search our own catalog first, then the web. Always re-check fitment before quoting.')}</div></div>
     </div>
 
     <div class="card"><div class="card-b">
       <div class="rf-conn-row">
-        <input id="mdQ" type="text" value="${esc(q)}" placeholder="${L('输入型号 / OE 号 / 编码，例如 WVA 29087、HOWO1、D1060', 'Part number, OE number or code — e.g. WVA 29087, HOWO1, D1060')}">
+        <input id="mdQ" type="text" value="${esc(q)}" placeholder="${L('输入款号 / OE 号 / 编码，例如 WVA 29087、HOWO1、D1060', 'Part number, OE number or code — e.g. WVA 29087, HOWO1, D1060')}">
         <button class="btn primary" data-act="modelGo">${st.busy ? L('查询中…', 'Searching…') : L('查询', 'Search')}</button>
       </div>
-      <div class="tiny muted" style="margin-top:8px">${L('站内库', 'Our catalog')}：${D.products.length} ${L('个型号', 'part numbers')} · ${L('联网搜索走本地服务代理', 'web search goes through the local service')}</div>
+      <div class="tiny muted" style="margin-top:8px">${L('站内库', 'Our catalog')}：${D.products.length} ${L('个款号', 'part numbers')} · ${L('联网搜索走本地服务代理', 'web search goes through the local service')}</div>
       ${q ? `<div class="row wrap-gap" style="margin-top:10px;gap:6px">
         <span class="tiny muted">${L('在浏览器里搜：', 'Open in browser:')}</span>
-        <a class="btn sm" target="_blank" rel="noopener" href="https://www.baidu.com/s?wd=${encodeURIComponent(q + ' 刹车片 型号')}">百度 ↗</a>
+        <a class="btn sm" target="_blank" rel="noopener" href="https://www.baidu.com/s?wd=${encodeURIComponent(q + ' 童装 款号')}">百度 ↗</a>
         <a class="btn sm" target="_blank" rel="noopener" href="https://www.google.com/search?q=${encodeURIComponent(q + ' brake pad')}">Google ↗</a>
         <a class="btn sm" target="_blank" rel="noopener" href="https://www.bing.com/search?q=${encodeURIComponent(q + ' brake pad')}">Bing ↗</a>
         <a class="btn sm" target="_blank" rel="noopener" href="https://s.1688.com/selloffer/offer_search.htm?keywords=${encodeURIComponent(q)}">1688 ↗</a>
@@ -2138,7 +2125,7 @@
     ${q ? `
     <div class="card"><div class="card-h"><h3>${L('站内库', 'Our catalog')}</h3><span class="sub">${local.length} ${L('个匹配', 'matches')}</span></div>
       <div class="card-b" style="padding:0">
-        ${local.length ? `<div class="tbl-wrap"><table><thead><tr><th>${L('型号', 'Part no.')}</th><th>${L('编码', 'Codes')}</th><th>${L('材质', 'Material')}</th><th>${L('规格', 'Size')}</th><th></th></tr></thead><tbody>
+        ${local.length ? `<div class="tbl-wrap"><table><thead><tr><th>${L('款号', 'Part no.')}</th><th>${L('编码', 'Codes')}</th><th>${L('面料', 'Material')}</th><th>${L('规格', 'Size')}</th><th></th></tr></thead><tbody>
         ${local.map(p => `<tr><td class="mono b">${esc(p.code)}</td>
           <td class="small">${(p.codes || []).slice(0, 4).map(c => esc(c)).join(' · ') || '—'}</td>
           <td class="small">${esc(p.material || '—')}</td>
@@ -2251,7 +2238,7 @@
   }
 
   /* ================= 售后服务 ================= */
-  const AS_TYPES = ['装车异常', '磨损过快', '异响 / 抖动', '尺寸不符', '退货', '索赔', '其他'];
+  const AS_TYPES = ['尺码不合适', '色差', '开线 / 脱线', '掉色 / 固色差', '版型偏差', '退换货', '其他'];
   const AS_STATUS = ['待处理', '处理中', '已关闭'];
 
   function vAfterSale() {          // 客户侧：提交
@@ -2260,14 +2247,14 @@
     $('#p-aftersale').innerHTML = `
     <div class="row wrap-gap" style="justify-content:space-between;margin-bottom:12px">
       <div><h1 style="margin:0">售后服务</h1>
-      <div class="muted small">装车问题、退换或索赔，填完提交，销售和老板那边都能看到，会尽快联系您。</div></div>
+      <div class="muted small">尺码、色差、开线等问题，填完提交，销售和老板那边都能看到，会尽快联系您。</div></div>
     </div>
 
     <div class="card"><div class="card-h"><h3>提交服务请求</h3><span class="sub">${esc(u.company || '')} · ${esc(u.name || '')}</span></div>
       <div class="card-b">
         <div class="rf-form">
-          <label>型号 / 订单号 *<input id="asModel" placeholder="例如 HOWO1 / KOOYING-2024-0871"></label>
-          <label>车型 / 车桥<input id="asVeh" placeholder="例如 重汽 HOWO / 13T 前桥"></label>
+          <label>款号 / 订单号 *<input id="asModel" placeholder="例如 HOWO1 / MIANDOU-2024-0871"></label>
+          <label>适用场景 / 尺码<input id="asVeh" placeholder="例如 重汽 HOWO / 13T 前桥"></label>
           <label>问题类型<select id="asType">${AS_TYPES.map(t => `<option>${t}</option>`).join('')}</select></label>
           <label>涉及数量<input id="asQty" type="number" min="0" placeholder="例如 40"></label>
           <label>联系方式 *<input id="asContact" value="${esc(u.contact || '')}" placeholder="WhatsApp / 微信 / 邮箱"></label>
@@ -2284,7 +2271,7 @@
 
     ${mine.length ? `<div class="card"><div class="card-h"><h3>我的记录</h3><span class="sub">${mine.length} 条</span></div>
       <div class="card-b" style="padding:0"><div class="tbl-wrap"><table>
-        <thead><tr><th>时间</th><th>型号</th><th>类型</th><th>说明</th><th>状态</th></tr></thead><tbody>
+        <thead><tr><th>时间</th><th>款号</th><th>类型</th><th>说明</th><th>状态</th></tr></thead><tbody>
         ${mine.map(x => `<tr><td class="small mono">${esc(x.at)}</td><td class="mono">${esc(x.model)}</td>
           <td class="small">${esc(x.type)}</td><td class="small" style="max-width:320px">${esc(x.desc)}</td>
           <td>${tag(x.status, x.status === '已关闭' ? 'n' : x.status === '处理中' ? 'b' : 'o')}</td></tr>`).join('')}
@@ -2303,7 +2290,7 @@
     </div>
     <div class="card"><div class="card-b" style="padding:0">
       ${list.length ? `<div class="tbl-wrap"><table>
-        <thead><tr><th>时间</th><th>客户</th><th>型号</th><th>问题</th><th>说明</th><th>联系</th><th>状态</th><th></th></tr></thead><tbody>
+        <thead><tr><th>时间</th><th>客户</th><th>款号</th><th>问题</th><th>说明</th><th>联系</th><th>状态</th><th></th></tr></thead><tbody>
         ${list.slice().reverse().map(x => `<tr>
           <td class="small mono">${esc(x.at)}</td>
           <td class="small"><b>${esc(x.cust)}</b><div class="tiny muted">${esc(x.company || '')}</div></td>
@@ -2417,7 +2404,7 @@
       const p = D.products.find(x => x.code === code);
       if (p) { openProduct(p.id); return; }
       const c = D.codes.find(x => x.code === code);
-      if (c && E.byId.get(c.pid)) openProduct(c.pid); else toast(LZ('没有这个型号', 'No such part'));
+      if (c && E.byId.get(c.pid)) openProduct(c.pid); else toast(LZ('没有这个款号', 'No such part'));
     },
     openLang() { openLang(); },
     /** 导航分组下拉：同一时间只开一个，再点同一个收起来 */
@@ -2445,7 +2432,7 @@
     heroMatch() {
       const el = $('#heroQ');
       const v = ((el && el.value) || '').trim();
-      if (!v) { toast('先输入车型、车桥或旧件编码'); if (el) el.focus(); return; }
+      if (!v) { toast('先输入适用场景、尺码或旧款编码'); if (el) el.focus(); return; }
       S.q = v; S.tab = 'select'; doMatch(v);
     },
     example(id) { S.tab = 'select'; doMatch(id); },
@@ -2475,7 +2462,7 @@
     closeModal() { closeModal(); },
     printQuote() {
       const rows = cartRows();
-      if (!rows.length) { toast('先加入型号'); return; }
+      if (!rows.length) { toast('先加入款号'); return; }
       const c = customer();
       const html = E.docQuote({
         customer: c, items: rows.map(r => ({ pid: r.pid, qty: r.qty, mat: r.mat })),
@@ -2489,7 +2476,7 @@
         /** 客户侧：打印当前结算单 */
     printSettle() {
       const rows = cartRows();
-      if (!rows.length) { toast(LZ('先加入型号', 'Add parts first')); return; }
+      if (!rows.length) { toast(LZ('先加入款号', 'Add parts first')); return; }
       const c = customer();
       const calc = E.quoteCalc(rows.map(r => ({ pid: r.pid, qty: r.qty, mat: r.mat })), c);
       const u = A.me() || {};
@@ -2550,7 +2537,7 @@
         n++;
       });
       save(); closeModal(); vQuote();
-      toast(LZ('已把 ' + n + ' 个型号填进结算单', 'Loaded ' + n + ' items into your settlement'));
+      toast(LZ('已把 ' + n + ' 个款号填进结算单', 'Loaded ' + n + ' items into your settlement'));
     },    /** 客户侧：打印某一张历史结算单 */
     printOrder(id) {
       const o = (S.myOrders || []).find(x => x.id === id);
@@ -2571,21 +2558,21 @@
       });
       save(); vQuote();
       toast(miss.length
-        ? LZ('已加回购物车；这些型号已下架：', 'Added back; discontinued: ') + miss.join('、')
+        ? LZ('已加回购物车；这些款号已下架：', 'Added back; discontinued: ') + miss.join('、')
         : LZ('已按原单加回购物车', 'Added back to your cart'));
     },
     printPack() {
       const rows = cartRows();
-      if (!rows.length) { toast('先加入型号'); return; }
+      if (!rows.length) { toast('先加入款号'); return; }
       const html = E.docPack({ customer: customer(), items: rows.map(r => ({ pid: r.pid, qty: r.qty, mat: r.mat })), no: S.quoteMeta.no || autoNo(), date: S.quoteMeta.date });
       A.track('pack', {});
       modal('资料包预览（多页）', `<div style="background:#fff">${html}</div>`,
         `<button class="btn" data-act="closeModal">关闭</button><button class="btn primary" data-act="printNow">打印 / 另存为 PDF</button>`, true);
     },
-    /** 报价：逐个型号改单价 → 发给客户 */
+    /** 报价：逐个款号改单价 → 发给客户 */
     priceOpen() {
       const rows = cartRows();
-      if (!rows.length) { toast(LZ('先把型号加入报价，再报价', 'Add a part to the quote first')); return; }
+      if (!rows.length) { toast(LZ('先把款号加入报价，再报价', 'Add a part to the quote first')); return; }
       const c = customer();
       const calc = E.quoteCalc(rows.map(r => ({ pid: r.pid, qty: r.qty, mat: r.mat })), c);
       PRICE_ROWS = calc.rows.map(r => ({ ...r, price: r.unit }));
@@ -2629,7 +2616,7 @@
     },
     priceSend() {
       const rows = PRICE_ROWS;
-      if (!rows || !rows.length) { toast(LZ('没有可报价的型号', 'Nothing to price')); return; }
+      if (!rows || !rows.length) { toast(LZ('没有可报价的款号', 'Nothing to price')); return; }
       const items = rows.map((r, i) => {
         const el = $('#pp' + i);
         const p = Math.max(0, Number(el ? el.value : r.price) || 0);
@@ -2650,7 +2637,7 @@
       if (!Array.isArray(S.custMsgs)) S.custMsgs = [];
       S.custMsgs.push({
         from: 'bot', time: chatTime(),
-        text: LZ(`报价单 ${no}：${items.length} 个型号，合计 $${money(total)}（含运费 $${money(calc.freight)}）。${note ? '备注：' + note : ''}`,
+        text: LZ(`报价单 ${no}：${items.length} 个款号，合计 $${money(total)}（含运费 $${money(calc.freight)}）。${note ? '备注：' + note : ''}`,
           `Quotation ${no}: ${items.length} items, total $${money(total)} (freight $${money(calc.freight)}). ${note ? 'Note: ' + note : ''}`)
 ,
         acts: '<button class="btn xs primary" data-act="viewQuote" data-id="' + qid + '">' + LZ('查看报价单', 'View quote') + '</button>'
@@ -2674,16 +2661,16 @@
     },
     askPrice(pid) {
       const items = pid ? [{ pid, qty: 100 }] : cartRows().map(r => ({ pid: r.pid, qty: r.qty }));
-      if (!items.length) { toast(LZ('先把型号加入报价，再来询价', 'Add a part to the quote first')); return; }
+      if (!items.length) { toast(LZ('先把款号加入报价，再来询价', 'Add a part to the quote first')); return; }
       RQ = items;
       const rows = items.map((it, i) => {
         const p = D.products.find(x => x.id === it.pid);
         return `<tr><td class="mono b">${esc(p.code)}</td><td>${esc(pCat(p))}</td><td>${esc(p.dim || '—')}</td>
           <td><input id="rqQ${i}" type="number" min="1" step="1" value="${it.qty}" style="width:96px"></td></tr>`;
       }).join('');
-      modal(`<div class="small muted mb">${LZ('填个数量就行，我们按阶梯价回你，不用猜型号。', 'Just give us a quantity; we reply with tier pricing.')}</div>
-        <table style="font-size:12.5px"><thead><tr><th>型号</th><th>类型</th><th>规格</th><th>${LZ('数量','Qty')}</th></tr></thead><tbody>${rows}</tbody></table>
-        <div class="field" style="margin-top:10px"><label>${LZ('备注 / 车型 / 目的地','Note / vehicle / destination')}</label>
+      modal(`<div class="small muted mb">${LZ('填个数量就行，我们按阶梯价回你，不用猜款号。', 'Just give us a quantity; we reply with tier pricing.')}</div>
+        <table style="font-size:12.5px"><thead><tr><th>款号</th><th>类型</th><th>规格</th><th>${LZ('数量','Qty')}</th></tr></thead><tbody>${rows}</tbody></table>
+        <div class="field" style="margin-top:10px"><label>${LZ('备注 / 适用场景 / 目的地','Note / vehicle / destination')}</label>
         <input id="rqNote" placeholder="${LZ('如：HOWO A7 后片，发墨西哥', 'e.g. HOWO A7 rear pads, to Mexico')}"></div>`,
         `<button class="btn" data-act="closeModal">${LZ('取消','Cancel')}</button>
          <button class="btn primary" data-act="sendInquiry">${LZ('提交询价','Send inquiry')}</button>`);
@@ -2742,11 +2729,11 @@
       if (!q) { toast('询价单不存在'); return; }
       S.cart = q.items.map(it => ({ pid: it.pid, qty: it.qty, mat: (D.products.find(p => p.id === it.pid) || {}).material }));
       save(); ACT.tab('quote');
-      toast(LZ('已载入 ' + q.items.length + ' 个型号，可直接生成报价', 'Loaded ' + q.items.length + ' items'));
+      toast(LZ('已载入 ' + q.items.length + ' 个款号，可直接生成报价', 'Loaded ' + q.items.length + ' items'));
     },
     async zipPack() {
       const rows = cartRows();
-      if (!rows.length) { toast('先加入型号'); return; }
+      if (!rows.length) { toast('先加入款号'); return; }
       const no = S.quoteMeta.no || autoNo();
       toast(LZ('正在打包，含图片…', 'Packing, including images…'));
       const files = await E.packFiles({ customer: customer(), items: rows.map(r => ({ pid: r.pid, qty: r.qty, mat: r.mat })), no, date: S.quoteMeta.date });
@@ -2756,7 +2743,7 @@
       toast(LZ(`ZIP 已生成：${files.length} 个文件（含 ${imgs} 张图）`, `ZIP ready: ${files.length} files, ${imgs} images`));
     },
     saveQuote() {
-      const rows = cartRows(); if (!rows.length) { toast('先加入型号'); return; }
+      const rows = cartRows(); if (!rows.length) { toast('先加入款号'); return; }
       const c = customer(), calc = E.quoteCalc(rows.map(r => ({ pid: r.pid, qty: r.qty, mat: r.mat })), c);
       const q = { id: 'Q' + Date.now(), no: S.quoteMeta.no || autoNo(), customer: c.name, total: calc.total, date: S.quoteMeta.date, items: rows.map(r => ({ pid: r.pid, qty: r.qty, mat: r.mat })) };
       S.quotes.push(q); S.quoteMeta.no = ''; save(); vQuote(); toast('已保存 ' + q.no);
@@ -2766,22 +2753,22 @@
       S.cart = q.items.map(i => ({ ...i })); S.quoteMeta.no = q.no; save(); render(); toast('已载入 ' + q.no);
     },
     newFit() {
-      modal('新增适配关系', `
+      modal('新增适用关系', `
         <div class="grid" style="grid-template-columns:1fr 1fr;gap:10px">
-          <div class="field"><label>车型</label><select id="nfV">${D.vehicles.map(v => `<option value="${v.id}">${esc(v.brand + ' ' + v.series + ' ' + v.model)}</option>`).join('')}</select></div>
-          <div class="field"><label>车桥（可空）</label><select id="nfA"><option value="">按旧件确认</option>${D.axles.map(a => `<option value="${a.id}">${esc(a.brand + ' ' + a.model)}</option>`).join('')}</select></div>
+          <div class="field"><label>适用场景</label><select id="nfV">${D.vehicles.map(v => `<option value="${v.id}">${esc(v.brand + ' ' + v.series + ' ' + v.model)}</option>`).join('')}</select></div>
+          <div class="field"><label>尺码（可空）</label><select id="nfA"><option value="">按旧款确认</option>${D.axles.map(a => `<option value="${a.id}">${esc(a.brand + ' ' + a.model)}</option>`).join('')}</select></div>
           <div class="field"><label>部位</label><select id="nfP"><option>后</option><option>前</option></select></div>
-          <div class="field"><label>型号（编码）</label><input id="nfC" placeholder="如 CA9T R"></div>
-          <div class="field"><label>适配类型</label><select id="nfF"><option>OE 替代</option><option>通用</option><option>替代</option><option>原厂配套</option></select></div>
+          <div class="field"><label>款号（编码）</label><input id="nfC" placeholder="如 CA9T R"></div>
+          <div class="field"><label>适用类型</label><select id="nfF"><option>OE 替代</option><option>通用</option><option>替代</option><option>原厂配套</option></select></div>
           <div class="field"><label>置信度</label><select id="nfConf"><option>中</option><option>高</option><option>低</option><option>已确认</option></select></div>
         </div>
         <div class="field mt-s"><label>消歧问题（一行一条）</label><textarea id="nfQ" placeholder="后桥是 457 还是 485？"></textarea></div>
-        <div class="notice mt-s">新增关系默认进入待复核队列；「已确认」需有实车/试验依据。</div>`,
+        <div class="notice mt-s">新增关系默认进入待复核队列；「已确认」需有样衣实测依据。</div>`,
         `<button class="btn" data-act="closeModal">取消</button><button class="btn primary" data-act="saveFit">保存</button>`);
     },
     saveFit() {
       const code = $('#nfC').value.trim();
-      if (!code) { toast('请填写型号编码'); return; }
+      if (!code) { toast('请填写款号编码'); return; }
       const pid = (E.codeFlat.find(c => E.norm(c.code) === E.norm(code)) || {}).pid;
       if (!pid) { toast('库里没有这个编码：' + code); return; }
       const f = {
@@ -2791,7 +2778,7 @@
       };
       S.draftFits.push(f);
       const v = D.vehicles.find(x => x.id === f.vid), a = D.axles.find(x => x.id === f.aid);
-      D.fitments.push({ ...f, code, vName: `${v.brand} ${v.series} ${v.model}`, aName: a ? `${a.brand} ${a.model}` : '按旧件确认' });
+      D.fitments.push({ ...f, code, vName: `${v.brand} ${v.series} ${v.model}`, aName: a ? `${a.brand} ${a.model}` : '按旧款确认' });
       save(); closeModal(); render(); toast('已加入待复核队列');
     },
     confirmFit(id) {
@@ -2804,7 +2791,7 @@
     copyAnswer(pid) {
       const p = E.byId.get(pid); if (!p) return;
       const fs = E.fitsByP.get(p.id) || [];
-      const txt = `型号：${p.code}\n规格：${p.dim || '按旧件核对'}\n材质：${D.materials.find(m => m.id === p.material).name}\n适配：${fs.slice(0, 3).map(f => f.vName + '/' + f.aName).join('；') || '按旧件确认'}\n报价：$${money(E.priceOf(p.id, 100, customer()))}/套（100 套，FOB）\n\n如需确认：请拍旧片正面 + 侧面靠卷尺 + 车桥铭牌各一张，2 小时内回复准确型号。`;
+      const txt = `款号：${p.code}\n规格：${p.dim || '按旧款核对'}\n面料：${D.materials.find(m => m.id === p.material).name}\n适用：${fs.slice(0, 3).map(f => f.vName + '/' + f.aName).join('；') || '按旧款确认'}\n报价：$${money(E.priceOf(p.id, 100, customer()))}/套（100 套，FOB）\n\n如需确认：请拍旧片正面 + 侧面靠卷尺 + 尺码铭牌各一张，2 小时内回复准确款号。`;
       navigator.clipboard?.writeText(txt).then(() => toast('话术已复制'), () => toast('复制失败，请手动选择'));
     },
     openLead(id) { openLead(id); },
@@ -2829,7 +2816,7 @@
         .replace('{{vehicle}}', v ? `${v.brand} ${v.series} ${v.model}` : (l.needZh || '').slice(0, 30))
         .replace('{{axleCount}}', v ? String(new Set((E.fitsByV.get(v.id) || []).map(f => f.aid)).size || 1) : '2')
         .replace('{{owner}}', l.owner || 'Sales');
-      modal('回复话术 · ' + l.company, `<div class="small muted mb">可直接复制到 WhatsApp / 邮件。已按该客户询盘自动填充车型与桥型数量。</div>
+      modal('回复话术 · ' + l.company, `<div class="small muted mb">可直接复制到 WhatsApp / 邮件。已按该客户询盘自动填充适用场景与桥型数量。</div>
         <textarea style="min-height:260px;font-size:13px" id="replyBox">${esc(body)}</textarea>`,
         `<button class="btn" data-act="closeModal">关闭</button><button class="btn primary" data-act="copyReply">复制</button>`);
     },
@@ -2846,7 +2833,7 @@
         <div class="field"><label>时区</label><select id="nlTz">${['Asia/Shanghai', 'Asia/Dubai', 'Asia/Riyadh', 'Asia/Jakarta', 'Asia/Ho_Chi_Minh', 'Asia/Kolkata', 'America/Mexico_City', 'America/Santiago', 'America/Lima', 'America/Bogota', 'Europe/Berlin', 'Africa/Lagos'].map(s => `<option>${s}</option>`).join('')}</select></div>
         <div class="field"><label>负责人</label><input id="nlOw" value="Sophia"></div>
       </div>
-      <div class="field mt-s"><label>询盘原文</label><textarea id="nlNeed" placeholder="粘贴客户原话，系统会自动识别车型/车桥/数量"></textarea></div>
+      <div class="field mt-s"><label>询盘原文</label><textarea id="nlNeed" placeholder="粘贴客户原话，系统会自动识别适用场景/尺码/数量"></textarea></div>
       <div class="notice mt-s">保存后自动评分，并识别是终端还是贸易商。</div>`,
         `<button class="btn" data-act="closeModal">取消</button><button class="btn primary" data-act="saveNewLead">保存并评分</button>`);
     },
@@ -2868,14 +2855,14 @@
     exportProducts() {
       const rows = [['code', 'sku', 'cat', 'nameEn', 'dim', 'material', 'brand', 'moq', 'pack', 'price', 'hs']]
         .concat(D.products.map(p => [p.code, p.sku, p.cat, p.nameEn, p.dim, p.material, p.brand, p.moq, p.pack.per, p.price, p.hs]));
-      E.download(new Blob(['\ufeff' + E.csv(rows)], { type: 'text/csv' }), '冠英产品目录.csv');
+      E.download(new Blob(['\ufeff' + E.csv(rows)], { type: 'text/csv' }), '棉豆产品目录.csv');
     },
     exportJson() {
       const blob = new Blob([JSON.stringify({ meta: D.meta, stats: D.stats, products: D.products, codes: D.codes, vehicles: D.vehicles, axles: D.axles, fitments: D.fitments, tests: D.tests, leads: S.leads, quotes: S.quotes }, null, 1)], { type: 'application/json' });
       E.download(blob, 'guanying-snapshot.json');
     },
     resetData() {
-      if (!confirm('将清空本机修改（线索、报价、手动适配），恢复默认数据。继续？')) return;
+      if (!confirm('将清空本机修改（线索、报价、手动适用），恢复默认数据。继续？')) return;
       localStorage.removeItem(KEY); location.reload();
     },
     /* ---- 增加客户（手动 / 拍照名片） ---- */
@@ -2914,8 +2901,8 @@
     dmPersona(id) {
       const p = SOCIAL.personas.find(x => x.id === id); if (!p) return;
       const sku = (p.tags[0] || 'HOWO1');
-      const txt = `Hi ${p.name.split(' ')[0]},\n\nI saw your post about ${p.tags.join(' / ') || 'brake pads'} — that is exactly what we make.\n\nWe are KOOYING, a brake pad factory in China (IATF 16949, ECE R90 for part of the range). For ${sku} we can offer $${money(E.priceOf((E.codeFlat.find(c => E.norm(c.code) === E.norm(sku)) || {}).pid || D.products[0].id, 100, customer()))}/set at 100 sets.\n\nIf you send a photo of the old pad next to a ruler, I will confirm the exact code within 2 hours — no need to guess the model.\n\nWould you like our catalog + test report?\n\nBest,\n${p.country === '中国' ? 'KOOYING Team' : 'Sophia | ZHEJIANG KOOYING'}`;
-      modal('私信草稿 · ' + p.name, `<div class="small muted mb">按该账号的语种/市场/关注车型生成，可直接改。演示账号数据，接平台 API 后可自动带入最近作品。</div>
+      const txt = `Hi ${p.name.split(' ')[0]},\n\nI saw your post about ${p.tags.join(' / ') || 'brake pads'} — that is exactly what we make.\n\nWe are MIANDOU, a brake pad factory in China (IATF 16949, ECE R90 for part of the range). For ${sku} we can offer $${money(E.priceOf((E.codeFlat.find(c => E.norm(c.code) === E.norm(sku)) || {}).pid || D.products[0].id, 100, customer()))}/set at 100 sets.\n\nIf you send a photo of the old pad next to a ruler, I will confirm the exact code within 2 hours — no need to guess the model.\n\nWould you like our catalog + test report?\n\nBest,\n${p.country === '中国' ? 'MIANDOU Team' : 'Sophia | ZHEJIANG MIANDOU'}`;
+      modal('私信草稿 · ' + p.name, `<div class="small muted mb">按该账号的语种/市场/关注适用场景生成，可直接改。演示账号数据，接平台 API 后可自动带入最近作品。</div>
         <textarea style="min-height:280px;font-size:13px" id="dmBox">${esc(txt)}</textarea>`,
         `<button class="btn" data-act="closeModal">关闭</button><button class="btn primary" data-act="copyDm">复制</button>`);
     },
@@ -2976,7 +2963,7 @@
     dealAdd() {
       const v = id => { const el = $('#' + id); return el ? el.value : ''; };
       const code = String(v('dCode') || '').trim();
-      if (!code) { toast('先填型号'); return; }
+      if (!code) { toast('先填款号'); return; }
       const p = D.products.find(x => x.code === code);
       const custRaw = v('dCust') || '|';
       const customer = custRaw.split('|')[0], country = custRaw.split('|')[1] || '';
@@ -3015,7 +3002,7 @@
       const d = (S.deals || []).find(x => x.id === id);
       if (!d) return;
       const p = D.products.find(x => x.code === d.code);
-      if (!p) { toast(LZ('产品库里没有这个型号', 'Not in the catalog')); return; }
+      if (!p) { toast(LZ('产品库里没有这个款号', 'Not in the catalog')); return; }
       const qty = +d.qty || 100;
       const hit = S.cart.find(x => x.pid === p.id);
       if (hit) hit.qty += qty; else S.cart.push({ pid: p.id, qty, mat: p.material });
@@ -3054,7 +3041,7 @@
           sel.appendChild(o); sel.value = want;
         }
       }
-      /* 带出他问过的第一个型号 */
+      /* 带出他问过的第一个款号 */
       const f = window.DEALS.followups(dealCtx()).find(x => x.uid === uid);
       if (f && f.wantCodes.length) {
         const codeEl = $('#dCode');
@@ -3248,7 +3235,7 @@
       const u = A.me() || {};
       const g = id2 => { const el2 = $('#' + id2); return el2 ? el2.value.trim() : ''; };
       const model = g('asModel'), contact = g('asContact'), desc = g('asDesc');
-      if (!model || !contact || !desc) { toast(LZ('型号、联系方式、情况说明都要填', 'Model, contact and description are required')); return; }
+      if (!model || !contact || !desc) { toast(LZ('款号、联系方式、情况说明都要填', 'Model, contact and description are required')); return; }
       const rec = {
         id: 'AS' + Date.now(), at: new Date().toISOString().slice(0, 16).replace('T', ' '),
         cust: u.name || '客户', company: u.company || '', model,
@@ -3349,11 +3336,11 @@
       navigator.clipboard?.writeText(txt).then(() => toast('回复已复制'), () => toast('复制失败'));
     },
     chatAskPhoto() {
-      const txt = '不用提供编码也能定：请拍 3 张照片 —— ① 旧片正面（带字的那一面）② 旧片侧面靠着卷尺 ③ 车桥铭牌。照片回来 2 小时内给型号和价格。';
+      const txt = '不用提供编码也能定：请拍 3 张照片 —— ① 旧片正面（带字的那一面）② 旧片侧面靠着卷尺 ③ 尺码铭牌。照片回来 2 小时内给款号和价格。';
       navigator.clipboard?.writeText(txt).then(() => toast('话术已复制'), () => toast('复制失败'));
     },
     chatAlertGo(pid) { ACT.openProduct(pid); },
-    /* ---- 热度 / 车型榜 ---- */
+    /* ---- 热度 / 适用场景榜 ---- */
     contentFor(pid) {
       const p = E.byId.get(pid); if (!p) return;
       S.content.pid = pid; S.tab = 'content'; genScript(); toast(`已按 ${p.code} 生成内容选题`);
@@ -3361,11 +3348,11 @@
     copyHeat(pid) {
       const p = E.byId.get(pid); if (!p) return;
       const rows = productVehicles(p);
-      if (!rows.length) { toast('该型号暂无适配车型'); return; }
-      const txt = `【${p.code}】常用车型（按社媒点赞量排序）\n` + rows.map((r, i) =>
-        `${i + 1}. ${r.vName}｜${[...r.axles].join('/') || '按旧件'}｜${[...r.pos].join('/')}片｜${[...r.codes].join('/')}｜点赞 ${r.heat.likes}（${r.heat.count} 条内容）`
-      ).join('\n') + `\n\n数据来源：冠英选型与报价中台（点赞为演示口径）`;
-      navigator.clipboard?.writeText(txt).then(() => toast('车型清单已复制'), () => toast('复制失败'));
+      if (!rows.length) { toast('该款号暂无适用场景'); return; }
+      const txt = `【${p.code}】常用适用场景（按社媒点赞量排序）\n` + rows.map((r, i) =>
+        `${i + 1}. ${r.vName}｜${[...r.axles].join('/') || '按旧款'}｜${[...r.pos].join('/')}片｜${[...r.codes].join('/')}｜点赞 ${r.heat.likes}（${r.heat.count} 条内容）`
+      ).join('\n') + `\n\n数据来源：棉豆童装选款与订货中台（互动量为演示口径）`;
+      navigator.clipboard?.writeText(txt).then(() => toast('适用场景清单已复制'), () => toast('复制失败'));
     },
     runImport() {
       const type = $('#impType').value, text = $('#impText').value.trim();
@@ -3380,14 +3367,14 @@
             const [vName, aName, pos, code, fit, conf, src] = cols;
             const v = D.vehicles.find(x => (x.brand + x.series + x.model).includes(vName) || vName.includes(x.model));
             const pid = (E.codeFlat.find(c => E.norm(c.code) === E.norm(code)) || {}).pid;
-            if (!v || !pid) throw new Error(!pid ? '型号不存在：' + code : '车型不存在：' + vName);
+            if (!v || !pid) throw new Error(!pid ? '款号不存在：' + code : '适用场景不存在：' + vName);
             const a = D.axles.find(x => (x.brand + x.model).includes(aName) || aName.includes(x.model));
             S.draftFits.push({ id: 'I' + Date.now() + i, vid: v.id, aid: a ? a.id : null, pid, pos: pos || '后', fit: fit || '通用', conf: conf || '中', src: src || 'CSV 导入', q: [] });
-            D.fitments.push({ id: 'I' + Date.now() + i, vid: v.id, aid: a ? a.id : null, pid, pos: pos || '后', fit: fit || '通用', conf: conf || '中', src: src || 'CSV 导入', q: [], code, vName: `${v.brand} ${v.series} ${v.model}`, aName: a ? `${a.brand} ${a.model}` : '按旧件确认' });
+            D.fitments.push({ id: 'I' + Date.now() + i, vid: v.id, aid: a ? a.id : null, pid, pos: pos || '后', fit: fit || '通用', conf: conf || '中', src: src || 'CSV 导入', q: [], code, vName: `${v.brand} ${v.series} ${v.model}`, aName: a ? `${a.brand} ${a.model}` : '按旧款确认' });
           } else if (type === 'prod') {
             const [code, dim, mat, price, moq] = cols;
             const p = D.products.find(x => E.norm(x.code) === E.norm(code));
-            if (!p) throw new Error('型号不存在：' + code);
+            if (!p) throw new Error('款号不存在：' + code);
             if (dim) { p.dim = dim; p.dimStatus = '已录入'; }
             if (mat && D.materials.some(m => m.id === mat)) p.material = mat;
             if (price && !isNaN(price)) p.price = Number(price);
@@ -3401,7 +3388,7 @@
           } else if (type === 'code') {
             const [code, xcode, xtype, src] = cols;
             const p = D.products.find(x => E.norm(x.code) === E.norm(code));
-            if (!p) throw new Error('型号不存在：' + code);
+            if (!p) throw new Error('款号不存在：' + code);
             D.codes.push({ id: 'X' + Date.now() + i, code: xcode, norm: E.norm(xcode), pid: p.id, type: xtype || '客户叫法', source: src || 'CSV 导入', conf: '中', note: '' });
           }
           ok++;
@@ -3429,7 +3416,7 @@
   function pName(p) { return I.getLang() === 'zh' ? (p.nameZh || p.nameEn || p.name || '') : (p.nameEn || p.nameZh || p.name || ''); }
   function pCat(p) { return I.getLang() === 'zh' ? (p.cat || '') : (p.catEn || p.cat || ''); }
   function mName(m) { return I.getLang() === 'zh' ? (m.name || '') : (m.nameEn || m.name || ''); }
-  /** 车型名：中文界面原样，其它语言按词典英文化 */
+  /** 适用场景名：中文界面原样，其它语言按词典英文化 */
   const VEH_DICT = {
     '中国重汽': 'SINOTRUK', '重汽豪沃': 'SINOTRUK HOWO', '上汽红岩': 'SAIC Hongyan',
     '一汽解放': 'FAW Jiefang', '梅赛德斯-奔驰': 'Mercedes-Benz', '三菱扶桑': 'Mitsubishi Fuso',
@@ -3439,8 +3426,8 @@
     '奔驰': 'Mercedes-Benz', '沃尔沃': 'Volvo', '福特': 'Ford', '尼奥普兰': 'Neoplan',
     '豪沃': 'HOWO', '德龙': 'Delong', '斯太尔': 'Steyr', '欧曼': 'Auman', '格尔发': 'Gallop',
     '杰狮': 'Genlyon', '天龙': 'Tianlong', '天锦': 'Tianjin', '约克': 'York', '富华': 'Fuwa',
-    '挂车桥': 'trailer axle', '半挂车': 'semi-trailer', '挂车': 'trailer', '客车': 'bus',
-    '卡车': 'truck', '栏板': 'dropside', '公路': 'road', '系列': 'series', '系': 'series', '桥': 'axle'
+    '连体衣': 'bodysuit', '哈衣': 'romper', '家居服': 'homewear', '睡袋': 'sleeping bag',
+    '童装': 'truck', '栏板': 'dropside', '公路': 'road', '系列': 'series', '系': 'series', '桥': 'axle'
   };
   const VEH_KEYS = Object.keys(VEH_DICT).sort((x, y) => y.length - x.length);
   function vehEn(a) {
@@ -3492,9 +3479,9 @@
     if ($('#langSub')) $('#langSub').textContent = T('m.sub');
     if ($('#langRememberTxt')) $('#langRememberTxt').textContent = T('m.auto');
     if ($('#langGo')) $('#langGo').textContent = T('m.btn');
-    document.title = I.getLang() === 'zh' ? '冠英 · 选型与报价中台 · KOOYING Hub' : 'KOOYING · Selection & Quotation Hub';
+    document.title = I.getLang() === 'zh' ? '棉豆 · 童装选款与订货中台' : 'MIANDOU · Kidswear Selection & Ordering';
     const bt = document.querySelector('.brand-t');
-    if (bt) bt.textContent = I.getLang() === 'zh' ? '选型与报价中台' : 'Selection & Quotation Hub';
+    if (bt) bt.textContent = I.getLang() === 'zh' ? '童装选款与订货' : 'Kidswear Selection';
     const bh = $('#brandHome');
     if (bh) {
       const back = I.getLang() === 'zh' ? '回到首页' : 'Back to home';
@@ -3561,7 +3548,7 @@
           </div>
           <div class="d">${u.role === 'staff'
           ? LZ('可以看到客户浏览、跟进线索、编辑报价与资料包。', 'Can see customer activity, leads, quotes and data packs.')
-          : LZ('你可以查看型号、测算价格；员工的报价与资料会发到这个联系方式。', 'You can browse parts and see prices; quotes will be sent to this contact.')}</div>
+          : LZ('你可以查看款号、测算价格；员工的报价与资料会发到这个联系方式。', 'You can browse parts and see prices; quotes will be sent to this contact.')}</div>
         </div>
       </div>
       <div class="gate-form" style="grid-template-columns:1fr">
@@ -3580,7 +3567,7 @@
     if (gTitle) gTitle.textContent = modeStaff ? LZ('选择入口', 'Choose entry') : LZ('客户登录', 'Customer sign in');
     if (gSub) gSub.textContent = modeStaff
       ? LZ('客户直接登录；员工用访问码，老板用老板访问码。', 'Customers sign in directly; staff use the access code, owners the owner code.')
-      : LZ('用手机号 / 邮箱 / WhatsApp 登录，看型号、看价格、收报价。', 'Sign in with phone, email or WhatsApp to browse parts and get quotes.');
+      : LZ('用手机号 / 邮箱 / WhatsApp 登录，看款号、看价格、收报价。', 'Sign in with phone, email or WhatsApp to browse parts and get quotes.');
     body.innerHTML = `
     ${modeStaff ? `<div class="gate-roles">
       <button class="gate-role ${gateRole === 'customer' ? 'on' : ''}" data-act="gateRole" data-id="customer">
@@ -3648,7 +3635,7 @@
   const EV_LABEL = {
     login: ['登录', 'Signed in'],
     search: ['搜索', 'Search'],
-    view: ['查看型号', 'Viewed part'],
+    view: ['查看款号', 'Viewed part'],
     addCart: ['加入报价单', 'Added to quote'],
     inquiry: ['提交询价', 'Asked for price'],
     quote: ['打开报价单', 'Opened quote'],
@@ -3689,7 +3676,7 @@
         <td class="tiny muted">${esc(ago(q.t))}</td>
         <td><b>${esc(q.user.name)}</b>${q.user.demo ? ' <span class="tag y">' + LZ('体验','Demo') + '</span>' : ''}
           ${q.user.company ? `<div class="tiny muted">${esc(q.user.company)}</div>` : ''}</td>
-        <td class="mono tiny">${esc(q.no)}<div class="tiny muted">${esc(q.items.length)} 型号 · ${pieces} 件</div></td>
+        <td class="mono tiny">${esc(q.no)}<div class="tiny muted">${esc(q.items.length)} 款号 · ${pieces} 件</div></td>
         <td>${items}${q.note ? `<div class="tiny muted" style="margin-top:4px">📝 ${esc(q.note)}</div>` : ''}</td>
         <td class="tiny">${esc(q.user.contact.type)}<div class="muted">${esc(q.user.contact.value)}</div></td>
         <td><div class="row">
@@ -3708,10 +3695,10 @@
   /* ================= 增加客户（手动录入 / 拍照名片） ================= */
   /** 名片识别演示结果：接真 OCR（腾讯云 / 阿里云 / GPT-4o）后换成接口返回 */
   const CARD_DEMO = [
-    { name: 'Omar Haddad', company: 'Haddad Brake Center', country: '阿联酋', type: 'WhatsApp', value: '+971 50 448 2210', tags: '名片导入, 中东, 批发', note: '迪拜刹车片批发商，先要目录 + ECE R90 报告' },
-    { name: 'Ricardo Alvarez', company: 'Refacciones del Norte', country: '墨西哥', type: 'Phone', value: '+52 81 3344 7788', tags: '名片导入, 墨西哥, 车队', note: '蒙特雷车队 60 台重卡，问后片阶梯价' },
-    { name: 'Budi Santoso', company: 'CV Sinar Jaya Parts', country: '印度尼西亚', type: 'WhatsApp', value: '+62 812 3344 5566', tags: '名片导入, 东南亚, 贸易商', note: '雅加达配件商，要 HOWO / 解放适配表' },
-    { name: 'Mehmet Yilmaz', company: 'Yilmaz Otomotiv', country: '土耳其', type: 'Email', value: 'mehmet@yilmazoto.com.tr', tags: '名片导入, 土耳其, 终端', note: '伊斯坦布尔车队，关注 29087 / 29095' }
+    { name: 'Omar Haddad', company: 'Haddad Brake Center', country: '阿联酋', type: 'WhatsApp', value: '+971 50 448 2210', tags: '名片导入, 中东, 批发', note: '迪拜童装批发商，先要目录 + ECE R90 报告' },
+    { name: 'Ricardo Alvarez', company: 'Refacciones del Norte', country: '墨西哥', type: 'Phone', value: '+52 81 3344 7788', tags: '名片导入, 墨西哥, 母婴连锁', note: '蒙特雷母婴连锁 60 家门店，问短袖T恤阶梯价' },
+    { name: 'Budi Santoso', company: 'CV Sinar Jaya Parts', country: '印度尼西亚', type: 'WhatsApp', value: '+62 812 3344 5566', tags: '名片导入, 东南亚, 贸易商', note: '雅加达配件商，要 HOWO / 解放适用表' },
+    { name: 'Mehmet Yilmaz', company: 'Yilmaz Otomotiv', country: '土耳其', type: 'Email', value: 'mehmet@yilmazoto.com.tr', tags: '名片导入, 土耳其, 终端', note: '伊斯坦布尔母婴连锁，关注 29087 / 29095' }
   ];
   function defaultAddCust() {
     return { name: '', company: '', country: '', type: 'WhatsApp', value: '', tags: '', note: '', photo: '', scanning: false, ocr: false };
@@ -3736,7 +3723,7 @@
             <div class="field"><label>${LZ('国家 / 地区', 'Country')}</label><input id="cuCountry" value="${esc(st.country)}" placeholder="墨西哥"></div>
             <div class="field"><label>${LZ('联系方式类型', 'Contact type')}</label><select id="cuType">${A.CONTACT_TYPES.map(t => `<option ${st.type === t ? 'selected' : ''}>${t}</option>`).join('')}</select></div>
             <div class="field" style="grid-column:span 2"><label>${LZ('联系方式 *', 'Contact *')}</label><input id="cuValue" value="${esc(st.value)}" placeholder="+52 55 1234 5678 / buyer@company.com"></div>
-            <div class="field" style="grid-column:span 2"><label>${LZ('标签（逗号分隔）', 'Tags (comma separated)')}</label><input id="cuTags" value="${esc(st.tags)}" placeholder="车队, 墨西哥, A 类"></div>
+            <div class="field" style="grid-column:span 2"><label>${LZ('标签（逗号分隔）', 'Tags (comma separated)')}</label><input id="cuTags" value="${esc(st.tags)}" placeholder="母婴连锁, 墨西哥, A 类"></div>
             <div class="field" style="grid-column:span 2"><label>${LZ('备注 / 需求', 'Note / need')}</label><input id="cuNote" value="${esc(st.note)}" placeholder="想要 29087 后片 200 套，先要目录"></div>
           </div>
           <div class="row wrap-gap mt-s">
@@ -3814,12 +3801,12 @@
     $('#p-visits').innerHTML = `
     <div class="row wrap-gap" style="justify-content:space-between;margin-bottom:12px">
       <div><h1 style="margin:0">${LZ('客户浏览', 'Customer activity')}</h1>
-        <div class="muted small">${LZ('客户在客户端搜了什么、看了哪些型号、有没有打开报价单——按最近活跃排序。', 'What customers searched, viewed and quoted — newest first.')}</div></div>
+        <div class="muted small">${LZ('客户在客户端搜了什么、看了哪些款号、有没有打开报价单——按最近活跃排序。', 'What customers searched, viewed and quoted — newest first.')}</div></div>
       <div class="row"><span class="tag ${list.length ? 'g' : 'n'}">${list.length} ${LZ('位客户', 'customers')}</span></div>
     </div>
     <div class="kpis mb">
       <div class="kpi"><div class="n">${today}</div><div class="l">${LZ('24 小时内活跃', 'Active in 24h')}</div></div>
-      <div class="kpi"><div class="n">${views}</div><div class="l">${LZ('累计浏览型号', 'Part views')}</div></div>
+      <div class="kpi"><div class="n">${views}</div><div class="l">${LZ('累计浏览款号', 'Part views')}</div></div>
       <div class="kpi"><div class="n">${orders}</div><div class="l">${LZ('打开报价 / 资料包', 'Quotes / packs opened')}</div></div>
       <div class="kpi"><div class="n">${list.filter(c => c.stat.score >= 60).length}</div><div class="l">${LZ('高意向待跟', 'Hot to follow up')}</div></div>
     </div>
@@ -3871,19 +3858,19 @@
       </div>
       <div class="kpis" style="margin-bottom:12px">
         <div class="kpi"><div class="n">${st.score}</div><div class="l">${LZ('意向评分', 'Intent score')}</div></div>
-        <div class="kpi"><div class="n">${st.views}</div><div class="l">${LZ('查看型号', 'Views')}</div></div>
+        <div class="kpi"><div class="n">${st.views}</div><div class="l">${LZ('查看款号', 'Views')}</div></div>
         <div class="kpi"><div class="n">${st.searches}</div><div class="l">${LZ('搜索', 'Searches')}</div></div>
         <div class="kpi"><div class="n">${st.orders}</div><div class="l">${LZ('报价/资料', 'Quote/pack')}</div></div>
       </div>
       ${searches.length ? `<div class="sec-t">${LZ('他搜过什么', 'What they searched')}</div>
         <div class="row wrap-gap" style="gap:6px">${searches.slice(0, 6).map(q => `<span class="chip">${esc(q)}</span>`).join('')}</div>` : ''}
-      ${codes.length ? `<div class="sec-t">${LZ('他看过哪些型号', 'Parts they viewed')}</div>
+      ${codes.length ? `<div class="sec-t">${LZ('他看过哪些款号', 'Parts they viewed')}</div>
         <div class="row wrap-gap" style="gap:6px">${codes.map(c => `<span class="chip" data-act="openProductByCode" data-id="${esc(c)}">${esc(c)}</span>`).join('')}</div>` : ''}
       <div class="sec-t">${LZ('浏览轨迹', 'Timeline')}</div>
       <div class="tl">${rows || `<div class="muted small">${LZ('还没有记录', 'No events yet')}</div>`}</div>
       <div class="sec-t">${LZ('发给他的消息', 'Message to this customer')}</div>
-      <textarea id="sendMsg" style="min-height:96px;font-size:12.5px">${esc(LZ('你好 ' + u.name + '，这里是冠英（KOOYING）。你之前看过 ' + (codes.slice(0, 3).join(' / ') || '我们的刹车片') + '，我把规格、适配车型和价格一起发你，方便的话回复数量，我按阶梯价报给你。',
-        'Hi ' + u.name + ', this is KOOYING. You looked at ' + (codes.slice(0, 3).join(' / ') || 'our brake pads') + '. I can send specs, fitment and prices — just tell me the quantity.'))}</textarea>
+      <textarea id="sendMsg" style="min-height:96px;font-size:12.5px">${esc(LZ('你好 ' + u.name + '，这里是棉豆（MIANDOU）。你之前看过 ' + (codes.slice(0, 3).join(' / ') || '我们的童装') + '，我把规格、适用场景和价格一起发你，方便的话回复数量，我按阶梯价报给你。',
+        'Hi ' + u.name + ', this is MIANDOU. You looked at ' + (codes.slice(0, 3).join(' / ') || 'our brake pads') + '. I can send specs, fitment and prices — just tell me the quantity.'))}</textarea>
       <div class="small muted mt-s">${LZ('发送后会打开 WhatsApp / 邮件客户端，内容可先编辑。', 'Opens WhatsApp or your mail app with the text above.')}</div>`,
       `<div class="row wrap-gap">
         <button class="btn primary" data-act="sendCustomer" data-id="${u.id}">${LZ('用 ' + u.contact.type + ' 发送', 'Send via ' + u.contact.type)}</button>

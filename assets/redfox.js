@@ -354,7 +354,7 @@
 
   function buildPayload(kind) {
     const a = ST.args;
-    const p = { source: 'RedFox · 冠英选型中台' };
+    const p = { source: 'RedFox · 棉豆选款中台' };
     if (ST.plat === 'tiktok') {
       p.count = ST.count;
       if (kind.id === 'topic') {

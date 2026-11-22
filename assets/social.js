@@ -9,23 +9,23 @@ window.SOCIAL = (function () {
   ];
 
   const personas = [
-    { id: 'A01', handle: '@repuestosdelnorte', name: 'Repuestos del Norte', platform: 'TikTok', country: '墨西哥', lang: 'ES', type: '修理厂连锁', community: 'latam', followers: 128000, following: 412, posts: 860, engage: 6.8, tags: ['HOWO', 'J6P', 'EQ153'], intent: 88, note: '视频里常出现豪沃 A7 后桥拆装，评论区大量问型号', action: '寄样 + 定制「车型→型号」对照卡' },
-    { id: 'A02', handle: '@tallerdonjorge', name: 'Taller Don Jorge', platform: 'YouTube', country: '墨西哥', lang: 'ES', type: '修理厂', community: 'latam', followers: 46000, following: 220, posts: 340, engage: 4.2, tags: ['Actros', 'BPW'], intent: 74, note: '长视频讲解刹车抖动，粉丝为个体司机', action: '提供试验报告做背书，置换口播' },
+    { id: 'A01', handle: '@repuestosdelnorte', name: 'Pequeños Pasos Kids', platform: 'TikTok', country: '墨西哥', lang: 'ES', type: '母婴连锁', community: 'latam', followers: 128000, following: 412, posts: 860, engage: 6.8, tags: ['连衣裙', 'T恤', '尺码'], intent: 88, note: '视频里常出现豪沃 A7 后桥拆装，评论区大量问款号', action: '寄样 + 定制「适用场景→款号」对照卡' },
+    { id: 'A02', handle: '@tallerdonjorge', name: 'Mamá y Bebé', platform: 'YouTube', country: '墨西哥', lang: 'ES', type: '母婴店', community: 'latam', followers: 46000, following: 220, posts: 340, engage: 4.2, tags: ['Actros', 'BPW'], intent: 74, note: '长视频讲解面料抖动，粉丝为个体司机', action: '提供试验报告做背书，置换口播' },
     { id: 'A03', handle: '@caminhoneiro_br', name: 'Caminhoneiro BR', platform: 'TikTok', country: '巴西', lang: 'PT', type: '司机 KOL', community: 'latam', followers: 310000, following: 180, posts: 1240, engage: 9.1, tags: ['Actros', 'Volvo FH'], intent: 61, note: '纯司机视角，关注耐用与价格，不关心技术参数', action: '按「每万公里成本」做对比视频' },
-    { id: 'A04', handle: '@frotabrasil', name: 'Frota Brasil Ltda', platform: 'Instagram', country: '巴西', lang: 'PT', type: '车队', community: 'latam', followers: 8400, following: 610, posts: 190, engage: 3.1, tags: ['BPW', '挂车'], intent: 82, note: '自有 260 台挂车，采购在评论区出现过', action: '直接私信采购，发装柜与阶梯价' },
-    { id: 'A05', handle: '@andina_frenos', name: 'Andina Frenos', platform: 'Instagram', country: '智利', lang: 'ES', type: '经销商', community: 'latam', followers: 15600, following: 380, posts: 420, engage: 4.7, tags: ['HOWO', 'J6P'], intent: 79, note: '已成交客户 Comercial Andina 的关联账号', action: '让其做本地案例，给二级分销价' },
-    { id: 'A06', handle: '@frenospacifico', name: 'Frenos del Pacífico', platform: 'Facebook', country: '秘鲁', lang: 'ES', type: '修理厂连锁', community: 'latam', followers: 22000, following: 540, posts: 610, engage: 5.3, tags: ['EQ153', 'HINO'], intent: 76, note: '18 家门店，需要小批量多品种', action: '推拼柜方案 + 门店选型二维码' },
-    { id: 'A07', handle: '@alrashid_parts', name: 'Al-Rashid Auto Parts', platform: 'Instagram', country: '阿联酋', lang: 'AR', type: '经销商', community: 'me', followers: 23400, following: 290, posts: 520, engage: 3.9, tags: ['BPW', 'Actros'], intent: 85, note: '迪拜汽配城门店，欧系盘式片为主', action: '新品先发，CIF Jebel Ali 报价' },
-    { id: 'A08', handle: '@shanab_trucks', name: 'Shanab Trucks', platform: 'TikTok', country: '沙特阿拉伯', lang: 'AR', type: '修理厂', community: 'me', followers: 88000, following: 130, posts: 950, engage: 7.4, tags: ['Actros', 'HOWO'], intent: 71, note: '短视频现场拆片，评论区问「哪款」', action: '给「拍照定位法」卡片，做置顶评论' },
-    { id: 'A09', handle: '@saharafleet', name: 'Sahara Fleet Mgmt', platform: 'LinkedIn', country: '沙特阿拉伯', lang: 'EN', type: '车队', community: 'me', followers: 5200, following: 780, posts: 120, engage: 2.4, tags: ['Actros', 'MAN'], intent: 80, note: '车队经理，关注 TCO 与交付周期', action: '发 TCO 测算表与年度框架协议' },
-    { id: 'A10', handle: '@bengkel_mandiri', name: 'Bengkel Mandiri', platform: 'TikTok', country: '印度尼西亚', lang: 'ID', type: '修理厂', community: 'sea', followers: 54000, following: 310, posts: 700, engage: 8.2, tags: ['HINO', 'FUSO'], intent: 68, note: '日系中卡为主，价格极敏感', action: 'AD 经济线 + 小包装试销' },
+    { id: 'A04', handle: '@frotabrasil', name: 'Bebê Brasil Moda', platform: 'Instagram', country: '巴西', lang: 'PT', type: '母婴连锁', community: 'latam', followers: 8400, following: 610, posts: 190, engage: 3.1, tags: ['BPW', '挂车'], intent: 82, note: '自有 260 台挂车，采购在评论区出现过', action: '直接私信采购，发装柜与阶梯价' },
+    { id: 'A05', handle: '@andina_frenos', name: 'Andina Frenos', platform: 'Instagram', country: '智利', lang: 'ES', type: '经销商', community: 'latam', followers: 15600, following: 380, posts: 420, engage: 4.7, tags: ['连衣裙', '卫衣'], intent: 79, note: '已成交客户 Comercial Andina 的关联账号', action: '让其做本地案例，给二级分销价' },
+    { id: 'A06', handle: '@frenospacifico', name: 'Frenos del Pacífico', platform: 'Facebook', country: '秘鲁', lang: 'ES', type: '母婴连锁', community: 'latam', followers: 22000, following: 540, posts: 610, engage: 5.3, tags: ['EQ153', 'HINO'], intent: 76, note: '18 家门店，需要小批量多品种', action: '推拼柜方案 + 门店选款二维码' },
+    { id: 'A07', handle: '@alrashid_parts', name: 'Al-Rashid Auto Parts', platform: 'Instagram', country: '阿联酋', lang: 'AR', type: '经销商', community: 'me', followers: 23400, following: 290, posts: 520, engage: 3.9, tags: ['BPW', 'Actros'], intent: 85, note: '迪拜童装城门店，欧系盘式片为主', action: '新品先发，CIF Jebel Ali 报价' },
+    { id: 'A08', handle: '@shanab_trucks', name: 'Shanab Trucks', platform: 'TikTok', country: '沙特阿拉伯', lang: 'AR', type: '母婴店', community: 'me', followers: 88000, following: 130, posts: 950, engage: 7.4, tags: ['Actros', 'HOWO'], intent: 71, note: '短视频现场拆片，评论区问「哪款」', action: '给「拍照定位法」卡片，做置顶评论' },
+    { id: 'A09', handle: '@saharafleet', name: 'Sahara Fleet Mgmt', platform: 'LinkedIn', country: '沙特阿拉伯', lang: 'EN', type: '母婴连锁', community: 'me', followers: 5200, following: 780, posts: 120, engage: 2.4, tags: ['Actros', 'MAN'], intent: 80, note: '母婴连锁经理，关注 TCO 与交付周期', action: '发 TCO 测算表与年度框架协议' },
+    { id: 'A10', handle: '@bengkel_mandiri', name: 'Bengkel Mandiri', platform: 'TikTok', country: '印度尼西亚', lang: 'ID', type: '母婴店', community: 'sea', followers: 54000, following: 310, posts: 700, engage: 8.2, tags: ['HINO', 'FUSO'], intent: 68, note: '日系中卡为主，价格极敏感', action: 'AD 经济线 + 小包装试销' },
     { id: 'A11', handle: '@sinarjaya_motor', name: 'PT Sinar Jaya Motor', platform: 'Facebook', country: '印度尼西亚', lang: 'ID', type: '经销商', community: 'sea', followers: 12700, following: 460, posts: 380, engage: 3.6, tags: ['HINO', 'ISUZU'], intent: 73, note: '已成交客户，关注交期', action: '锁定 30 天交期承诺' },
-    { id: 'A12', handle: '@phutungxetai_vn', name: 'Phụ Tùng Xe Tải', platform: 'TikTok', country: '越南', lang: 'VI', type: '配件店', community: 'sea', followers: 73000, following: 240, posts: 810, engage: 6.1, tags: ['HOWO', 'J6P'], intent: 66, note: '中国重卡配件为主，视频拍拆箱', action: '寄 3 个爆款做开箱视频' },
+    { id: 'A12', handle: '@phutungxetai_vn', name: 'Bé Yêu Kids', platform: 'TikTok', country: '越南', lang: 'VI', type: '童装店', community: 'sea', followers: 73000, following: 240, posts: 810, engage: 6.1, tags: ['连衣裙', '卫衣'], intent: 66, note: '主营童装批发，视频拍拆箱', action: '寄 3 个爆款做开箱视频' },
     { id: 'A13', handle: '@mekongparts', name: 'Mekong Friction Parts', platform: 'Facebook', country: '越南', lang: 'VI', type: '贸易商', community: 'sea', followers: 4900, following: 1200, posts: 260, engage: 1.8, tags: [], intent: 34, note: '只问价格，无终端地址', action: '只发目录，不投技术资源' },
-    { id: 'A14', handle: '@lagos_autohub', name: 'Lagos Auto Hub', platform: 'TikTok', country: '尼日利亚', lang: 'EN', type: '汽配市场档口', community: 'afr', followers: 41000, following: 620, posts: 540, engage: 5.9, tags: ['HOWO', 'J6P'], intent: 58, note: '拉各斯汽配市场，现金采购', action: '小批量现货 + 西非港口报价' },
-    { id: 'A15', handle: '@truckparts_tr', name: 'Truck Parts TR', platform: 'Instagram', country: '土耳其', lang: 'TR', type: '经销商', community: 'eur', followers: 18900, following: 340, posts: 460, engage: 4.4, tags: ['MAN', 'Actros'], intent: 70, note: '辐射东欧与中亚，要求 ECE R90', action: '主推有 R90 的型号' },
-    { id: 'A16', handle: '@jorge.ramirez', name: 'Jorge Ramírez', platform: 'LinkedIn', country: '墨西哥', lang: 'ES', type: '采购经理', community: 'latam', followers: 1800, following: 940, posts: 42, engage: 1.2, tags: ['HOWO'], intent: 91, note: 'Transportes del Norte 采购，480 台车队', action: '决策人：直接约视频会议 + 样件' },
-    { id: 'A17', handle: '@kooying_official', name: 'KOOYING 官方', platform: 'TikTok', country: '中国', lang: 'EN', type: '品牌号', community: 'brand', followers: 12600, following: 180, posts: 210, engage: 2.9, tags: [], intent: 100, note: '自有账号，内容以工厂与试验为主', action: '周更 3 条：选型 / 试验 / 装柜' }
+    { id: 'A14', handle: '@lagos_autohub', name: 'Lagos Auto Hub', platform: 'TikTok', country: '尼日利亚', lang: 'EN', type: '童装市场档口', community: 'afr', followers: 41000, following: 620, posts: 540, engage: 5.9, tags: ['连衣裙', '卫衣'], intent: 58, note: '拉各斯童装市场，现金采购', action: '小批量现货 + 西非港口报价' },
+    { id: 'A15', handle: '@truckparts_tr', name: 'Truck Parts TR', platform: 'Instagram', country: '土耳其', lang: 'TR', type: '经销商', community: 'eur', followers: 18900, following: 340, posts: 460, engage: 4.4, tags: ['MAN', 'Actros'], intent: 70, note: '辐射东欧与中亚，要求 ECE R90', action: '主推有 R90 的款号' },
+    { id: 'A16', handle: '@jorge.ramirez', name: 'Jorge Ramírez', platform: 'LinkedIn', country: '墨西哥', lang: 'ES', type: '采购经理', community: 'latam', followers: 1800, following: 940, posts: 42, engage: 1.2, tags: ['HOWO'], intent: 91, note: 'Transportes del Norte 采购，480 台母婴连锁', action: '决策人：直接约视频会议 + 样件' },
+    { id: 'A17', handle: '@kooying_official', name: 'MIANDOU 官方', platform: 'TikTok', country: '中国', lang: 'EN', type: '品牌号', community: 'brand', followers: 12600, following: 180, posts: 210, engage: 2.9, tags: [], intent: 100, note: '自有账号，内容以工厂与试验为主', action: '周更 3 条：选款 / 试验 / 装柜' }
   ];
 
   // from 关注 to（谁关注谁）
@@ -39,24 +39,24 @@ window.SOCIAL = (function () {
   ];
 
   const videos = [
-    { id: 'V1', platform: 'TikTok', lang: 'ES', country: '墨西哥', title: '「Mismo camión, 3 frenos distintos」实拍 J6P 三种后桥', views: 1840000, likes: 96000, comments: 3100, model: 'CA9T R', angle: '同车型不同桥的坑', trend: '+182%' },
-    { id: 'V2', platform: 'TikTok', lang: 'PT', country: '巴西', title: 'Quanto custa rodar 100 mil km com pastilha barata?', views: 960000, likes: 54000, comments: 1800, model: '29087', angle: '每万公里成本对比', trend: '+120%' },
+    { id: 'V1', platform: 'TikTok', lang: 'ES', country: '墨西哥', title: '「Mismo camión, 3 frenos distintos」实拍 J6P 三种后桥', views: 1840000, likes: 96000, comments: 3100, model: 'CA9T R', angle: '同适用场景不同桥的坑', trend: '+182%' },
+    { id: 'V2', platform: 'TikTok', lang: 'PT', country: '巴西', title: 'Quanto custa rodar 100 mil km com pastilha barata?', views: 960000, likes: 54000, comments: 1800, model: 'MD1005', angle: '每万公里成本对比', trend: '+120%' },
     { id: 'V3', platform: 'Instagram', lang: 'AR', country: '沙特', title: 'فحمات أصلية أم تجارية؟ الفرق بعد 20 ألف كم', views: 720000, likes: 41000, comments: 2200, model: '29162', angle: '原厂 vs 副厂 20 万公里实拍', trend: '+95%' },
     { id: 'V4', platform: 'YouTube', lang: 'EN', country: '尼日利亚', title: 'How to identify a brake pad without any part number', views: 410000, likes: 18000, comments: 900, model: 'HOWO1', angle: '没有编码怎么认片', trend: '+64%' },
     { id: 'V5', platform: 'TikTok', lang: 'ID', country: '印度尼西亚', title: 'Kampas rem Hino 500, jangan sampai salah beli', views: 380000, likes: 24000, comments: 1400, model: '47441-4220', angle: '买错一次亏多少', trend: '+51%' },
     { id: 'V6', platform: 'TikTok', lang: 'VI', country: '越南', title: 'Mở hộp má phanh HOWO — nhìn mặt cắt là biết hàng', views: 260000, likes: 15000, comments: 760, model: 'HOWO1', angle: '开箱看断面', trend: '+43%' },
-    { id: 'V7', platform: 'Instagram', lang: 'ES', country: '智利', title: 'Freno de remolque BPW: la medida que nadie revisa', views: 190000, likes: 9800, comments: 410, model: 'WB 3025', angle: '挂车蹄总成尺寸', trend: '+38%' },
-    { id: 'V8', platform: 'TikTok', lang: 'TR', country: '土耳其', title: 'Aynı kasa, farklı balata: MAN mı Mercedes mi?', views: 155000, likes: 8200, comments: 380, model: '29090', angle: '同车身不同片', trend: '+29%' },
-    { id: 'V9', platform: 'YouTube', lang: 'ES', country: '秘鲁', title: 'Cómo leer el número WVA de una pastilla de freno', views: 132000, likes: 6400, comments: 290, model: '29087', angle: '教看 WVA 号', trend: '+24%' },
-    { id: 'V10', platform: 'Facebook', lang: 'AR', country: '阿联酋', title: 'تركيب فحمات BPW على مقطورة 13 طن', views: 98000, likes: 5200, comments: 310, model: 'BPW05090146170', angle: '挂车蹄安装实拍', trend: '+18%' },
-    { id: 'V11', platform: 'TikTok', lang: 'EN', country: '肯尼亚', title: 'Why your trailer pads crack in 2 months', views: 87000, likes: 4900, comments: 240, model: 'BPW05090146170', angle: '开裂原因拆解', trend: '+15%' },
+    { id: 'V7', platform: 'Instagram', lang: 'ES', country: '智利', title: 'Cómo elegir talla por altura: la medida que nadie revisa', views: 190000, likes: 9800, comments: 410, model: 'MD1031', angle: '连体哈衣尺码对照', trend: '+38%' },
+    { id: 'V8', platform: 'TikTok', lang: 'TR', country: '土耳其', title: 'Aynı yaş, farklı boy: hangi beden?', views: 155000, likes: 8200, comments: 380, model: 'MD1027', angle: '同尺码不同面料', trend: '+29%' },
+    { id: 'V9', platform: 'YouTube', lang: 'ES', country: '秘鲁', title: 'Cómo leer el número WVA de una pastilla de freno', views: 132000, likes: 6400, comments: 290, model: 'MD1005', angle: '教看 WVA 号', trend: '+24%' },
+    { id: 'V10', platform: 'Facebook', lang: 'AR', country: '阿联酋', title: 'كيف تختار مقاس ملابس الأطفال حسب الطول', views: 98000, likes: 5200, comments: 310, model: 'MD1001', angle: '哈衣试穿实拍', trend: '+18%' },
+    { id: 'V11', platform: 'TikTok', lang: 'EN', country: '肯尼亚', title: 'Why your trailer pads crack in 2 months', views: 87000, likes: 4900, comments: 240, model: 'MD1001', angle: '开裂原因拆解', trend: '+15%' },
     { id: 'V12', platform: 'Instagram', lang: 'PT', country: '巴西', title: 'Antes de comprar: foto + régua = código certo', views: 76000, likes: 4100, comments: 180, model: 'EQ153 R', angle: '拍照+尺子定位法', trend: '+12%' }
   ];
 
-  // 真实内容互动（演示数据）：同一条型号被不同市场的账号拍过，点赞量决定车型热度排序
+  // 真实内容互动（演示数据）：同一条款号被不同市场的账号拍过，点赞量决定适用场景热度排序
   const posts = [
     { id: 'P01', platform: 'TikTok', lang: 'ES', country: '墨西哥', author: '@repuestosdelnorte', vid: 'V-HOWO-A7', code: 'HOWO1', title: 'HOWO A7 后片拆装，这片的断面一看就知道密度够', likes: 42800, comments: 1860, shares: 940, date: '2026-11-14' },
-    { id: 'P02', platform: 'TikTok', lang: 'ES', country: '墨西哥', author: '@tallerdonjorge', vid: 'V-HOWO-A7', code: 'HOWO1', title: '3 个月吃一副片？豪沃车主最容易踩的坑', likes: 18300, comments: 720, shares: 410, date: '2026-11-09' },
+    { id: 'P02', platform: 'TikTok', lang: 'ES', country: '墨西哥', author: '@tallerdonjorge', vid: 'V-HOWO-A7', code: 'HOWO1', title: '3 个月小一号？买童装最容易踩的坑', likes: 18300, comments: 720, shares: 410, date: '2026-11-09' },
     { id: 'P03', platform: 'Facebook', lang: 'VI', country: '越南', author: '@phutungxetai_vn', vid: 'V-HOWO-A7', code: 'HOWO1', title: 'Khai hộp má phanh HOWO — nhìn mặt cắt là biết hàng', likes: 6540, comments: 268, shares: 150, date: '2026-11-16' },
     { id: 'P04', platform: 'TikTok', lang: 'ES', country: '智利', author: '@andina_frenos', vid: 'V-HOWO-TH7', code: 'NEW HOWO1', title: 'TH7 换了新桥，旧片还能用吗？', likes: 9820, comments: 341, shares: 190, date: '2026-11-11' },
     { id: 'P05', platform: 'TikTok', lang: 'ES', country: '墨西哥', author: '@repuestosdelnorte', vid: 'V-J6P', code: 'CA9T R', title: 'J6P 三种后桥：457 / 485 / 498，片完全不一样', likes: 31400, comments: 1460, shares: 880, date: '2026-11-13' },
@@ -67,11 +67,11 @@ window.SOCIAL = (function () {
     { id: 'P10', platform: 'Facebook', lang: 'ES', country: '秘鲁', author: '@frenospacifico', vid: 'V-TIANLONG', code: 'EQ153 R', title: '¿Cuánto dura realmente una pastilla EQ153?', likes: 8120, comments: 305, shares: 144, date: '2026-11-06' },
     { id: 'P11', platform: 'TikTok', lang: 'ES', country: '墨西哥', author: '@tallerdonjorge', vid: 'V-TIANJIN', code: 'EQ153 R', title: '天锦拉轻抛货，用 EQ153 后片会不会太硬', likes: 4310, comments: 165, shares: 78, date: '2026-11-10' },
     { id: 'P12', platform: 'Facebook', lang: 'ES', country: '哥伦比亚', author: '@aumanparts', vid: 'V-AUMAN', code: 'NEW EQ153 R', title: '欧曼 EST 后片替换，跑了 8 万公里拆下来看', likes: 6180, comments: 214, shares: 101, date: '2026-11-08' },
-    { id: 'P13', platform: 'TikTok', lang: 'ES', country: '秘鲁', author: '@jacperu', vid: 'V-JAC', code: 'EQ153 R', title: '江淮格尔发用错片的代价：刹车锅拉花', likes: 3120, comments: 121, shares: 54, date: '2026-11-04' },
+    { id: 'P13', platform: 'TikTok', lang: 'ES', country: '秘鲁', author: '@jacperu', vid: 'V-JAC', code: 'EQ153 R', title: '尺码买错的代价：穿一次就小了', likes: 3120, comments: 121, shares: 54, date: '2026-11-04' },
     { id: 'P14', platform: 'TikTok', lang: 'AR', country: '沙特阿拉伯', author: '@shanab_trucks', vid: 'V-DELONG', code: 'STEYR R', title: 'ديلونغ ٣٠٠٠: الفحمات الخلفية بعد ٩٠ ألف كم', likes: 26100, comments: 1180, shares: 690, date: '2026-11-15' },
     { id: 'P15', platform: 'TikTok', lang: 'AR', country: '阿联酋', author: '@alrashid_parts', vid: 'V-DELONG', code: 'STEYR R', title: 'ليش الفحمات التجارية تصرخ؟', likes: 9430, comments: 402, shares: 233, date: '2026-11-09' },
     { id: 'P16', platform: 'TikTok', lang: 'ES', country: '智利', author: '@dayun_cl', vid: 'V-DAYUN', code: 'STEYR R', title: '大运 N8H 后片，山路工况实测', likes: 4820, comments: 176, shares: 88, date: '2026-11-11' },
-    { id: 'P17', platform: 'Instagram', lang: 'ES', country: '秘鲁', author: '@hongyan_pe', vid: 'V-HONGYAN', code: 'STEYR R', title: '红岩杰狮刹车偏软，先查片还是先查泵？', likes: 3610, comments: 143, shares: 66, date: '2026-11-03' },
+    { id: 'P17', platform: 'Instagram', lang: 'ES', country: '秘鲁', author: '@hongyan_pe', vid: 'V-HONGYAN', code: 'STEYR R', title: '孩子长得快，按身高选码还是按年龄？', likes: 3610, comments: 143, shares: 66, date: '2026-11-03' },
     { id: 'P18', platform: 'Instagram', lang: 'AR', country: '沙特阿拉伯', author: '@shanab_trucks', vid: 'V-ACTROS', code: '29162', title: 'أكتروس MP3: الفرق بين الفحمات الأصلية والتجارية', likes: 58400, comments: 2640, shares: 1520, date: '2026-11-16' },
     { id: 'P19', platform: 'TikTok', lang: 'PT', country: '巴西', author: '@caminhoneiro_br', vid: 'V-ACTROS', code: '29162', title: 'Actros: pastilha de 200 mil km existe?', likes: 21300, comments: 890, shares: 470, date: '2026-11-12' },
     { id: 'P20', platform: 'Instagram', lang: 'ES', country: '墨西哥', author: '@tallerdonjorge', vid: 'V-ACTROS', code: '29137', title: 'Actros 前片 29137，装之前一定要量这个尺寸', likes: 9140, comments: 356, shares: 188, date: '2026-11-08' },
@@ -94,13 +94,13 @@ window.SOCIAL = (function () {
     { ch: 'WhatsApp', from: 'Ahmed（Sahara Truck Center）', country: '沙特阿拉伯', tz: 'Asia/Riyadh', text: 'عندي أكتروس ٢٠١٢، أبغى الفحمات الخلفية. كم السعر؟', zh: '有台 2012 年 Actros，要后片，多少钱？' },
     { ch: 'WhatsApp', from: 'Jorge Ramírez（Transportes del Norte）', country: '墨西哥', tz: 'America/Mexico_City', text: 'Necesito pastillas traseras para HOWO A7, 200 sets. ¿Precio FOB?', zh: '豪沃 A7 后片 200 套，FOB 价？' },
     { ch: 'TikTok 私信', from: 'Carlos M.', country: '哥伦比亚', tz: 'America/Bogota', text: 'buenas, busco pastillas para NPR 71, tienen?', zh: '找 NPR 71 的片，有吗？' },
-    { ch: 'Facebook', from: 'Ravi（Sunrise Auto）', country: '印度', tz: 'Asia/Kolkata', text: 'Need brake lining for BPW axle, 500 pcs, best price CIF Chennai.', zh: 'BPW 桥衬片 500 片，CIF 金奈最低价' },
-    { ch: 'WhatsApp', from: 'Nguyen Van A', country: '越南', tz: 'Asia/Ho_Chi_Minh', text: 'cần báo giá má phanh cho xe Howo, 100 bộ', zh: '豪沃刹车片 100 套报价' },
+    { ch: 'Facebook', from: 'Ravi（Sunrise Auto）', country: '印度', tz: 'Asia/Kolkata', text: 'Need brake lining for BPW axle, 500 pcs, best price CIF Chennai.', zh: 'BPW 桥款式 500 片，CIF 金奈最低价' },
+    { ch: 'WhatsApp', from: 'Nguyen Van A', country: '越南', tz: 'Asia/Ho_Chi_Minh', text: 'cần báo giá má phanh cho xe Howo, 100 bộ', zh: '豪沃童装 100 套报价' },
     { ch: 'Instagram', from: 'Marco（Andina Frenos）', country: '智利', tz: 'America/Santiago', text: 'precio para J6P 457, 300 sets?', zh: 'J6P 457 桥 300 套价格？' },
-    { ch: 'WhatsApp', from: 'Budi', country: '印度尼西亚', tz: 'Asia/Jakarta', text: 'berapa harga kampas rem untuk Hino 500?', zh: '日野 500 刹车片多少钱？' },
+    { ch: 'WhatsApp', from: 'Budi', country: '印度尼西亚', tz: 'Asia/Jakarta', text: 'berapa harga kampas rem untuk Hino 500?', zh: '日野 500 童装多少钱？' },
     { ch: 'Facebook', from: 'María（Frenos del Pacífico）', country: '秘鲁', tz: 'America/Lima', text: 'tienen para EQ153? necesito 20 sets por modelo', zh: '有 EQ153 吗？每款 20 套' },
-    { ch: 'WhatsApp', from: 'Dmitry', country: '俄罗斯', tz: 'Europe/Moscow', text: 'нужны колодки на BPW TS2, 300 шт', zh: '要 BPW TS2 刹车片 300 片' },
-    { ch: 'TikTok 私信', from: 'Shanab', country: '沙特阿拉伯', tz: 'Asia/Riyadh', text: 'السلام عليكم، عندي شاحنة كيف أعرف الفحمات المناسبة؟', zh: '你好，我有台卡车，怎么知道用哪种片？' }
+    { ch: 'WhatsApp', from: 'Dmitry', country: '俄罗斯', tz: 'Europe/Moscow', text: 'нужны колодки на BPW TS2, 300 шт', zh: '要 BPW TS2 童装 300 片' },
+    { ch: 'TikTok 私信', from: 'Shanab', country: '沙特阿拉伯', tz: 'Asia/Riyadh', text: 'السلام عليكم، عندي شاحنة كيف أعرف الفحمات المناسبة؟', zh: '你好，我有台童装，怎么知道用哪种片？' }
   ];
 
   /* ---------- 脚本生成 ---------- */
@@ -114,7 +114,7 @@ window.SOCIAL = (function () {
     TR: { name: '土耳其语', hook: 'Kamyonunuz 3 ayda bir balata yiyor mu? Sorun neredeyse hiç balatada değil.', cta: 'Balatanın yanına cetvel koyup fotoğrafını gönderin, 2 saat içinde doğru kodu yazayım.' }
   };
 
-  function makeScript({ product, lang = 'ES', platform = 'TikTok', market = '墨西哥', pain = '同车型装不同桥，买错就抖', seconds = 30 }) {
+  function makeScript({ product, lang = 'ES', platform = 'TikTok', market = '墨西哥', pain = '同适用场景装不同桥，买错就抖', seconds = 30 }) {
     const L = LANG[lang] || LANG.EN;
     const p = product;
     const dur = Number(seconds) || 30;
@@ -125,22 +125,22 @@ window.SOCIAL = (function () {
       cta: L.cta,
       board: [
         beat('钩子', '', `0–3`) + ` — 镜头：手拿旧片敲两下，字幕「${pain}」`,
-        beat('', '', `3–8`) + ` — 镜头：同车型 3 个桥（457/485/498）摆一排，手上换片对不上`,
-        beat('', '', `8–16`) + ` — 镜头：${p.code} 特写 + 卷尺量 ${p.dim || '尺寸'} + 材质断面`,
+        beat('', '', `3–8`) + ` — 镜头：同适用场景 3 个桥（457/485/498）摆一排，手上换片对不上`,
+        beat('', '', `8–16`) + ` — 镜头：${p.code} 特写 + 卷尺量 ${p.dim || '尺寸'} + 面料断面`,
         beat('', '', `16–24`) + ` — 镜头：试验报告 / 台架数据特写（${p.material} 配方）`,
-        beat('', '', `24–${dur}`) + ` — 镜头：装车实拍 + 口播 CTA`
+        beat('', '', `24–${dur}`) + ` — 镜头：试穿实拍 + 口播 CTA`
       ],
       voice: [
         `【${L.name} 口播 · 可交给配音】`,
         L.hook,
         'Mismo modelo, tres puentes distintos: 457, 485, 498. Si compras la pastilla equivocada, vibra y se cristaliza.',
-        `${p.code} — ${p.nameZh}，${p.dim || '按旧件核对'}，${p.material} 配方。`,
+        `${p.code} — ${p.nameZh}，${p.dim || '按旧款核对'}，${p.material} 配方。`,
         'GB 5763 / ECE R90，8 万公里路试。',
         L.cta
       ].join('\n'),
       tags: ['#brakepad', '#truckparts', '#frenos', '#فحمات', `#${p.code.replace(/\s/g, '')}`, `#${market}`],
-      shots: ['旧件敲击声', '三个车桥并排', '卷尺量厚度特写', '断面/纤维分布', '试验报告翻页', '装车拧紧扭矩'],
-      prompt: `你是冠英（KOOYING）的海外短视频编导。请为 ${market} 市场、${L.name}、${platform} 平台，写一条 ${dur} 秒的刹车片短视频脚本。\n产品：${p.code}（${p.nameZh}），规格 ${p.dim || '见资料'}，材质 ${p.material}，适配 ${(p.appsAll || []).slice(0, 3).join('、') || '按资料'}。\n核心痛点：${pain}。\n要求：前 3 秒必须有反常识钩子；中段用「同车型不同桥」制造具体冲突；结尾 CTA 是「拍照+尺子，2 小时给型号」；口播用${L.name}，字幕给中文；给出 6 个分镜与拍摄清单；不要夸大认证。`
+      shots: ['旧款对比', '三个尺码并排', '软尺量衣长特写', '面料成分标签', '质检报告翻页', '试穿活动实拍'],
+      prompt: `你是棉豆（MIANDOU）的海外短视频编导。请为 ${market} 市场、${L.name}、${platform} 平台，写一条 ${dur} 秒的童装短视频脚本。\n产品：${p.code}（${p.nameZh}），规格 ${p.dim || '见资料'}，面料 ${p.material}，适用 ${(p.appsAll || []).slice(0, 3).join('、') || '按资料'}。\n核心痛点：${pain}。\n要求：前 3 秒必须有反常识钩子；中段用「同适用场景不同桥」制造具体冲突；结尾 CTA 是「拍照+尺子，2 小时给款号」；口播用${L.name}，字幕给中文；给出 6 个分镜与拍摄清单；不要夸大认证。`
     };
   }
 
