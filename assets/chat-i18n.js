@@ -17,7 +17,7 @@ window.CHAT_I18N = {
     noMatchText: '未识别到车型 → 自动发送「三步定位法」索要照片', copyPhotoScript: '复制索要话术',
     emptyHint: '点击「模拟新消息」，看浮窗如何在 1 秒内提示型号',
     alertTitle: '新消息命中车型', alertAsks: '问', alertOpen: '看型号', alertOpenSupport: '打开客服解答',
-    history: '浏览记录', histTitle: '聊天记录', histBrowse: '最近浏览',
+    history: '对话记录', histTitle: '聊天记录', histBrowse: '最近浏览',
     custLabel: '客户', staffLabel: '客服', histEmpty: '还没有聊天记录，发一条消息试试',
     queueEnd: '演示队列已播完，可清空后重放'
   },

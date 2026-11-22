@@ -3158,7 +3158,7 @@
     closePerm() { closePerm(); },
     chatToggle() { S.chat.open = !S.chat.open; renderChat(); },
     chatNext() { pushChat(false); },
-    /** 客服解答：浏览记录（历史聊天 + 浏览足迹） */
+    /** 客服解答：对话记录（只留聊天，不再混浏览足迹） */
     chatHistory() {
       const zh = I.getLang() === 'zh';
       const staff = A.isStaff();
@@ -3166,11 +3166,6 @@
       const convo = staff ? (S.chat.msgs || []).slice() : (S.custMsgs || []).slice();
       const c0 = staff ? A.customers()[0] : null;
       const who = staff ? (c0 ? c0.name : '') : (me && me.name ? me.name : '');
-      const evs = staff ? (c0 ? A.stats(c0).events : []) : (me ? A.stats(me).events : []);
-      const TYPE = { view: LZ('看型号', 'viewed'), search: LZ('搜索', 'searched'), addCart: LZ('加入购物车', 'added'),
-        quote: LZ('生成报价单', 'quoted'), pack: LZ('资料包', 'data pack'), inquiry: LZ('询价', 'inquiry'), login: LZ('登录', 'login') };
-      const hh = t => { const d = new Date(t); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); };
-      const dd = t => { const d = new Date(t); return (d.getMonth() + 1) + '/' + d.getDate(); };
 
       const convoHtml = convo.length ? convo.map(m => {
         const isMe = m.from === 'me';
@@ -3184,16 +3179,9 @@
         return '<div class="hx-row ' + (isMe ? 'me' : 'bot') + '">' + line + '</div>';
       }).join('') : '<div class="hx-empty">' + CT('histEmpty') + '</div>';
 
-      const evHtml = evs.length ? evs.slice().reverse().slice(0, 12).map(e => {
-        const d = e.d || {};
-        const what = d.code || d.q || d.no || (d.items && d.items.length ? d.items.length + LZ(' 项', ' items') : '');
-        return '<div class="hx-ev"><span>' + dd(e.t) + ' ' + hh(e.t) + ' · ' + (TYPE[e.type] || e.type) + '</span><b class="mono">' + esc(String(what || '')) + '</b></div>';
-      }).join('') : '<div class="hx-empty">' + LZ('还没有浏览记录', 'No browsing yet') + '</div>';
-
-      modal(LZ('浏览记录', 'Records'),
+      modal(LZ('对话记录', 'Conversation'),
         '<div class="hx-sec"><div class="hx-h">' + CT('histTitle') + (who ? ' · ' + esc(who) : '') + '</div>' +
-        '<div class="hx-thread">' + convoHtml + '</div></div>' +
-        '<div class="hx-sec"><div class="hx-h">' + CT('histBrowse') + '</div><div class="hx-evs">' + evHtml + '</div></div>',
+        '<div class="hx-thread">' + convoHtml + '</div></div>',
         '<button class="btn" data-act="closeModal">' + LZ('关闭', 'Close') + '</button>');
     },
     /** 「自定义定制」是一个独立页面 */
