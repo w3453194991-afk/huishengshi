@@ -29,6 +29,13 @@
     fuFlags: {},
     fuNotes: {},
     fuFilter: 'all',
+    leadsOwner: '',
+    /* 售后服务：客户提交后各存一份，员工删自己的、老板删自己的，互不影响 */
+    asStaff: [],
+    asBoss: [],
+    /* 工具书 */
+    tax: { country: 'US', hs: '', qty: 0 },
+    model: { q: '', res: [], busy: false, err: '' },
     quoteMeta: { no: '', date: new Date().toISOString().slice(0, 10), incoterm: '', pay: '', note: '' }
   };
   let storageOK = true;
@@ -42,7 +49,9 @@
       localStorage.setItem(KEY, JSON.stringify({
         cart: S.cart, customerId: S.customerId, leads: S.leads, quotes: S.quotes,
         overrides: S.overrides, draftFits: S.draftFits, quoteMeta: S.quoteMeta, custMsgs: S.custMsgs, deals: S.deals,
-        fuMute: S.fuMute, fuFlags: S.fuFlags, fuNotes: S.fuNotes
+        fuMute: S.fuMute, fuFlags: S.fuFlags, fuNotes: S.fuNotes,
+        /* 新增：售后服务两份独立清单 + 税务查询上次所选市场 */
+        asStaff: S.asStaff, asBoss: S.asBoss, tax: S.tax
       }));
     } catch (e) { storageOK = false; }
   }
@@ -171,13 +180,15 @@
     ['import', '数据导入', '⇪']
   ];
   // 客户能看的：首页 / 选型 / 产品库 / 我的报价 / 自定义定制
-  const CUST_TABS = ['home', 'select', 'products', 'quote', 'custom'];
+  const CUST_TABS = ['home', 'select', 'products', 'quote', 'custom', 'aftersale'];
   // 员工视角的基础页（比客户多一个「资料包」）
   const STAFF_TABS = ['home', 'select', 'products', 'quote', 'pack'];
   /** 仅员工可见的 9 个页面，按用途收进 2 个分组菜单（14 个入口一个不丢） */
   const NAV_GROUPS = [
     // 客户线索：客户提的需求 + 客户在我方站内的行为 + 我们要主动找的人
-    { key: 'clues', label: 'nav.g.clues', items: ['addcust', 'inquiries', 'leads', 'visits', 'network', 'deals', 'redfox'] },
+    { key: 'clues', label: 'nav.g.clues', items: ['addcust', 'inquiries', 'aftersales', 'leads', 'visits', 'network', 'deals', 'redfox'] },
+    // 工具书：查税率、查库里没有的型号
+    { key: 'tools', label: 'nav.g.tools', items: ['tax', 'model'] },
     // 型号数据：都是「补充 / 校正型号与适配」的维护动作
     { key: 'data', label: 'nav.g.data', items: ['xref', 'graph', 'import'] }
   ];
@@ -221,14 +232,15 @@
     }
   }
   /** 客户端换几个更好懂的名字 */
-  const CUST_LABEL = { home: 'nav.homeCust', quote: 'nav.cart' };
+  const CUST_LABEL = { home: 'nav.homeCust', quote: 'nav.cart', aftersale: 'nav.aftersale' };
   /** 客户端只有「选购」一个入口：首页也收进同一个菜单里 */
   const CUST_MENU = [
     ['home', '⌂', '看类别、找型号、进客服', 'Categories, search and chat'],
     ['select', '◎', '车型 / 车桥 / 编码 → 候选型号', 'Vehicle, axle or code to candidates'],
     ['products', '▤', '全部型号，规格 · 材质 · 图片', 'All parts with specs and photos'],
     ['custom', '✂', '非标尺寸 / 材质 / 包装 / 打标', 'Non-standard size, mix, packing, marking'],
-    ['quote', '￥', '已选型号，出阶梯价和报价单', 'Your picks, tier price and quote']
+    ['quote', '￥', '已选型号，出阶梯价和报价单', 'Your picks, tier price and quote'],
+    ['aftersale', '☎', '装车问题、退换、索赔都在这儿提', 'Install issues, returns and claims']
   ];
   /** 顶栏真实高度 → 导航吸顶位置，避免被压住 */
   function syncTopbarH() {
@@ -344,7 +356,7 @@
       $('.wrap').appendChild(sec);
     }
     $$('.page').forEach(p => p.classList.toggle('on', p.id === 'p-' + S.tab));
-    ({ home: vHome, select: vSelect, products: vProducts, graph: vGraph, quote: vQuote, pack: vPack, inquiries: vInquiries, search: vSearch, xref: vXref, redfox: vRedfox, deals: vDeals, boss: vBoss, visits: vVisits, leads: vLeads, network: vNetwork, content: vContent, import: vImport, custom: vCustom, addcust: vAddCustomer }[S.tab])();
+    ({ home: vHome, select: vSelect, products: vProducts, graph: vGraph, quote: vQuote, pack: vPack, inquiries: vInquiries, search: vSearch, xref: vXref, redfox: vRedfox, deals: vDeals, boss: vBoss, visits: vVisits, leads: vLeads, network: vNetwork, content: vContent, import: vImport, custom: vCustom, addcust: vAddCustomer, tax: vTax, model: vModel, aftersale: vAfterSale, aftersales: vAfterSales }[S.tab])();
     if (S.tab === 'content') { const el = $('#p-content'); if (el) el.insertAdjacentHTML('afterbegin', acquireBar('content')); }
     window.scrollTo({ top: 0, behavior: 'instant' });
   }
@@ -1014,20 +1026,26 @@
 
   /* ================= 询盘线索 ================= */
   function vLeads() {
-    const rows = S.leads.slice().sort((a, b) => (b.score || 0) - (a.score || 0));
+    const own = S.leadsOwner || '';
+    const rows = S.leads.filter(l => !own || (l.owner || '') === own).slice().sort((a, b) => (b.score || 0) - (a.score || 0));
+    const isBoss = A.isBoss();
     $('#p-leads').innerHTML = `
     <div class="row wrap-gap" style="justify-content:space-between;margin-bottom:12px">
       <div><h1 style="margin:0">${T('ld.title')}</h1><div class="muted small">${T('ld.sub')}</div></div>
-      <button class="btn primary" data-act="newLead">+ ${T('ld.new')}</button>
+      <div class="row wrap-gap">
+        ${own ? `<button class="chip on" data-act="leadsOwnerClear">只看：${esc(own)} ✕</button>` : ''}
+        <button class="btn primary" data-act="newLead">+ ${T('ld.new')}</button>
+      </div>
     </div>
     <div class="card"><div class="tbl-wrap">
-      <table><thead><tr><th>${LZ('线索','Lead')}</th><th>${LZ('来源','Source')}</th><th>${LZ('需求','Need')}</th><th>${LZ('客户类型','Type')}</th><th>${LZ('当地时间','Local time')}</th><th>${LZ('状态','Status')}</th><th class="right">${LZ('评分','Score')}</th><th></th></tr></thead><tbody>
+      <table><thead><tr><th>${LZ('线索','Lead')}</th><th>${LZ('来源','Source')}</th><th>${LZ('需求','Need')}</th>${isBoss ? `<th>${LZ('跟进人','Owner')}</th>` : ''}<th>${LZ('客户类型','Type')}</th><th>${LZ('当地时间','Local time')}</th><th>${LZ('状态','Status')}</th><th class="right">${LZ('评分','Score')}</th><th></th></tr></thead><tbody>
       ${rows.map(l => {
         const sc = E.scoreLead(l), t = E.localTime(l.tz);
         return `<tr class="click" data-act="openLead" data-id="${l.id}">
           <td><b>${esc(l.company)}</b><div class="tiny muted">${esc(l.country)} · ${esc(l.contact)}</div></td>
           <td class="small">${esc(l.src)}<div class="tiny muted">${esc((l.created || '').slice(0, 16))}</div></td>
           <td class="small" style="max-width:300px">${esc(l.needZh || l.need).slice(0, 54)}</td>
+          ${isBoss ? `<td class="small b">${esc(l.owner || '—')}</td>` : ''}
           <td>${tag(sc.trading ? LZ('贸易商','Trader') : sc.terminal ? LZ('终端','End user') : LZ('待甄别','Verify'), sc.trading ? 'n' : sc.terminal ? 'g' : 'y')}</td>
           <td class="small"><span class="mono">${t.text}</span> <span class="tiny ${t.working ? '' : 'muted'}">${t.working ? '● 可联系' : '○ 休息'}</span></td>
           <td>${tag(l.status, l.status === '待跟进' ? 'o' : l.status === '已报价' ? 'b' : 'n')}</td>
@@ -1686,6 +1704,220 @@
     box.innerHTML = window.REDFOX.html({ esc, LZ, T });
     const k = $('#rfKey');
     if (k) k.onchange = () => window.REDFOX.setKey(k.value.trim());
+  }
+
+  /* ================= 工具书：税务查询 ================= */
+  /** 常用市场税率（刹车片 HS 8708.30；仅作报价参考，正式报关以当地税则为准） */
+  const TAX_MK = [
+    { k: 'US', n: '美国', en: 'United States', duty: 2.5, vat: 0, vatName: '销售税（州级另计）', note: '301 条款加征 25% 需另算' },
+    { k: 'DE', n: '德国', en: 'Germany', duty: 4.5, vat: 19, vatName: 'VAT', note: '欧盟统一税则' },
+    { k: 'ES', n: '西班牙', en: 'Spain', duty: 4.5, vat: 21, vatName: 'IVA', note: '欧盟统一税则' },
+    { k: 'RU', n: '俄罗斯', en: 'Russia', duty: 10, vat: 20, vatName: 'НДС', note: 'EAEU 统一税则' },
+    { k: 'SA', n: '沙特', en: 'Saudi Arabia', duty: 5, vat: 15, vatName: 'VAT', note: 'GCC 关税同盟' },
+    { k: 'AE', n: '阿联酋', en: 'UAE', duty: 5, vat: 5, vatName: 'VAT', note: 'GCC 关税同盟' },
+    { k: 'MX', n: '墨西哥', en: 'Mexico', duty: 10, vat: 16, vatName: 'IVA', note: '无自贸协定加征' },
+    { k: 'BR', n: '巴西', en: 'Brazil', duty: 16, vat: 17, vatName: 'ICMS', note: '另有 IPI / PIS / COFINS' },
+    { k: 'VN', n: '越南', en: 'Vietnam', duty: 20, vat: 10, vatName: 'VAT', note: 'ACFTA 可凭原产地证降税' },
+    { k: 'TH', n: '泰国', en: 'Thailand', duty: 20, vat: 7, vatName: 'VAT', note: 'ACFTA 可降税' },
+    { k: 'ID', n: '印尼', en: 'Indonesia', duty: 10, vat: 11, vatName: 'PPN', note: '进口需 SNI 认证' },
+    { k: 'TR', n: '土耳其', en: 'Turkey', duty: 4.5, vat: 20, vatName: 'KDV', note: '另有反倾销附加税' },
+    { k: 'EG', n: '埃及', en: 'Egypt', duty: 30, vat: 14, vatName: 'VAT', note: '需 ACID 预申报' },
+    { k: 'ZA', n: '南非', en: 'South Africa', duty: 20, vat: 15, vatName: 'VAT', note: 'SADC 内可优惠' },
+    { k: 'NG', n: '尼日利亚', en: 'Nigeria', duty: 10, vat: 7.5, vatName: 'VAT', note: '需 SONCAP 认证' },
+    { k: 'IN', n: '印度', en: 'India', duty: 15, vat: 28, vatName: 'GST', note: 'BIS 认证强制' }
+  ];
+  const REBATE = 13; // 中国出口退税率（汽配 8708 类通常 13%）
+
+  function vTax() {
+    const m = TAX_MK.find(x => x.k === (S.tax.country || 'US')) || TAX_MK[0];
+    const val = Number(S.tax.qty) || 0;
+    const rebate = val * REBATE / 100;
+    const duty = val * m.duty / 100;
+    const vat = (val + duty) * m.vat / 100;
+    const landed = val + duty + vat;
+    const card = (lab, big, sub, cls) =>
+      `<div class="rf-kpi"><span>${lab}</span><b class="${cls || ''}">${big}</b><i>${sub}</i></div>`;
+
+    $('#p-tax').innerHTML = `
+    <div class="row wrap-gap" style="justify-content:space-between;margin-bottom:12px">
+      <div><h1 style="margin:0">税务查询</h1>
+      <div class="muted small">选市场 → 看进口关税、增值税和国内出口退税，报价时直接算进成本。</div></div>
+      <div class="row wrap-gap">
+        <label class="tiny muted" style="display:flex;align-items:center;gap:6px">货值 USD
+          <input id="taxVal" type="number" min="0" step="100" value="${val || ''}" placeholder="10000" style="width:110px">
+        </label>
+      </div>
+    </div>
+
+    <div class="card"><div class="card-b">
+      <div class="rf-plats" style="margin-bottom:0">
+        ${TAX_MK.map(x => `<button class="rf-plat ${x.k === m.k ? 'on' : ''}" data-act="taxCty" data-id="${x.k}">${x.n}</button>`).join('')}
+      </div>
+    </div></div>
+
+    <div class="card"><div class="card-h"><h3>${m.n} · ${m.en}</h3>
+      <span class="sub">HS 8708.30 · ${m.note}</span></div>
+      <div class="card-b">
+        <div class="rf-kpis">
+          ${card('中国出口退税', REBATE + '%', val ? '可退 $' + Math.round(rebate).toLocaleString() : '按货值算')}
+          ${card('进口关税', m.duty + '%', val ? '$' + Math.round(duty).toLocaleString() : m.note)}
+          ${card(m.vatName, m.vat + '%', val ? '$' + Math.round(vat).toLocaleString() : '按 CIF＋关税计征')}
+          ${card('到岸总成本', val ? '$' + Math.round(landed).toLocaleString() : '—', val ? '货值 + 关税 + ' + m.vatName : '填货值后自动算', 'c-hi')}
+        </div>
+        <div class="tiny muted" style="line-height:1.9">
+          · 关税 = 货值 × ${m.duty}%；${m.vatName} = (货值 + 关税) × ${m.vat}%；出口退税按 13% 退，实际到手 = 货值 − 退税额。<br>
+          · ${val ? `以 $${val.toLocaleString()} 货值计：出口可退 <b>$${Math.round(rebate).toLocaleString()}</b>，客户到手成本 <b>$${Math.round(landed).toLocaleString()}</b>。` : '填入货值可直接算出金额。'}<br>
+          · 税率随原产地证、自贸协定、反倾销措施变化，正式报关前请让货代复核。
+        </div>
+      </div>
+    </div>
+
+    <div class="card"><div class="card-h"><h3>常用市场对照</h3><span class="sub">点一行切换上方明细</span></div>
+      <div class="tbl-wrap"><table><thead><tr><th>市场</th><th class="right">进口关税</th><th class="right">增值税</th><th class="right">综合税负</th><th>备注</th></tr></thead><tbody>
+      ${TAX_MK.map(x => {
+      const comp = x.duty + (100 + x.duty) * x.vat / 100;
+      return `<tr class="click ${x.k === m.k ? 'on' : ''}" data-act="taxCty" data-id="${x.k}">
+          <td><b>${x.n}</b><div class="tiny muted">${x.en}</div></td>
+          <td class="right mono">${x.duty}%</td>
+          <td class="right mono">${x.vat}%<div class="tiny muted">${x.vatName}</div></td>
+          <td class="right mono b">${comp.toFixed(1)}%</td>
+          <td class="small muted">${x.note}</td></tr>`;
+    }).join('')}
+      </tbody></table></div>
+    </div>`;
+
+    const vi = $('#taxVal');
+    if (vi) vi.onchange = () => { S.tax.qty = Number(vi.value) || 0; save(); vTax(); };
+  }
+
+  /* ================= 工具书：型号查询（联网） ================= */
+  function vModel() {
+    const st = S.model;
+    const q = (st.q || '').trim();
+    const local = q ? D.products.filter(p =>
+      (p.code || '').toLowerCase().includes(q.toLowerCase()) ||
+      (p.id || '').toLowerCase().includes(q.toLowerCase()) ||
+      (p.codes || []).some(c => String(c).toLowerCase().includes(q.toLowerCase()))
+    ).slice(0, 12) : [];
+
+    $('#p-model').innerHTML = `
+    <div class="row wrap-gap" style="justify-content:space-between;margin-bottom:12px">
+      <div><h1 style="margin:0">型号查询</h1>
+      <div class="muted small">先查本站型号库，库里没有就去互联网找。适配要自己复核，别直接照抄。</div></div>
+    </div>
+
+    <div class="card"><div class="card-b">
+      <div class="rf-conn-row">
+        <input id="mdQ" type="text" value="${esc(q)}" placeholder="输入型号 / OE 号 / 编码，例如 WVA 29087、HOWO1、D1060">
+        <button class="btn primary" data-act="modelGo">${st.busy ? '查询中…' : '查询'}</button>
+      </div>
+      <div class="tiny muted" style="margin-top:8px">站内库：${D.products.length} 个型号 · 联网搜索走本地服务代理</div>
+      ${q ? `<div class="row wrap-gap" style="margin-top:10px;gap:6px">
+        <span class="tiny muted">在浏览器里搜：</span>
+        <a class="btn sm" target="_blank" rel="noopener" href="https://www.baidu.com/s?wd=${encodeURIComponent(q + ' 刹车片 型号')}">百度 ↗</a>
+        <a class="btn sm" target="_blank" rel="noopener" href="https://www.google.com/search?q=${encodeURIComponent(q + ' brake pad')}">Google ↗</a>
+        <a class="btn sm" target="_blank" rel="noopener" href="https://www.bing.com/search?q=${encodeURIComponent(q + ' brake pad')}">Bing ↗</a>
+        <a class="btn sm" target="_blank" rel="noopener" href="https://s.1688.com/selloffer/offer_search.htm?keywords=${encodeURIComponent(q)}">1688 ↗</a>
+      </div>` : ''}
+    </div></div>
+
+    ${q ? `
+    <div class="card"><div class="card-h"><h3>站内库</h3><span class="sub">${local.length} 个匹配</span></div>
+      <div class="card-b" style="padding:0">
+        ${local.length ? `<div class="tbl-wrap"><table><thead><tr><th>型号</th><th>编码</th><th>材质</th><th>规格</th><th></th></tr></thead><tbody>
+        ${local.map(p => `<tr><td class="mono b">${esc(p.code)}</td>
+          <td class="small">${(p.codes || []).slice(0, 4).map(c => esc(c)).join(' · ') || '—'}</td>
+          <td class="small">${esc(p.material || '—')}</td>
+          <td class="small">${esc(p.size || '')}</td>
+          <td><button class="btn xs" data-act="modelOpen" data-id="${esc(p.id)}">看详情</button></td></tr>`).join('')}
+        </tbody></table></div>` : `<div class="card-b muted small">本站库里没有找到，下面是互联网结果。</div>`}
+      </div>
+    </div>` : ''}
+
+    ${st.err ? `<div class="card"><div class="card-b rf-err">${esc(st.err)}</div></div>` : ''}
+
+    ${st.res && st.res.length ? `
+    <div class="card"><div class="card-h"><h3>互联网结果</h3><span class="sub">${st.res.length} 条 · 仅作线索</span></div>
+      <div class="card-b" style="padding:0">
+        ${st.res.map((r, i) => `<div class="rf-tool" style="padding:12px 15px;border-top:${i ? '1px solid var(--line-2)' : '0'}">
+          <a href="${esc(r.url)}" target="_blank" rel="noopener" style="font-weight:600;color:#1d4ed8;text-decoration:none">${esc(r.title)}</a>
+          <div class="small" style="margin-top:4px;line-height:1.6">${esc(r.snippet)}</div>
+          <div class="tiny muted" style="margin-top:4px">${esc(r.site || '')}</div>
+        </div>`).join('')}
+      </div>
+    </div>` : ''}
+    `;
+
+    const inp = $('#mdQ');
+    if (inp) inp.onkeydown = e => { if (e.key === 'Enter') ACT.modelGo(); };
+  }
+
+  /* ================= 售后服务 ================= */
+  const AS_TYPES = ['装车异常', '磨损过快', '异响 / 抖动', '尺寸不符', '退货', '索赔', '其他'];
+  const AS_STATUS = ['待处理', '处理中', '已关闭'];
+
+  function vAfterSale() {          // 客户侧：提交
+    const u = A.me() || {};
+    const mine = (S.asStaff || []).filter(x => x.cust === (u.name || ''));
+    $('#p-aftersale').innerHTML = `
+    <div class="row wrap-gap" style="justify-content:space-between;margin-bottom:12px">
+      <div><h1 style="margin:0">售后服务</h1>
+      <div class="muted small">装车问题、退换或索赔，填完提交，销售和老板那边都能看到，会尽快联系您。</div></div>
+    </div>
+
+    <div class="card"><div class="card-h"><h3>提交服务请求</h3><span class="sub">${esc(u.company || '')} · ${esc(u.name || '')}</span></div>
+      <div class="card-b">
+        <div class="rf-form">
+          <label>型号 / 订单号 *<input id="asModel" placeholder="例如 HOWO1 / KOOYING-2024-0871"></label>
+          <label>车型 / 车桥<input id="asVeh" placeholder="例如 重汽 HOWO / 13T 前桥"></label>
+          <label>问题类型<select id="asType">${AS_TYPES.map(t => `<option>${t}</option>`).join('')}</select></label>
+          <label>涉及数量<input id="asQty" type="number" min="0" placeholder="例如 40"></label>
+          <label>联系方式 *<input id="asContact" value="${esc(u.contact || '')}" placeholder="WhatsApp / 微信 / 邮箱"></label>
+        </div>
+        <label style="display:block;margin-top:10px">情况说明 *
+          <textarea id="asDesc" rows="4" style="width:100%;margin-top:4px" placeholder="什么时候装的、跑了多少公里、什么症状、有没有拍照"></textarea>
+        </label>
+        <div class="row wrap-gap" style="margin-top:12px">
+          <button class="btn primary" data-act="asSend">提交</button>
+          <span class="tiny muted">提交后可在本页下方看到处理进度</span>
+        </div>
+      </div>
+    </div>
+
+    ${mine.length ? `<div class="card"><div class="card-h"><h3>我的记录</h3><span class="sub">${mine.length} 条</span></div>
+      <div class="card-b" style="padding:0"><div class="tbl-wrap"><table>
+        <thead><tr><th>时间</th><th>型号</th><th>类型</th><th>说明</th><th>状态</th></tr></thead><tbody>
+        ${mine.map(x => `<tr><td class="small mono">${esc(x.at)}</td><td class="mono">${esc(x.model)}</td>
+          <td class="small">${esc(x.type)}</td><td class="small" style="max-width:320px">${esc(x.desc)}</td>
+          <td>${tag(x.status, x.status === '已关闭' ? 'n' : x.status === '处理中' ? 'b' : 'o')}</td></tr>`).join('')}
+      </tbody></table></div></div></div>` : ''}`;
+  }
+
+  function vAfterSales() {         // 员工 / 老板侧：两个独立列表
+    const boss = A.isBoss();
+    const list = (boss ? S.asBoss : S.asStaff) || [];
+    const open = list.filter(x => x.status !== '已关闭').length;
+    $('#p-aftersales').innerHTML = `
+    <div class="row wrap-gap" style="justify-content:space-between;margin-bottom:12px">
+      <div><h1 style="margin:0">售后服务</h1>
+      <div class="muted small">${boss ? '老板端' : '员工端'}的售后请求 · 与${boss ? '员工' : '老板'}那份分开存，这边删了不影响另一边。</div></div>
+      <div class="rf-kpi" style="min-width:150px"><span>待处理</span><b>${open}</b><i>共 ${list.length} 条</i></div>
+    </div>
+    <div class="card"><div class="card-b" style="padding:0">
+      ${list.length ? `<div class="tbl-wrap"><table>
+        <thead><tr><th>时间</th><th>客户</th><th>型号</th><th>问题</th><th>说明</th><th>联系</th><th>状态</th><th></th></tr></thead><tbody>
+        ${list.slice().reverse().map(x => `<tr>
+          <td class="small mono">${esc(x.at)}</td>
+          <td class="small"><b>${esc(x.cust)}</b><div class="tiny muted">${esc(x.company || '')}</div></td>
+          <td class="mono small">${esc(x.model)}<div class="tiny muted">${esc(x.vehicle || '')}</div></td>
+          <td class="small">${esc(x.type)}${x.qty ? '<div class="tiny muted">' + esc(String(x.qty)) + ' 件</div>' : ''}</td>
+          <td class="small" style="max-width:280px">${esc(x.desc)}</td>
+          <td class="small">${esc(x.contact)}</td>
+          <td>${AS_STATUS.map(s => `<button class="btn xs ${x.status === s ? 'primary' : ''}" data-act="asSt" data-id="${x.id}" data-st="${s}">${s}</button>`).join(' ')}</td>
+          <td><button class="btn xs" data-act="asDel" data-id="${x.id}">删除</button></td>
+        </tr>`).join('')}
+      </tbody></table></div>` : `<div class="card-b muted" style="padding:28px;text-align:center">还没有售后请求。客户在「售后服务」页提交后会出现在这里。</div>`}
+    </div></div>`;
   }
 
   function vXref() {
@@ -2455,6 +2687,57 @@
     rfCopyMcp() { window.REDFOX.copyMcp(); },
     rfClear() { window.REDFOX.clearKey(); vRedfox(); toast('已清除本机 Key'); },
     rfClearRes() { window.REDFOX.clearRes(); vRedfox(); },
+    /* 工具书 */
+    taxCty(id) { S.tax.country = id; save(); vTax(); },
+    modelGo() {
+      const i = $('#mdQ'); const q = i ? i.value.trim() : '';
+      S.model.q = q; S.model.res = []; S.model.err = '';
+      if (!q) { vModel(); return; }
+      S.model.busy = true; vModel();
+      fetch('/api/lookup?q=' + encodeURIComponent(q))
+        .then(r => r.json())
+        .then(j => {
+          S.model.busy = false;
+          if (!j.ok) { S.model.err = '联网查询失败：' + (j.error || '未知'); S.model.res = []; }
+          else { S.model.res = j.items || []; S.model.err = (j.items && j.items.length) ? '' : '没搜到结果，换个写法试试'; }
+          vModel();
+        })
+        .catch(e => { S.model.busy = false; S.model.err = '请求失败（本地服务没开？）: ' + e.message; vModel(); });
+    },
+    modelOpen(id) { S.filters.q = id; S.tab = 'products'; renderNav(); render(); },
+    /* 售后服务 */
+    asSend() {
+      const u = A.me() || {};
+      const g = id2 => { const el2 = $('#' + id2); return el2 ? el2.value.trim() : ''; };
+      const model = g('asModel'), contact = g('asContact'), desc = g('asDesc');
+      if (!model || !contact || !desc) { toast(LZ('型号、联系方式、情况说明都要填', 'Model, contact and description are required')); return; }
+      const rec = {
+        id: 'AS' + Date.now(), at: new Date().toISOString().slice(0, 16).replace('T', ' '),
+        cust: u.name || '客户', company: u.company || '', model,
+        vehicle: g('asVeh'), type: g('asType'), qty: g('asQty'), contact, desc, status: '待处理'
+      };
+      S.asStaff.push(Object.assign({}, rec));
+      S.asBoss.push(Object.assign({}, rec));
+      save(); vAfterSale();
+      toast(LZ('已提交，销售和老板都会看到', 'Submitted — sales and owner can see it'));
+    },
+    asSt(id, t) {
+      const st = t.dataset.st;
+      const arr = A.isBoss() ? S.asBoss : S.asStaff;
+      const r = arr.find(x => x.id === id);
+      if (r) { r.status = st; save(); vAfterSales(); }
+    },
+    asDel(id) {
+      const arr = A.isBoss() ? S.asBoss : S.asStaff;
+      const i = arr.findIndex(x => x.id === id);
+      if (i >= 0) { arr.splice(i, 1); save(); vAfterSales(); toast(LZ('已删除（只删这边这份）', 'Deleted on this side only')); }
+    },
+    bossStaff(name) {
+      if (!name) return;
+      S.leadsOwner = String(name); S.tab = 'leads'; renderNav(); render();
+      toast(LZ('只看 ' + name + ' 跟进的客户', 'Showing leads of ' + name));
+    },
+    leadsOwnerClear() { S.leadsOwner = ''; renderNav(); render(); },
     xrefAdd(id) {
       const p = E.byId.get(id); if (!p) return;
       const hit = S.cart.find(x => x.pid === id);

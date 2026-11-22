@@ -582,8 +582,8 @@
       '<div class="card"><div class="card-h"><h3>员工业绩</h3><span class="sub">按成交额排序</span></div><div class="card-b" style="padding:4px 0 0">',
       '<div class="tbl-wrap"><table><thead><tr><th>员工</th><th class="right">客户</th><th class="right">记录</th><th class="right">成交单</th><th class="right">成交额</th><th class="right">平均单额</th><th class="right">转化率</th><th>主战场</th><th>最近</th></tr></thead><tbody>',
       rows.map(r => [
-        '<tr>',
-        '<td><b>' + esc(r.staff) + '</b><div class="deal-bar"><i style="width:' + Math.round(r.amount / max * 100) + '%"></i></div></td>',
+        '<tr class="click" data-act="bossStaff" data-id="' + esc(r.staff) + '" title="点开看这位员工跟进的客户">',
+        '<td><b>' + esc(r.staff) + '</b> <span class="tiny muted">看客户 ›</span><div class="deal-bar"><i style="width:' + Math.round(r.amount / max * 100) + '%"></i></div></td>',
         '<td class="right mono small">' + r.custs + '</td>',
         '<td class="right mono small">' + r.deals + '</td>',
         '<td class="right mono"><b>' + r.won + '</b></td>',

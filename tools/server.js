@@ -147,8 +147,65 @@ async function redfoxApi(req, res) {
   }
 }
 
+/* ---- 型号查询：/api/lookup?q=xxx ---- */
+function decodeDdg(href) {
+  const m = /uddg=([^&]+)/.exec(href || '');
+  if (m) { try { return decodeURIComponent(m[1]); } catch (e) { return href; } }
+  if (href.indexOf('//') === 0) return 'https:' + href;
+  return href;
+}
+function stripTags(s) {
+  return String(s || '').replace(/<[^>]*>/g, '').replace(/&lt;/g, '<').replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&amp;/g, '&').replace(/\s+/g, ' ').trim();
+}
+async function lookupApi(req, res) {
+  const u = url.parse(req.url, true);
+  const q = String(u.query.q || '').trim().slice(0, 120);
+  if (!q) return sendJson(res, 200, { ok: false, error: '缺少关键词' });
+  const UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36';
+  /* 型号多是纯代码，搜索词补一句上下文，免得搜到显示器、电池等同名结果 */
+  const qq = /brake|pad|刹车|制动/i.test(q) ? q : q + ' brake pad';
+  try {
+    /* 先 DuckDuckGo（返回干净，无广告） */
+    let items = [];
+    try {
+      const r = await fetch('https://html.duckduckgo.com/html/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'User-Agent': UA },
+        body: 'q=' + encodeURIComponent(qq),
+        signal: AbortSignal.timeout(20000)
+      });
+      const html = await r.text();
+      const re = /<a[^>]*class="result__a"[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>[\s\S]*?<a[^>]*class="result__snippet"[^>]*>([\s\S]*?)<\/a>/g;
+      let m;
+      while ((m = re.exec(html)) && items.length < 10) {
+        items.push({ title: stripTags(m[2]), url: decodeDdg(m[1]), snippet: stripTags(m[3]), site: '' });
+      }
+    } catch (e) { /* 落到 Bing */ }
+    /* Bing 兜底 */
+    if (!items.length) {
+      const r2 = await fetch('https://www.bing.com/search?q=' + encodeURIComponent(qq) + '&setlang=zh-CN', {
+        headers: { 'User-Agent': UA }, signal: AbortSignal.timeout(20000)
+      });
+      const html2 = await r2.text();
+      const re2 = /<li[^>]*class="b_algo"[\s\S]*?<h2[^>]*><a[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>[\s\S]*?<p[^>]*>([\s\S]*?)<\/p>/g;
+      let m2;
+      while ((m2 = re2.exec(html2)) && items.length < 10) {
+        items.push({ title: stripTags(m2[2]), url: m2[1], snippet: stripTags(m2[3]), site: '' });
+      }
+    }
+    items.forEach(it => {
+      try { it.site = new URL(it.url).hostname.replace(/^www\./, ''); } catch (e) { }
+    });
+    return sendJson(res, 200, { ok: true, q, items });
+  } catch (e) {
+    return sendJson(res, 200, { ok: false, error: String((e && e.message) || e) });
+  }
+}
+
 http.createServer((req, res) => {
   if (req.url.indexOf('/api/redfox') === 0) return redfoxApi(req, res);
+  if (req.url.indexOf('/api/lookup') === 0) return lookupApi(req, res);
   let rel = decodeURIComponent(url.parse(req.url).pathname);
   if (rel === '/') rel = '/index.html';
   const fp = path.join(ROOT, rel);
