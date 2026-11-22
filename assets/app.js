@@ -2162,7 +2162,11 @@
       toast(roleName(r.user));
       if (window.__askLang) { window.__askLang = false; setTimeout(openLang, 40); }
     },
-    logout() { A.logout(); applySession(); renderGate(); toast(LZ('已退出登录', 'Signed out')); },
+    logout() {
+      A.logout();
+      gateStaffMode = false; gateRole = 'customer';   // 退出后收起员工 / 老板入口，回到纯客户登录
+      applySession(); renderGate(); toast(LZ('已退出登录', 'Signed out'));
+    },
     openCustomer(id) { openCustomer(id); },
     sendCustomer(id) {
       const u = A.customers().find(x => x.id === id);
@@ -3211,6 +3215,8 @@
   /* ================= 入口（员工 / 客户） ================= */
   const A = window.AUTH;
   let gateRole = 'customer';
+  /** 员工 / 老板入口默认隐藏：在登录窗顶部（Logo + 标题）双击解锁，避免客户看到管理入口 */
+  let gateStaffMode = false;
 
   function roleName(u) {
     if (!u) return T('gate.none');
@@ -3252,7 +3258,10 @@
     const body = $('#gateBody');
     if (!body) return;
     const u = A.me();
+    const gTitle = $('#gateTitle'), gSub = $('#gateSub');
     if (u) {
+      if (gTitle) gTitle.textContent = LZ('当前账号', 'Your account');
+      if (gSub) gSub.textContent = LZ('登录状态存在本机，可在这里切换身份或退出。', 'Session lives on this device; switch or sign out here.');
       body.innerHTML = `
       <div class="gate-roles" style="grid-template-columns:1fr">
         <div class="gate-role on" style="cursor:default">
@@ -3275,9 +3284,15 @@
       </div>`;
       return;
     }
-    const staff = gateRole === 'staff';
+    const modeStaff = gateStaffMode;
+    const boss = modeStaff && gateRole === 'boss';
+    const staff = modeStaff && gateRole === 'staff';
+    if (gTitle) gTitle.textContent = modeStaff ? LZ('选择入口', 'Choose entry') : LZ('客户登录', 'Customer sign in');
+    if (gSub) gSub.textContent = modeStaff
+      ? LZ('客户直接登录；员工用访问码，老板用老板访问码。', 'Customers sign in directly; staff use the access code, owners the owner code.')
+      : LZ('用手机号 / 邮箱 / WhatsApp 登录，看型号、看价格、收报价。', 'Sign in with phone, email or WhatsApp to browse parts and get quotes.');
     body.innerHTML = `
-    <div class="gate-roles">
+    ${modeStaff ? `<div class="gate-roles">
       <button class="gate-role ${staff ? '' : 'on'}" data-act="gateRole" data-id="customer">
         <div class="ic">🛒</div>
         <div class="t">${T('gate.cust')}</div>
@@ -3293,9 +3308,9 @@
         <div class="t">${LZ('老板', 'Owner')}</div>
         <div class="d">${LZ('看员工业绩、成交、转化与产品结构', 'Staff performance, deals and product mix')}</div>
       </button>
-    </div>
+    </div>` : ''}
     <div class="gate-form">
-      ${gateRole === 'boss' ? `
+      ${boss ? `
         <div class="full"><label>${LZ('老板访问码', 'Owner code')}</label><input id="gCode" type="text" autocomplete="off" placeholder="GYBOSS"></div>
         <div><label>${T('gate.name')}</label><input id="gName" type="text" placeholder="Owner"></div>
         <div><label>${T('gate.contactValue')}</label><input id="gValue" type="text" placeholder="boss@kooying.com"></div>
@@ -3318,7 +3333,7 @@
         <span>${LZ('体验版 · 客户（不填联系方式）', 'Demo · Customer (no contact needed)')}</span>
         <span class="tiny muted">${LZ('随便点，数据只在本机', 'click anything, local only')}</span>
       </button>
-      <button class="gate-demo staff" data-act="gateDemo" data-id="staff">
+      ${modeStaff ? `<button class="gate-demo staff" data-act="gateDemo" data-id="staff">
         <span class="bolt">⚡</span>
         <span>${LZ('体验版 · 员工（免访问码，只读）', 'Demo · Staff (no code, read-only)')}</span>
         <span class="tiny muted">${LZ('可看客户浏览，不能改数据', 'see activity, no edits')}</span>
@@ -3327,10 +3342,10 @@
         <span class="bolt">⚡</span>
         <span>${LZ('体验版 · 老板（免访问码，只读）', 'Demo · Owner (no code, read-only)')}</span>
         <span class="tiny muted">${LZ('看员工业绩与成交总结', 'staff performance summary')}</span>
-      </button>
+      </button>` : ''}
     </div>
     <div class="gate-foot">
-      <span class="tip">${gateRole === 'boss' ? LZ('演示访问码：GYBOSS', 'Demo owner code: GYBOSS') : staff ? LZ('演示访问码：GY2024', 'Demo access code: GY2024') : T('gate.tip')}</span>
+      <span class="tip">${boss ? LZ('演示访问码：GYBOSS', 'Demo owner code: GYBOSS') : staff ? LZ('演示访问码：GY2024', 'Demo access code: GY2024') : T('gate.tip')}</span>
       <span class="flex1"></span>
       <button class="btn primary" data-act="gateLogin">${T('gate.in')}</button>
     </div>`;
@@ -3658,6 +3673,13 @@
   });
   $('#drawerMask').onclick = closeDrawer;
   $('#modalMask').onclick = e => { if (e.target.id === 'modalMask') closeModal(); };
+  // 登录窗顶部（Logo + 标题）双击：解锁员工 / 老板登录入口，默认只给客户登录
+  const gateHead = $('#gateHead');
+  if (gateHead) gateHead.addEventListener('dblclick', () => {
+    if (gateStaffMode) return;
+    gateStaffMode = true; gateRole = 'staff'; renderGate();
+    toast(LZ('员工 / 老板登录已解锁', 'Staff and owner sign-in unlocked'));
+  });
   // 点左上角 Logo 回首页（键盘 Enter / 空格同样有效）
   const brandHome = $('#brandHome');
   if (brandHome) brandHome.addEventListener('keydown', e => {
