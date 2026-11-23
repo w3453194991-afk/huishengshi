@@ -405,7 +405,7 @@
     const tel = String(((x.contact || {}).value) || '').replace(/[\s\-().+]/g, '');
     return name + '|' + tel;
   }
-  function netReady() { return !!(window.SYN && SYN.available() && SYN.on()); }
+  function netReady() { return !NO_NET && !!(window.SYN && SYN.available() && SYN.on()); }
   function mergeNet() {
     if (!netReady()) return false;
     let changed = false;
@@ -2669,7 +2669,7 @@
         <div class="tiny muted" style="margin-top:10px">${LZ('客户登录后，在右下角「客服解答」里能看到这条报价。', 'The customer sees it in the Support panel after login.')}</div></div>`,
         `<button class="btn primary" data-act="closeModal">${LZ('知道了', 'Got it')}</button>`);
       toast(LZ('报价 ' + no + ' 已发送', 'Quote ' + no + ' sent'));
-      if (window.SYN && SYN.available()) {
+      if (!NO_NET && window.SYN && SYN.available()) {
         const o = (S.quotes || [])[S.quotes.length - 1];
         if (o) SYN.add('quotes', Object.assign({}, o, { custKey: custKeyOf(c), t: Date.now() }));
       }
@@ -4035,13 +4035,21 @@
      - 不弹登录窗、不弹语言窗，打开即见页面
      - 只能看客户侧页面（产品库、选型、购物车、售后），员工数据仍被权限挡住
      - 用途：网页取证、给客户发一个「免登录试用」链接 */
-  const GUEST_MODE = /(?:^|[?&])view=guest(?:[&=#]|$)/.test(location.search + location.hash);
+  const GUEST_ROLE = (function () {
+    const m = /(?:^|[?&])view=(guest|boss)(?:[&=#]|$)/.exec(location.search + location.hash);
+    return m ? m[1] : '';
+  })();
+  const GUEST_MODE = !!GUEST_ROLE;
+  /* 老板演示视图不接服务器共享区：只用本机演示数据，避免把真实客户记录暴露给任何拿到链接的人 */
+  const NO_NET = GUEST_ROLE === 'boss';
   if (GUEST_MODE) {
-    try { A.loginDemo('customer'); } catch (e) { }
+    try { A.loginDemo(GUEST_ROLE === 'boss' ? 'boss' : 'customer'); } catch (e) { }
     try { I.setLang('zh'); applyLangChrome(); window.__askLang = false; } catch (e) { }
     const gm = /^#\/?([a-z]+)$/i.exec(location.hash || '');
     const gtab = gm ? gm[1].toLowerCase() : '';
-    S.tab = (tab => ['home', 'select', 'products', 'custom', 'quote', 'aftersale'].indexOf(tab) >= 0 ? tab : 'products')(gtab || S.tab);
+    const custTabs = ['home', 'select', 'products', 'custom', 'quote', 'aftersale'];
+    const okTab = t => (GUEST_ROLE === 'boss' ? allowedTab(t) : custTabs.indexOf(t) >= 0);
+    S.tab = okTab(gtab) ? gtab : (GUEST_ROLE === 'boss' ? 'boss' : 'products');
   }
   ensureDeals();
   render();
@@ -4053,7 +4061,7 @@
   $('#chatBadge').style.display = S.chat.msgs.some(m => m.match && m.match.top) ? 'inline-block' : 'none';
   render();
   /* ---- 共享区：服务器模式下拉数据 + 轮询（客户和员工不在同一台电脑也能互通） ---- */
-  if (window.SYN && SYN.available()) {
+  if (!NO_NET && window.SYN && SYN.available()) {
     const sig = () => [SYN.list('quotes').length, SYN.list('settlements').length,
       SYN.list('inquiries').length, SYN.list('aftersales').length].join('/');
     let lastSig = '';
@@ -4065,7 +4073,7 @@
   if (GUEST_MODE) {
     const gb = document.createElement('div');
     gb.className = 'guest-bar';
-    gb.textContent = '演示模式 · 只读浏览（不含员工数据）';
+    gb.textContent = GUEST_ROLE === 'boss' ? '演示模式 · 老板视图（仅演示数据，不含真实客户记录）' : '演示模式 · 只读浏览（不含员工数据）';
     document.body.appendChild(gb);
     document.body.classList.add('has-guestbar');
   }
